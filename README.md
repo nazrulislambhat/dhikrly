@@ -75,7 +75,7 @@ dhikrly/
 
 ```bash
 # Clone the repo
-git clone https://github.com/your-username/dhikrly.git
+git clone https://github.com/nazrulislambhat/dhikrly.git
 cd dhikrly
 
 # Install dependencies
