@@ -460,7 +460,7 @@ function DuaCard({ dua, checked, onToggle, dark }: DuaCardProps) {
       >
         {activeTab === 'Arabic' && (
           <p
-            className={`font-arabic text-right leading-[2.2] text-[clamp(20px,3vw,26px)] ${dark ? 'text-stone-100' : 'text-stone-800'}`}
+            className={`font-arabic text-right leading-[2.2] text-[clamp(16px,2vw,24px)] ${dark ? 'text-stone-100' : 'text-stone-800'}`}
             dir="rtl"
             lang="ar"
           >
