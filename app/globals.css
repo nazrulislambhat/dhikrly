@@ -1,26 +1,181 @@
-@import "tailwindcss";
+/* ── Google Fonts (fallback if next/font is unavailable) ─────── */
+@import url("https://fonts.googleapis.com/css2?family=Scheherazade+New:wght@400;700&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&display=swap");
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+/* ── Base layer overrides ────────────────────────────────────── */
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  body {
+    @apply antialiased;
+    font-family: var(--font-crimson, "Crimson Pro", Georgia, serif);
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar        { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track  { background: transparent; }
+  ::-webkit-scrollbar-thumb  {
+    @apply rounded-full;
+    background: rgba(212, 175, 55, 0.25);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(212, 175, 55, 0.45);
+  }
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(212, 175, 55, 0.25) transparent;
+  }
+
+  /* Selection */
+  ::selection {
+    background: rgba(212, 175, 55, 0.22);
+  }
+
+  /* Focus ring — plain CSS avoids @apply opacity-modifier build errors */
+  :focus-visible {
+    outline: 2px solid rgba(251, 191, 36, 0.6);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* Arabic text direction */
+  [lang="ar"],
+  [dir="rtl"] {
+    font-family: var(--font-scheherazade, "Scheherazade New", "Traditional Arabic", serif);
+    direction: rtl;
+    unicode-bidi: bidi-override;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* ── Component layer — plain CSS only, no @apply with modifiers ─ */
+
+/* Serif utility (Crimson Pro) */
+.font-serif {
+  font-family: var(--font-crimson, "Crimson Pro", Georgia, serif);
+}
+
+/* Arabic font utility */
+.font-arabic {
+  font-family: var(--font-scheherazade, "Scheherazade New", "Traditional Arabic", serif);
+}
+
+/* Dua card base */
+.dua-card {
+  border-radius: 1rem;
+  border-width: 1px;
+  border-style: solid;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+}
+.dua-card:hover {
+  transform: translateY(-1px);
+}
+
+/* Tab button base */
+.tab-pill {
+  flex: 1 1 0%;
+  border-radius: 0.375rem;
+  padding-top: 0.375rem;
+  padding-bottom: 0.375rem;
+  font-family: var(--font-crimson, "Crimson Pro", Georgia, serif);
+  font-size: 11px;
+  transition: all 0.15s ease;
+}
+
+/* Session pill base */
+.session-pill {
+  border-radius: 9999px;
+  padding: 2px 8px;
+  font-size: 10px;
+  font-weight: 500;
+}
+
+/* Ghost input */
+.ghost-input {
+  height: 2rem;
+  flex: 1 1 0%;
+  border-radius: 9999px;
+  border-width: 1px;
+  border-style: solid;
+  background: transparent;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  font-size: 0.75rem;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+.ghost-input:focus {
+  border-color: rgba(251, 191, 36, 0.5);
+}
+
+/* Pill button (filter / toggle) */
+.pill-btn {
+  height: 2rem;
+  border-radius: 9999px;
+  border-width: 1px;
+  border-style: solid;
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
+  font-size: 11px;
+  transition: all 0.18s ease;
+}
+
+/* ── Keyframes & custom utilities — plain CSS ───────────────── */
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0);     }
+}
+.animate-fade-in {
+  animation: fade-in 0.25s ease forwards;
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+.animate-slide-up {
+  animation: slide-up 0.3s ease forwards;
+}
+
+@keyframes check-pop {
+  0%   { transform: scale(0.5); }
+  55%  { transform: scale(1.3); }
+  100% { transform: scale(1);   }
+}
+.animate-check-pop {
+  animation: check-pop 0.35s ease forwards;
+}
+
+@keyframes glow-green {
+  0%, 100% { box-shadow: 0 0 0   0 rgba(16, 185, 129, 0);    }
+  50%       { box-shadow: 0 0 14px 4px rgba(16, 185, 129, 0.2); }
+}
+.animate-glow-green {
+  animation: glow-green 2s ease-in-out infinite;
+}
+
+/* Arabic line-height helper */
+.leading-arabic {
+  line-height: 2.2;
+}
+
+.arabic-block {
+  font-family: var(--font-scheherazade, "Scheherazade New", serif);
+  direction:   rtl;
+  text-align:  right;
+  line-height: 2.2;
 }
