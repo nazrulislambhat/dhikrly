@@ -20,7 +20,7 @@ const scheherazade = Scheherazade_New({
 
 /* ── Metadata ─────────────────────────────────────────────────── */
 export const metadata: Metadata = {
-  title:       "Daily Adhkār & Du'ā | أذكار يومية",
+  title:       "Dhikrly: Daily Adhkār & Du'ā Tracker",
   description: "A minimal daily tracker for Islamic adhkār and du'ā — with full Arabic text, transliteration, English meaning, streaks, and light/dark mode.",
   keywords:    ["adhkar", "dua", "islamic", "daily dhikr", "quran", "tracker", "wird"],
   authors:     [{ name: "Duas Tracker" }],
