@@ -756,7 +756,7 @@ export default function DuasTracker() {
                 : 'border-black/10 text-stone-400 hover:text-stone-600'
             }`}
           >
-            {dark ? '☾ Dark mode' : '☀ Light mode'}
+            {dark ? '☀ Light mode' : '☾ Dark mode'}
           </button>
         </header>
 
