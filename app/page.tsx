@@ -605,11 +605,24 @@ export default function DuasTracker() {
   const prevDone = useRef<number>(
     Object.values(checked).filter(Boolean).length,
   );
+  // Refs let the effect always read the latest values without being deps.
+  const streakRef = useRef<Streak>(streak);
+  const todayRef = useRef<string>(today);
+  useEffect(() => {
+    streakRef.current = streak;
+  }, [streak]);
+
+  // Defined before the effect that calls it — arrow fns are not hoisted.
+  const showToast = useCallback((msg: string): void => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 3500);
+  }, []);
 
   /* persist checked + update streak */
   useEffect(() => {
+    const currentToday = todayRef.current;
     const all = load<Record<string, Record<string, boolean>>>(STORAGE_KEY, {});
-    all[today] = checked;
+    all[currentToday] = checked;
     const keys = Object.keys(all).sort();
     if (keys.length > 60)
       keys.slice(0, keys.length - 60).forEach((k: string) => delete all[k]);
@@ -617,21 +630,22 @@ export default function DuasTracker() {
 
     const done = Object.values(checked).filter(Boolean).length;
     if (done === DUAS.length && prevDone.current < DUAS.length) {
-      const s = { ...streak };
-      if (s.lastComplete !== today) {
-        const yesterday = new Date(Date.now() - 86_400_000)
+      const s = { ...streakRef.current };
+      if (s.lastComplete !== currentToday) {
+        const nowMs = Date.now();
+        const yesterday = new Date(nowMs - 86_400_000)
           .toISOString()
           .slice(0, 10);
         s.current = s.lastComplete === yesterday ? s.current + 1 : 1;
         s.best = Math.max(s.best, s.current);
-        s.lastComplete = today;
+        s.lastComplete = currentToday;
         setStreak(s);
         save(STREAK_KEY, s);
         showToast('All duas completed. BarakAllahu feek. 🌙');
       }
     }
     prevDone.current = done;
-  }, [checked]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [checked, showToast]);
 
   /* persist dark mode preference */
   useEffect(() => {
@@ -643,11 +657,6 @@ export default function DuasTracker() {
   const toggle = useCallback((id: string): void => {
     setChecked((prev) => ({ ...prev, [id]: !prev[id] }));
   }, []);
-
-  const showToast = (msg: string): void => {
-    setToast(msg);
-    setTimeout(() => setToast(null), 3500);
-  };
 
   const resetDay = (): void => {
     setChecked({});
