@@ -588,7 +588,7 @@ export default function DuasTracker() {
   const today = getTodayKey();
 
   const [dark, setDark] = useState<boolean>(
-    () => load<{ dark: boolean }>(SETTINGS_KEY, { dark: true }).dark,
+    () => load<{ dark: boolean }>(SETTINGS_KEY, { dark: false }).dark,
   );
   const [checked, setChecked] = useState<Record<string, boolean>>(
     () =>
