@@ -1,0 +1,43 @@
+{
+  "name": "Daily Adhkār & Du'ā",
+  "short_name": "Adhkār",
+  "description": "Track your daily Islamic remembrances and supplications with streaks, reminders, and progress reports.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0c1a2e",
+  "theme_color": "#0c1a2e",
+  "orientation": "portrait-primary",
+  "lang": "en",
+  "categories": ["lifestyle", "productivity"],
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Morning Adhkār",
+      "short_name": "Morning",
+      "description": "Open morning session",
+      "url": "/?session=morning",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Evening Adhkār",
+      "short_name": "Evening",
+      "description": "Open evening session",
+      "url": "/?session=evening",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}
