@@ -463,6 +463,7 @@ function DuaCard({ dua, checked, onToggle, dark }: DuaCardProps) {
             className={`font-arabic text-right leading-[2.2] text-[clamp(16px,2vw,24px)] ${dark ? 'text-stone-100' : 'text-stone-800'}`}
             dir="rtl"
             lang="ar"
+            translate="no"
           >
             {dua.ar}
           </p>
@@ -740,6 +741,7 @@ export default function DuasTracker() {
             className={`mt-1 font-arabic text-xl ${dark ? 'text-amber-400/45' : 'text-amber-600/50'}`}
             dir="rtl"
             lang="ar"
+            translate="no"
           >
             أَذْكَار يَوْمِيَّة
           </p>
@@ -927,6 +929,7 @@ export default function DuasTracker() {
             className={`font-arabic text-xl ${dark ? 'text-amber-400/30' : 'text-amber-600/30'}`}
             dir="rtl"
             lang="ar"
+            translate="no"
           >
             بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
           </p>
