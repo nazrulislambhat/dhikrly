@@ -285,7 +285,7 @@ export default function ExportReport({
                     : 'bg-amber-200 text-amber-600')
                 : dark
                   ? 'bg-amber-400/20 text-amber-300 hover:bg-amber-400/30'
-                  : 'bg-amber-500 text-white hover:bg-amber-600'
+                  : 'bg-green-500 text-white hover:bg-amber-600'
             }`}
           >
             {generating ? 'Generating…' : '↓ Export PDF'}

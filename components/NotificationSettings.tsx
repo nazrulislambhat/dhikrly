@@ -144,7 +144,7 @@ export default function NotificationSettings({
                   ? 'border-red-500/30 bg-red-500/10 text-red-400'
                   : 'border-red-300/50 bg-red-50 text-red-600'
                 : dark
-                  ? 'border-amber-500/30 bg-amber-500/10 text-amber-400'
+                  ? 'border-amber-500/30 bg-green-500/10 text-amber-400'
                   : 'border-amber-300/50 bg-amber-50 text-amber-700'
           }`}
         >
@@ -197,8 +197,8 @@ export default function NotificationSettings({
               className={`relative h-6 w-11 rounded-full transition-colors ${
                 settings.morningEnabled
                   ? dark
-                    ? 'bg-amber-500'
-                    : 'bg-amber-500'
+                    ? 'bg-green-500'
+                    : 'bg-green-500'
                   : dark
                     ? 'bg-stone-700'
                     : 'bg-stone-200'
@@ -302,7 +302,7 @@ export default function NotificationSettings({
                     : 'bg-stone-100 text-stone-400')
                 : dark
                   ? 'bg-amber-400/20 text-amber-300 hover:bg-amber-400/30'
-                  : 'bg-amber-500 text-white hover:bg-amber-600'
+                  : 'bg-green-500 text-white hover:bg-amber-600'
           }`}
         >
           {saved ? '✓ Saved!' : 'Save & Schedule'}

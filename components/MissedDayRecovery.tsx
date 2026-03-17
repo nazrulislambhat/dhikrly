@@ -165,7 +165,7 @@ export default function MissedDayRecovery({
                           : 'bg-stone-100 text-stone-400'
                         : dark
                           ? 'bg-amber-400/20 text-amber-300 hover:bg-amber-400/30'
-                          : 'bg-amber-500 text-white hover:bg-amber-600'
+                          : 'bg-green-500 text-white hover:bg-amber-600'
                     }`}
                   >
                     {isRecovering ? '...' : 'Mark Done'}

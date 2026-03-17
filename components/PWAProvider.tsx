@@ -112,7 +112,7 @@ export default function PWAProvider({
           className={`flex-1 rounded-xl py-2 text-[12px] font-medium transition-all active:scale-95 ${
             dark
               ? 'bg-amber-400/20 text-amber-300 hover:bg-amber-400/30'
-              : 'bg-amber-500 text-white hover:bg-amber-600'
+              : 'bg-green-500 text-white hover:bg-amber-600'
           }`}
         >
           Install
