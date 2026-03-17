@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { load, save, pruneOldEntries, STORAGE_KEY } from '@/lib/storage';
 import { getTodayKey } from '@/lib/dates';
+import { playCheck, playUncheck, playComplete } from '@/lib/sounds';
 
 export function useChecked(totalDuas: number) {
   // Keep today as state so it can change at midnight without a page reload
@@ -52,9 +53,28 @@ export function useChecked(totalDuas: number) {
     save(STORAGE_KEY, all);
   }, [checked, today]);
 
-  const toggle = useCallback((id: string) => {
-    setChecked((prev) => ({ ...prev, [id]: !prev[id] }));
-  }, []);
+  const toggle = useCallback(
+    (id: string, soundEnabled = true) => {
+      setChecked((prev) => {
+        const wasChecked = !!prev[id];
+        const next = { ...prev, [id]: !wasChecked };
+
+        if (soundEnabled) {
+          // Play completion fanfare if this toggle completes all duas
+          const newDone = Object.values(next).filter(Boolean).length;
+          if (!wasChecked && newDone === totalDuas && totalDuas > 0) {
+            // slight delay so the check animation renders first
+            setTimeout(playComplete, 80);
+          } else {
+            wasChecked ? playUncheck() : playCheck();
+          }
+        }
+
+        return next;
+      });
+    },
+    [totalDuas]
+  );
 
   const reset = useCallback(() => {
     setChecked({});
