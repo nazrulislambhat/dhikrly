@@ -27,7 +27,7 @@ export const save = (key: string, val: unknown): void => {
 /** Prune old daily entries, keeping only the last `maxDays` days. */
 export function pruneOldEntries(
   key: string,
-  maxDays = 90,
+  maxDays = 90
 ): Record<string, Record<string, boolean>> {
   const all = load<Record<string, Record<string, boolean>>>(key, {});
   const keys = Object.keys(all).sort();

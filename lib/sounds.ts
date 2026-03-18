@@ -1,4 +1,4 @@
-  /* ─────────────────────────────────────────────
+/* ─────────────────────────────────────────────
    sounds.ts
    Web Audio API sound effects — zero external files.
    All sounds are synthesized in <1ms.

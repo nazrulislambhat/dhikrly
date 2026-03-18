@@ -2,13 +2,10 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import DUAS_JSON from '@/data/duas.json';
-import type { Dua, CatEntry } from '@/types';
+import type { Dua, CatEntry, Streak } from '@/types';
 import {
-  load,
-  save,
-  SETTINGS_KEY,
-  CUSTOM_DUAS_KEY,
-  NOTIFICATION_KEY,
+  load, save,
+  SETTINGS_KEY, CUSTOM_DUAS_KEY, NOTIFICATION_KEY, STREAK_KEY,
 } from '@/lib/storage';
 import { getHijriDate, getGregorianDate } from '@/lib/dates';
 import { scheduleNotifications } from '@/components/NotificationSettings';
@@ -23,11 +20,15 @@ import NotificationSettings from '@/components/NotificationSettings';
 import AddDuaModal from '@/components/AddDuaModal';
 import MissedDayRecovery from '@/components/MissedDayRecovery';
 import ExportReport from '@/components/ExportReport';
+import AuthModal from '@/components/AuthModal';
+import UserMenu from '@/components/UserMenu';
+import PWAProvider from '@/components/PWAProvider';
 
 import { useChecked } from '@/hooks/useChecked';
 import { useStreak } from '@/hooks/useStreak';
 import { useToast } from '@/hooks/useToast';
-import PWAProvider from '@/components/PWAProvider';
+import { useAuth } from '@/hooks/useAuth';
+import { useSync } from '@/hooks/useSync';
 
 /* ── Static data ── */
 const BASE_DUAS = DUAS_JSON as Dua[];
@@ -40,32 +41,65 @@ const CATS: CatEntry[] = [
   { key: 'custom', label: 'Custom' },
 ];
 
-/* ── Modal types ── */
-type Modal = 'notifications' | 'addDua' | 'missedDay' | 'export' | null;
+type Modal = 'notifications' | 'addDua' | 'missedDay' | 'export' | 'auth' | null;
 
 /* ─────────────────────────────────────────────
    MAIN COMPONENT
 ───────────────────────────────────────────── */
 export default function DuasTracker() {
-  /* Settings */
+  /* ── Settings ── */
   const [dark, setDark] = useState<boolean>(
-    () => load<{ dark: boolean }>(SETTINGS_KEY, { dark: false }).dark,
+    () => load<{ dark: boolean; sound: boolean }>(SETTINGS_KEY, { dark: false, sound: true }).dark
+  );
+  const [soundEnabled, setSoundEnabled] = useState<boolean>(
+    () => load<{ dark: boolean; sound: boolean }>(SETTINGS_KEY, { dark: false, sound: true }).sound ?? true
   );
 
-  /* Custom duas */
-  const [customDuas, setCustomDuas] = useState<Dua[]>(() =>
-    load<Dua[]>(CUSTOM_DUAS_KEY, []),
+  /* ── Custom duas ── */
+  const [customDuas, setCustomDuas] = useState<Dua[]>(
+    () => load<Dua[]>(CUSTOM_DUAS_KEY, [])
   );
   const allDuas: Dua[] = [...BASE_DUAS, ...customDuas];
 
-  /* Core hooks */
-  const { checked, toggle, reset, done, pct, today } = useChecked(
-    allDuas.length,
-  );
+  /* ── Core hooks ── */
+  const { checked, toggle, reset, done, pct, today } = useChecked(allDuas.length);
   const streak = useStreak(done, allDuas.length);
   const { toast, showToast } = useToast();
 
-  /* UI state */
+  /* ── Auth ── */
+  const { user, loading: authLoading, signOut } = useAuth();
+
+  /* ── Sync ── */
+  const [isSynced, setIsSynced] = useState(true);
+
+  const handlePullComplete = useCallback(
+    (data: {
+      checkedByDate: Record<string, Record<string, boolean>>;
+      customDuas: Dua[];
+      streak: Streak;
+    }) => {
+      if (data.customDuas.length > 0) {
+        setCustomDuas(data.customDuas);
+        save(CUSTOM_DUAS_KEY, data.customDuas);
+      }
+      setIsSynced(true);
+      showToast('Synced across devices. 🌙');
+    },
+    [showToast]
+  );
+
+  useSync({ user, today, checked, customDuas, streak, onPullComplete: handlePullComplete });
+
+  // Briefly flip to "unsynced" on any toggle so UserMenu shows the pulse
+  useEffect(() => {
+    if (!user) return;
+    setIsSynced(false);
+    const t = setTimeout(() => setIsSynced(true), 2500);
+    return () => clearTimeout(t);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [checked]);
+
+  /* ── UI state ── */
   const [filter, setFilter] = useState('all');
   const [search, setSearch] = useState('');
   const [priOnly, setPriOnly] = useState(false);
@@ -74,45 +108,38 @@ export default function DuasTracker() {
 
   const prevDone = useRef(done);
 
-  /* Dark mode persistence */
+  /* ── Dark mode + sound persistence ── */
   useEffect(() => {
-    save(SETTINGS_KEY, { dark });
+    save(SETTINGS_KEY, { dark, sound: soundEnabled });
     document.documentElement.classList.toggle('dark', dark);
-  }, [dark]);
+  }, [dark, soundEnabled]);
 
-  /* Completion toast */
+  /* ── Completion toast ── */
   useEffect(() => {
-    if (
-      done === allDuas.length &&
-      allDuas.length > 0 &&
-      prevDone.current < allDuas.length
-    ) {
+    if (done === allDuas.length && allDuas.length > 0 && prevDone.current < allDuas.length) {
       showToast('All duas completed. BarakAllahu feek. 🌙');
     }
     prevDone.current = done;
   }, [done, allDuas.length, showToast]);
 
-  /* Schedule notifications on load */
+  /* ── Schedule notifications ── */
   useEffect(() => {
-    const notifSettings = load<NotifSettings>(NOTIFICATION_KEY, {
-      morningEnabled: false,
-      morningTime: '06:00',
-      eveningEnabled: false,
-      eveningTime: '18:00',
+    const s = load<NotifSettings>(NOTIFICATION_KEY, {
+      morningEnabled: false, morningTime: '06:00',
+      eveningEnabled: false, eveningTime: '18:00',
     });
-    scheduleNotifications(notifSettings);
+    scheduleNotifications(s);
   }, []);
 
-  /* Show missed-day prompt once per session */
+  /* ── Missed day prompt (once per session) ── */
   const missedShown = useRef(false);
   useEffect(() => {
     if (missedShown.current) return;
     missedShown.current = true;
-    // Small delay so app loads first
     setTimeout(() => setActiveModal('missedDay'), 800);
   }, []);
 
-  /* Handlers */
+  /* ── Handlers ── */
   const handleReset = () => {
     reset();
     showToast('Reset. Begin again with Bismillah.');
@@ -125,7 +152,7 @@ export default function DuasTracker() {
       save(CUSTOM_DUAS_KEY, updated);
       showToast(`"${dua.title}" added.`);
     },
-    [customDuas, showToast],
+    [customDuas, showToast]
   );
 
   const handleDeleteDua = useCallback(
@@ -135,10 +162,10 @@ export default function DuasTracker() {
       save(CUSTOM_DUAS_KEY, updated);
       showToast("Custom du'ā removed.");
     },
-    [customDuas, showToast],
+    [customDuas, showToast]
   );
 
-  /* Derived */
+  /* ── Derived counts ── */
   const total = allDuas.length;
   const pending = total - done;
 
@@ -167,13 +194,9 @@ export default function DuasTracker() {
   const bg = dark
     ? 'min-h-screen bg-[#0c1a2e] text-stone-200'
     : 'min-h-screen bg-stone-50 text-stone-800';
-  const card = dark
-    ? 'bg-white/[0.04] border-white/[0.07]'
-    : 'bg-white border-black/[0.07] shadow-sm';
 
   return (
     <div className={bg}>
-      {/* PWA install prompt */}
       <PWAProvider dark={dark} />
 
       {/* Toast */}
@@ -184,18 +207,14 @@ export default function DuasTracker() {
       )}
 
       {/* Modals */}
+      {activeModal === 'auth' && (
+        <AuthModal dark={dark} onClose={() => setActiveModal(null)} />
+      )}
       {activeModal === 'notifications' && (
-        <NotificationSettings
-          dark={dark}
-          onClose={() => setActiveModal(null)}
-        />
+        <NotificationSettings dark={dark} onClose={() => setActiveModal(null)} />
       )}
       {activeModal === 'addDua' && (
-        <AddDuaModal
-          dark={dark}
-          onAdd={handleAddDua}
-          onClose={() => setActiveModal(null)}
-        />
+        <AddDuaModal dark={dark} onAdd={handleAddDua} onClose={() => setActiveModal(null)} />
       )}
       {activeModal === 'missedDay' && (
         <MissedDayRecovery
@@ -203,136 +222,113 @@ export default function DuasTracker() {
           total={total}
           duaIds={allDuas.map((d) => d.id)}
           onClose={() => setActiveModal(null)}
-          onRecover={() => {
-            showToast('Day marked complete. JazakAllahu khairan.');
-          }}
+          onRecover={() => showToast('Day marked complete. JazakAllahu khairan.')}
         />
       )}
       {activeModal === 'export' && (
-        <ExportReport
-          dark={dark}
-          duas={allDuas}
-          onClose={() => setActiveModal(null)}
-        />
+        <ExportReport dark={dark} duas={allDuas} onClose={() => setActiveModal(null)} />
       )}
 
       <div className="mx-auto max-w-2xl px-4 py-8 pb-16">
-        {/* Header */}
-        <header className="mb-8 text-center">
-          <div
-            className={`mb-1 text-[11px] uppercase tracking-[0.18em] ${
-              dark ? 'text-amber-400/60' : 'text-amber-600/70'
-            }`}
-          >
-            {getHijriDate()}
-          </div>
-          <h1
-            className={`font-serif text-[clamp(22px,4vw,32px)] font-normal tracking-wide ${
-              dark ? 'text-amber-400' : 'text-amber-700'
-            }`}
-          >
-            Daily Adhkār &amp; Du&apos;ā
-          </h1>
-          <p
-            className={`mt-1 font-arabic text-xl ${
-              dark ? 'text-amber-400/45' : 'text-amber-600/50'
-            }`}
-            dir="rtl"
-            lang="ar"
-            translate="no"
-          >
-            أَذْكَار يَوْمِيَّة
-          </p>
-          <p
-            className={`mt-2 text-[11px] ${dark ? 'text-stone-500' : 'text-stone-400'}`}
-          >
-            {getGregorianDate()}
-          </p>
 
-          {/* Action row */}
+        {/* ── Header ── */}
+        <header className="mb-8">
+
+          {/* Top bar: Hijri date left, auth right */}
+          <div className="mb-4 flex items-center justify-between">
+            <div className={`text-[11px] uppercase tracking-[0.18em] ${dark ? 'text-amber-400/60' : 'text-amber-600/70'}`}>
+              {getHijriDate()}
+            </div>
+
+            {authLoading ? (
+              <div className={`h-7 w-24 animate-pulse rounded-full ${dark ? 'bg-white/5' : 'bg-stone-100'}`} />
+            ) : user ? (
+              <UserMenu
+                user={user}
+                dark={dark}
+                isSynced={isSynced}
+                onSignOut={async () => { await signOut(); showToast('Signed out.'); }}
+              />
+            ) : (
+              <button
+                onClick={() => setActiveModal('auth')}
+                className={`rounded-full border px-3.5 py-1.5 text-[11px] uppercase tracking-widest transition-all hover:scale-105 active:scale-95 ${
+                  dark
+                    ? 'border-amber-400/30 text-amber-400/70 hover:border-amber-400/50 hover:text-amber-400'
+                    : 'border-amber-500/40 text-amber-600 hover:border-amber-500 hover:text-amber-700'
+                }`}
+              >
+                ↑ Sync / Login
+              </button>
+            )}
+          </div>
+
+          {/* Title block */}
+          <div className="text-center">
+            <h1 className={`font-serif text-[clamp(22px,4vw,32px)] font-normal tracking-wide ${dark ? 'text-amber-400' : 'text-amber-700'}`}>
+              Daily Adhkār &amp; Du&apos;ā
+            </h1>
+            <p className={`mt-1 font-arabic text-xl ${dark ? 'text-amber-400/45' : 'text-amber-600/50'}`} dir="rtl" lang="ar" translate="no">
+              أَذْكَار يَوْمِيَّة
+            </p>
+            <p className={`mt-2 text-[11px] ${dark ? 'text-stone-500' : 'text-stone-400'}`}>
+              {getGregorianDate()}
+            </p>
+          </div>
+
+          {/* Action buttons */}
           <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
-            <button
-              onClick={() => setDark((d) => !d)}
-              className={`rounded-full border px-4 py-1.5 text-[11px] uppercase tracking-widest transition-all hover:scale-105 active:scale-95 ${
-                dark
-                  ? 'border-white/10 text-stone-400 hover:text-stone-200'
-                  : 'border-black/10 text-stone-400 hover:text-stone-600'
-              }`}
-            >
-              {dark ? '☀ Light' : '☾ Dark'}
-            </button>
-            <button
-              onClick={() => setActiveModal('notifications')}
-              className={`rounded-full border px-4 py-1.5 text-[11px] uppercase tracking-widest transition-all hover:scale-105 active:scale-95 ${
-                dark
-                  ? 'border-white/10 text-stone-400 hover:text-stone-200'
-                  : 'border-black/10 text-stone-400 hover:text-stone-600'
-              }`}
-            >
-              🔔 Reminders
-            </button>
-            <button
-              onClick={() => setActiveModal('export')}
-              className={`rounded-full border px-4 py-1.5 text-[11px] uppercase tracking-widest transition-all hover:scale-105 active:scale-95 ${
-                dark
-                  ? 'border-white/10 text-stone-400 hover:text-stone-200'
-                  : 'border-black/10 text-stone-400 hover:text-stone-600'
-              }`}
-            >
-              ↓ Export
-            </button>
-            <button
-              onClick={() => setActiveModal('missedDay')}
-              className={`rounded-full border px-4 py-1.5 text-[11px] uppercase tracking-widest transition-all hover:scale-105 active:scale-95 ${
-                dark
-                  ? 'border-white/10 text-stone-400 hover:text-stone-200'
-                  : 'border-black/10 text-stone-400 hover:text-stone-600'
-              }`}
-            >
-              ↺ Missed Days
-            </button>
+            {[
+              { label: dark ? '☀ Light' : '☾ Dark', onClick: () => setDark((d) => !d) },
+              {
+                label: soundEnabled ? '🔊 Sound' : '🔇 Muted',
+                onClick: () => setSoundEnabled((s) => !s),
+                active: soundEnabled,
+              },
+              { label: '🔔 Reminders', onClick: () => setActiveModal('notifications') },
+              { label: '↓ Export', onClick: () => setActiveModal('export') },
+              { label: '↺ Missed Days', onClick: () => setActiveModal('missedDay') },
+            ].map(({ label, onClick, active }) => (
+              <button
+                key={label}
+                onClick={onClick}
+                className={`rounded-full border px-4 py-1.5 text-[11px] uppercase tracking-widest transition-all hover:scale-105 active:scale-95 ${
+                  active === true
+                    ? dark
+                      ? 'border-amber-400/30 text-amber-400/80'
+                      : 'border-amber-400/50 text-amber-600'
+                    : dark
+                      ? 'border-white/10 text-stone-400 hover:text-stone-200'
+                      : 'border-black/10 text-stone-400 hover:text-stone-600'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
           </div>
         </header>
 
-        {/* Stats */}
+        {/* ── Stats ── */}
         <div className="mb-4 grid grid-cols-4 gap-2">
-          <StatCard label="Total" value={total} accent="gold" dark={dark} />
-          <StatCard label="Done" value={done} accent="green" dark={dark} />
-          <StatCard
-            label="Pending"
-            value={pending}
-            accent={pending > 0 ? 'amber' : 'green'}
-            dark={dark}
-          />
-          <StatCard
-            label="Streak"
-            value={`${streak.current}d`}
-            accent="purple"
-            dark={dark}
-          />
+          <StatCard label="Total"   value={total}   accent="gold"                           dark={dark} />
+          <StatCard label="Done"    value={done}    accent="green"                          dark={dark} />
+          <StatCard label="Pending" value={pending} accent={pending > 0 ? 'amber' : 'green'} dark={dark} />
+          <StatCard label="Streak"  value={`${streak.current}d`} accent="purple"            dark={dark} />
         </div>
 
-        {/* Progress bar */}
-        <div className="mb-1">
-          <ProgressBar pct={pct} dark={dark} />
-        </div>
-        <div
-          className={`mb-5 flex justify-between text-[10px] ${
-            dark ? 'text-stone-600' : 'text-stone-400'
-          }`}
-        >
+        {/* ── Progress bar ── */}
+        <div className="mb-1"><ProgressBar pct={pct} dark={dark} /></div>
+        <div className={`mb-5 flex justify-between text-[10px] ${dark ? 'text-stone-600' : 'text-stone-400'}`}>
           <span>{pct}% complete</span>
-          <span>
-            {done} / {total}
-          </span>
+          <span>{done} / {total}</span>
         </div>
 
-        {/* 7-day history */}
+        {/* ── 7-day history ── */}
         <div className="mb-3">
           <WeeklyHistory dark={dark} total={total} streakBest={streak.best} />
         </div>
 
-        {/* Heatmap toggle */}
+        {/* ── Heatmap toggle ── */}
         <button
           onClick={() => setShowHeatmap((v) => !v)}
           className={`mb-3 w-full rounded-xl border px-4 py-2.5 text-[11px] uppercase tracking-widest transition-all ${
@@ -343,13 +339,9 @@ export default function DuasTracker() {
         >
           {showHeatmap ? '▲ Hide Heatmap' : '▼ Show Heatmap'}
         </button>
-        {showHeatmap && (
-          <div className="mb-3">
-            <StreakHeatmap dark={dark} total={total} />
-          </div>
-        )}
+        {showHeatmap && <div className="mb-3"><StreakHeatmap dark={dark} total={total} /></div>}
 
-        {/* Controls */}
+        {/* ── Controls ── */}
         <div className="mb-3 flex flex-wrap gap-2">
           <input
             type="text"
@@ -366,12 +358,8 @@ export default function DuasTracker() {
             onClick={() => setPriOnly((p) => !p)}
             className={`h-8 rounded-full border px-3 text-[11px] transition-all ${
               priOnly
-                ? dark
-                  ? 'border-amber-400/40 bg-amber-400/15 text-amber-300'
-                  : 'border-amber-400/50 bg-amber-50 text-amber-700'
-                : dark
-                  ? 'border-white/[0.08] text-stone-500 hover:text-stone-300'
-                  : 'border-black/[0.08] text-stone-400 hover:text-stone-600'
+                ? dark ? 'border-amber-400/40 bg-amber-400/15 text-amber-300' : 'border-amber-400/50 bg-amber-50 text-amber-700'
+                : dark ? 'border-white/[0.08] text-stone-500 hover:text-stone-300' : 'border-black/[0.08] text-stone-400 hover:text-stone-600'
             }`}
           >
             ★ Priority
@@ -398,7 +386,7 @@ export default function DuasTracker() {
           </button>
         </div>
 
-        {/* Category tabs */}
+        {/* ── Category tabs ── */}
         <div className="mb-5 flex flex-wrap gap-1.5">
           {CATS.map(({ key, label }: CatEntry) => {
             const active = filter === key;
@@ -411,20 +399,12 @@ export default function DuasTracker() {
                 className={[
                   'rounded-full border px-3.5 py-1 font-serif text-[11px] tracking-wide transition-all',
                   active
-                    ? dark
-                      ? 'border-amber-400/40 bg-amber-400/15 text-amber-300'
-                      : 'border-amber-400/50 bg-amber-50 text-amber-700'
-                    : dark
-                      ? 'border-white/[0.07] text-stone-500 hover:text-stone-300'
-                      : 'border-black/[0.07] text-stone-400 hover:text-stone-600',
+                    ? dark ? 'border-amber-400/40 bg-amber-400/15 text-amber-300' : 'border-amber-400/50 bg-amber-50 text-amber-700'
+                    : dark ? 'border-white/[0.07] text-stone-500 hover:text-stone-300' : 'border-black/[0.07] text-stone-400 hover:text-stone-600',
                 ].join(' ')}
               >
                 {label}
-                <span
-                  className={`ml-1.5 text-[9px] ${
-                    active ? '' : dark ? 'text-stone-700' : 'text-stone-300'
-                  }`}
-                >
+                <span className={`ml-1.5 text-[9px] ${active ? '' : dark ? 'text-stone-700' : 'text-stone-300'}`}>
                   {catDone(key)}/{count}
                 </span>
               </button>
@@ -432,14 +412,10 @@ export default function DuasTracker() {
           })}
         </div>
 
-        {/* Dua cards */}
+        {/* ── Dua cards ── */}
         <div className="flex flex-col gap-3">
           {filtered.length === 0 && (
-            <p
-              className={`py-12 text-center text-sm ${
-                dark ? 'text-stone-600' : 'text-stone-400'
-              }`}
-            >
+            <p className={`py-12 text-center text-sm ${dark ? 'text-stone-600' : 'text-stone-400'}`}>
               No duas match your search.
             </p>
           )}
@@ -451,32 +427,18 @@ export default function DuasTracker() {
               onToggle={toggle}
               onDelete={d.custom ? handleDeleteDua : undefined}
               dark={dark}
+              soundEnabled={soundEnabled}
             />
           ))}
         </div>
 
-        {/* Footer */}
-        <footer
-          className={`mt-12 border-t pt-6 text-center ${
-            dark ? 'border-white/[0.06]' : 'border-black/[0.06]'
-          }`}
-        >
-          <p
-            className={`font-arabic text-xl ${
-              dark ? 'text-amber-400/30' : 'text-amber-600/30'
-            }`}
-            dir="rtl"
-            lang="ar"
-            translate="no"
-          >
+        {/* ── Footer ── */}
+        <footer className={`mt-12 border-t pt-6 text-center ${dark ? 'border-white/[0.06]' : 'border-black/[0.06]'}`}>
+          <p className={`font-arabic text-xl ${dark ? 'text-amber-400/30' : 'text-amber-600/30'}`} dir="rtl" lang="ar" translate="no">
             بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
           </p>
-          <p
-            className={`mt-2 text-[10px] uppercase tracking-widest ${
-              dark ? 'text-stone-700' : 'text-stone-400'
-            }`}
-          >
-            Progress saved locally
+          <p className={`mt-2 text-[10px] uppercase tracking-widest ${dark ? 'text-stone-700' : 'text-stone-400'}`}>
+            {user ? `Synced · ${user.email}` : 'Progress saved locally'}
           </p>
         </footer>
       </div>
