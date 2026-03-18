@@ -20,6 +20,7 @@
 # production
 /build
 .env.local
+supabase-schema.sql
 # misc
 .DS_Store
 *.pem
