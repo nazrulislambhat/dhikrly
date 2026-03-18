@@ -30,12 +30,9 @@ export default function UserMenu({
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  const initials = user.email
-    ? user.email.slice(0, 2).toUpperCase()
-    : '??';
+  const initials = user.email ? user.email.slice(0, 2).toUpperCase() : '??';
 
-  const avatarUrl =
-    user.user_metadata?.avatar_url as string | undefined;
+  const avatarUrl = user.user_metadata?.avatar_url as string | undefined;
 
   const panel = dark
     ? 'bg-[#111f33] border-white/10 shadow-2xl'
@@ -58,27 +55,30 @@ export default function UserMenu({
               src={avatarUrl}
               alt="avatar"
               className="h-6 w-6 rounded-full object-cover"
+              referrerPolicy="no-referrer"
+              onError={(e) => {
+                // Hide broken image and show initials div instead
+                const img = e.currentTarget;
+                img.style.display = 'none';
+                const fallback = img.nextElementSibling as HTMLElement | null;
+                if (fallback) fallback.style.display = 'flex';
+              }}
             />
-          ) : (
-            <div
-              className={`flex h-6 w-6 items-center justify-center rounded-full text-[9px] font-bold ${
-                dark
-                  ? 'bg-amber-400/20 text-amber-300'
-                  : 'bg-amber-100 text-amber-700'
-              }`}
-            >
-              {initials}
-            </div>
-          )}
+          ) : null}
+          <div
+            className={`h-6 w-6 items-center justify-center rounded-full text-[9px] font-bold ${
+              dark
+                ? 'bg-amber-400/20 text-amber-300'
+                : 'bg-amber-100 text-amber-700'
+            } ${avatarUrl ? 'hidden' : 'flex'}`}
+          >
+            {initials}
+          </div>
           {/* Sync indicator dot */}
           <span
             className={`absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full border ${
               dark ? 'border-[#111f33]' : 'border-white'
-            } ${
-              isSynced
-                ? 'bg-emerald-500'
-                : 'bg-amber-400 animate-pulse'
-            }`}
+            } ${isSynced ? 'bg-emerald-500' : 'bg-amber-400 animate-pulse'}`}
           />
         </div>
 
@@ -99,7 +99,12 @@ export default function UserMenu({
           viewBox="0 0 12 12"
           fill="none"
         >
-          <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+          <path
+            d="M2 4l4 4 4-4"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+          />
         </svg>
       </button>
 
@@ -158,9 +163,7 @@ export default function UserMenu({
                     : 'text-amber-700'
               }`}
             >
-              {isSynced
-                ? 'All changes synced'
-                : 'Syncing changes…'}
+              {isSynced ? 'All changes synced' : 'Syncing changes…'}
             </span>
           </div>
 
