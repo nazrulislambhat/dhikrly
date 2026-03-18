@@ -29,7 +29,7 @@ export default function Privacy() {
         <a href="https://dhikrly.vercel.app">dhikrly.vercel.app</a>. We are an
         independent developer project. For any privacy-related questions, please
         contact us at{' '}
-        <a href="mailto:dhikrly@stacknothing.com">dhikrly@stacknothing.com</a>.
+        <a href="mailto:nazrul@stacknothing.com">nazrul@stacknothing.com</a>.
       </p>
 
       <h2>2. Information We Collect</h2>
@@ -146,7 +146,7 @@ export default function Privacy() {
       <p>
         You can delete your account and all associated data at any time by
         contacting us at{' '}
-        <a href="mailto:dhikrly@stacknothing.com">dhikrly@stacknothing.com</a>.
+        <a href="mailto:nazrul@stacknothing.com">nazrul@stacknothing.com</a>.
       </p>
 
       <h2>7. Your Rights</h2>
@@ -172,8 +172,8 @@ export default function Privacy() {
       </ul>
       <p>
         To exercise any of these rights, email us at{' '}
-        <a href="mailto:dhikrly@stacknothing.com">dhikrly@stacknothing.com</a>.
-        We will respond within 30 days.
+        <a href="mailto:nazrul@stacknothing.com">nazrul@stacknothing.com</a>. We
+        will respond within 30 days.
       </p>
 
       <h2>8. Cookies</h2>
@@ -203,8 +203,7 @@ export default function Privacy() {
       <h2>11. Contact</h2>
       <p>
         For any privacy questions, data requests, or concerns, please contact us
-        at:{' '}
-        <a href="mailto:dhikrly@stacknothing.com">dhikrly@stacknothing.com</a>
+        at: <a href="mailto:nazrul@stacknothing.com">nazrul@stacknothing.com</a>
       </p>
     </LegalLayout>
   );
