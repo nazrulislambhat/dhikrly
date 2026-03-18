@@ -9,9 +9,10 @@ const TABS: TabLabel[] = ['Arabic', 'English', 'Transliteration'];
 interface DuaCardProps {
   dua: Dua;
   checked: boolean;
-  onToggle: (id: string) => void;
+  onToggle: (id: string, soundEnabled?: boolean) => void;
   onDelete?: (id: string) => void;
   dark: boolean;
+  soundEnabled?: boolean;
 }
 
 export default function DuaCard({
@@ -20,6 +21,7 @@ export default function DuaCard({
   onToggle,
   onDelete,
   dark,
+  soundEnabled = true,
 }: DuaCardProps) {
   const [activeTab, setActiveTab] = useState<TabLabel>('Arabic');
 
@@ -51,7 +53,7 @@ export default function DuaCard({
       <div className="flex items-start gap-3 px-4 pb-3 pt-4">
         {/* Checkbox */}
         <button
-          onClick={() => onToggle(dua.id)}
+          onClick={() => onToggle(dua.id, soundEnabled)}
           aria-label={checked ? 'Mark incomplete' : 'Mark complete'}
           className={[
             'mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-[7px] border-2 transition-all duration-150 active:scale-90',
