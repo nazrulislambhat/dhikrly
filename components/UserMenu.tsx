@@ -42,7 +42,7 @@ export default function UserMenu({
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen((v) => !v)}
-        className={`flex items-center gap-2 rounded-full border px-2 py-1 transition-all hover:scale-105 active:scale-95 ${
+        className={`flex items-center cursor-pointer gap-2 rounded-full border px-2 py-1 transition-all hover:scale-105 active:scale-95 ${
           dark
             ? 'border-white/10 bg-white/5 hover:bg-white/10'
             : 'border-stone-200 bg-white hover:bg-stone-50 shadow-sm'
@@ -173,7 +173,7 @@ export default function UserMenu({
               setOpen(false);
               onSignOut();
             }}
-            className={`w-full rounded-xl px-3 py-2 text-left text-[12px] transition-colors ${
+            className={`w-full cursor-pointer rounded-xl px-3 py-2 text-left text-[12px] transition-colors ${
               dark
                 ? 'text-red-400/70 hover:bg-red-500/10 hover:text-red-400'
                 : 'text-red-500 hover:bg-red-50'
