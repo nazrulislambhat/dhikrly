@@ -11,19 +11,17 @@ const QUEUE_KEY = 'adhkar_sync_queue_v1';
 
 interface QueueItem {
   type: 'progress' | 'custom_duas' | 'streak';
-  date?: string;          // for progress items
+  date?: string;
   payload: unknown;
   queuedAt: number;
 }
 
 function enqueue(item: QueueItem) {
   const q = load<QueueItem[]>(QUEUE_KEY, []);
-  // Deduplicate: replace existing item of same type+date
   const filtered = q.filter(
     (i) => !(i.type === item.type && i.date === item.date)
   );
   filtered.push(item);
-  // Keep queue lean — max 90 items
   if (filtered.length > 90) filtered.splice(0, filtered.length - 90);
   save(QUEUE_KEY, filtered);
 }
@@ -36,7 +34,7 @@ function clearQueue() {
   save(QUEUE_KEY, []);
 }
 
-/* ── Sync helpers ─────────────────────────────────────────────────── */
+/* ── Supabase push helpers ─────────────────────────────────────────── */
 async function pushProgress(
   userId: string,
   date: string,
@@ -51,12 +49,7 @@ async function pushProgress(
   return !error;
 }
 
-async function pushCustomDuas(
-  userId: string,
-  duas: Dua[]
-): Promise<boolean> {
-  if (duas.length === 0) return true;
-  // Delete all user's custom duas then re-insert (simplest conflict strategy)
+async function pushCustomDuas(userId: string, duas: Dua[]): Promise<boolean> {
   await supabase.from('custom_duas').delete().eq('user_id', userId);
   if (duas.length === 0) return true;
   const { error } = await supabase.from('custom_duas').insert(
@@ -65,10 +58,7 @@ async function pushCustomDuas(
   return !error;
 }
 
-async function pushStreak(
-  userId: string,
-  streak: Streak
-): Promise<boolean> {
+async function pushStreak(userId: string, streak: Streak): Promise<boolean> {
   const { error } = await supabase
     .from('user_data')
     .upsert(
@@ -78,7 +68,7 @@ async function pushStreak(
   return !error;
 }
 
-/* ── Pull from Supabase → merge into localStorage ─────────────────── */
+/* ── Pull all remote data ──────────────────────────────────────────── */
 export async function pullFromSupabase(userId: string): Promise<{
   checkedByDate: Record<string, Record<string, boolean>>;
   customDuas: Dua[];
@@ -91,15 +81,8 @@ export async function pullFromSupabase(userId: string): Promise<{
       .eq('user_id', userId)
       .order('date', { ascending: false })
       .limit(90),
-    supabase
-      .from('custom_duas')
-      .select('dua')
-      .eq('user_id', userId),
-    supabase
-      .from('user_data')
-      .select('streak')
-      .eq('user_id', userId)
-      .single(),
+    supabase.from('custom_duas').select('dua').eq('user_id', userId),
+    supabase.from('user_data').select('streak').eq('user_id', userId).single(),
   ]);
 
   const checkedByDate: Record<string, Record<string, boolean>> = {};
@@ -107,14 +90,10 @@ export async function pullFromSupabase(userId: string): Promise<{
     checkedByDate[row.date] = row.checked as Record<string, boolean>;
   });
 
-  const customDuas: Dua[] = (customRes.data ?? []).map(
-    (row) => row.dua as Dua
-  );
-
-  const streak: Streak | null =
-    userRes.data?.streak
-      ? (userRes.data.streak as Streak)
-      : null;
+  const customDuas: Dua[] = (customRes.data ?? []).map((row) => row.dua as Dua);
+  const streak: Streak | null = userRes.data?.streak
+    ? (userRes.data.streak as Streak)
+    : null;
 
   return { checkedByDate, customDuas, streak };
 }
@@ -126,11 +105,14 @@ interface UseSyncOptions {
   checked: Record<string, boolean>;
   customDuas: Dua[];
   streak: Streak;
+  /** Called once after initial pull on login */
   onPullComplete: (data: {
     checkedByDate: Record<string, Record<string, boolean>>;
     customDuas: Dua[];
     streak: Streak;
   }) => void;
+  /** Called whenever another device updates today's progress */
+  onRemoteCheckedUpdate: (checked: Record<string, boolean>) => void;
 }
 
 export function useSync({
@@ -140,34 +122,52 @@ export function useSync({
   customDuas,
   streak,
   onPullComplete,
+  onRemoteCheckedUpdate,
 }: UseSyncOptions) {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isSyncing = useRef(false);
+  // Track the last value we pushed so realtime echo doesn't re-apply our own changes
+  const lastPushedChecked = useRef<string>('');
 
-  /* ── Initial pull when user logs in ── */
+  /* ── Flush offline queue ─────────────────────────────────────────── */
+  const flushQueue = useCallback(async (userId: string) => {
+    if (isSyncing.current) return;
+    isSyncing.current = true;
+    try {
+      const items = dequeue();
+      if (items.length === 0) return;
+      const results = await Promise.all(
+        items.map(async (item) => {
+          if (item.type === 'progress' && item.date)
+            return pushProgress(userId, item.date, item.payload as Record<string, boolean>);
+          if (item.type === 'custom_duas')
+            return pushCustomDuas(userId, item.payload as Dua[]);
+          if (item.type === 'streak')
+            return pushStreak(userId, item.payload as Streak);
+          return true;
+        })
+      );
+      if (results.every(Boolean)) clearQueue();
+    } finally {
+      isSyncing.current = false;
+    }
+  }, []);
+
+  /* ── Initial pull on login ───────────────────────────────────────── */
   useEffect(() => {
     if (!user) return;
 
     (async () => {
       const remote = await pullFromSupabase(user.id);
 
-      // Merge: remote wins for dates that exist remotely;
-      // local wins for dates that don't exist remotely yet
-      const localAll = load<Record<string, Record<string, boolean>>>(
-        STORAGE_KEY,
-        {}
-      );
+      const localAll = load<Record<string, Record<string, boolean>>>(STORAGE_KEY, {});
       const merged = { ...localAll, ...remote.checkedByDate };
       save(STORAGE_KEY, merged);
 
+      let mergedStreak = remote.streak;
       if (remote.streak) {
-        const localStreak = load<Streak>(STREAK_KEY, {
-          current: 0,
-          best: 0,
-          lastComplete: '',
-        });
-        // Remote wins on best streak; take the higher current
-        const mergedStreak: Streak = {
+        const localStreak = load<Streak>(STREAK_KEY, { current: 0, best: 0, lastComplete: '' });
+        mergedStreak = {
           current: Math.max(localStreak.current, remote.streak.current),
           best: Math.max(localStreak.best, remote.streak.best),
           lastComplete:
@@ -176,7 +176,6 @@ export function useSync({
               : localStreak.lastComplete,
         };
         save(STREAK_KEY, mergedStreak);
-        remote.streak = mergedStreak;
       }
 
       onPullComplete({
@@ -185,103 +184,94 @@ export function useSync({
           remote.customDuas.length > 0
             ? remote.customDuas
             : load<Dua[]>(CUSTOM_DUAS_KEY, []),
-        streak: remote.streak ?? load<Streak>(STREAK_KEY, {
-          current: 0,
-          best: 0,
-          lastComplete: '',
-        }),
+        streak: mergedStreak ?? load<Streak>(STREAK_KEY, { current: 0, best: 0, lastComplete: '' }),
       });
 
-      // Flush any queued offline changes now that we're online + authed
       await flushQueue(user.id);
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
-  /* ── Debounced push on checked/streak change ── */
+  /* ── Realtime subscription ───────────────────────────────────────── */
+  // Listens for INSERT/UPDATE on daily_progress for today.
+  // When another device saves a change, this fires and updates local state.
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel(`progress:${user.id}:${today}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',                        // INSERT and UPDATE
+          schema: 'public',
+          table: 'daily_progress',
+          filter: `user_id=eq.${user.id}`,  // only this user's rows
+        },
+        (payload) => {
+          const row = payload.new as { date: string; checked: Record<string, boolean> } | undefined;
+          if (!row || row.date !== today) return;
+
+          // Ignore echo of our own push
+          const incoming = JSON.stringify(row.checked);
+          if (incoming === lastPushedChecked.current) return;
+
+          // Save to localStorage and update UI
+          const all = load<Record<string, Record<string, boolean>>>(STORAGE_KEY, {});
+          all[today] = row.checked;
+          save(STORAGE_KEY, all);
+          onRemoteCheckedUpdate(row.checked);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id, today, onRemoteCheckedUpdate]);
+
+  /* ── Debounced push on local checked change ──────────────────────── */
   useEffect(() => {
     if (!user) {
-      // No user — just queue the change for later
       enqueue({ type: 'progress', date: today, payload: checked, queuedAt: Date.now() });
       return;
     }
 
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(async () => {
+      lastPushedChecked.current = JSON.stringify(checked);
       if (navigator.onLine) {
         await pushProgress(user.id, today, checked);
       } else {
         enqueue({ type: 'progress', date: today, payload: checked, queuedAt: Date.now() });
       }
-    }, 1500);
+    }, 800); // 800ms debounce — fast enough to feel real-time
 
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
-  // We intentionally only re-run when checked changes
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [checked]);
 
-  /* ── Push custom duas when they change ── */
+  /* ── Push custom duas ────────────────────────────────────────────── */
   useEffect(() => {
-    if (!user) {
-      enqueue({ type: 'custom_duas', payload: customDuas, queuedAt: Date.now() });
-      return;
-    }
-    if (navigator.onLine) {
-      pushCustomDuas(user.id, customDuas);
-    } else {
-      enqueue({ type: 'custom_duas', payload: customDuas, queuedAt: Date.now() });
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (!user) { enqueue({ type: 'custom_duas', payload: customDuas, queuedAt: Date.now() }); return; }
+    if (navigator.onLine) pushCustomDuas(user.id, customDuas);
+    else enqueue({ type: 'custom_duas', payload: customDuas, queuedAt: Date.now() });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [customDuas]);
 
-  /* ── Push streak when it changes ── */
+  /* ── Push streak ─────────────────────────────────────────────────── */
   useEffect(() => {
-    if (!user) {
-      enqueue({ type: 'streak', payload: streak, queuedAt: Date.now() });
-      return;
-    }
-    if (navigator.onLine) {
-      pushStreak(user.id, streak);
-    } else {
-      enqueue({ type: 'streak', payload: streak, queuedAt: Date.now() });
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (!user) { enqueue({ type: 'streak', payload: streak, queuedAt: Date.now() }); return; }
+    if (navigator.onLine) pushStreak(user.id, streak);
+    else enqueue({ type: 'streak', payload: streak, queuedAt: Date.now() });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [streak]);
 
-  /* ── Flush queue when coming back online ── */
-  const flushQueue = useCallback(async (userId: string) => {
-    if (isSyncing.current) return;
-    isSyncing.current = true;
-    try {
-      const items = dequeue();
-      if (items.length === 0) return;
-
-      const results = await Promise.all(
-        items.map(async (item) => {
-          if (item.type === 'progress' && item.date) {
-            return pushProgress(userId, item.date, item.payload as Record<string, boolean>);
-          }
-          if (item.type === 'custom_duas') {
-            return pushCustomDuas(userId, item.payload as Dua[]);
-          }
-          if (item.type === 'streak') {
-            return pushStreak(userId, item.payload as Streak);
-          }
-          return true;
-        })
-      );
-
-      if (results.every(Boolean)) clearQueue();
-    } finally {
-      isSyncing.current = false;
-    }
-  }, []);
-
+  /* ── Flush queue on reconnect ────────────────────────────────────── */
   useEffect(() => {
     if (!user) return;
-
     const handleOnline = () => flushQueue(user.id);
     window.addEventListener('online', handleOnline);
     return () => window.removeEventListener('online', handleOnline);

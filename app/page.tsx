@@ -62,7 +62,7 @@ export default function DuasTracker() {
   const allDuas: Dua[] = [...BASE_DUAS, ...customDuas];
 
   /* ── Core hooks ── */
-  const { checked, toggle, reset, done, pct, today } = useChecked(allDuas.length);
+  const { checked, setChecked, toggle, reset, done, pct, today } = useChecked(allDuas.length);
   const streak = useStreak(done, allDuas.length);
   const { toast, showToast } = useToast();
 
@@ -82,13 +82,28 @@ export default function DuasTracker() {
         setCustomDuas(data.customDuas);
         save(CUSTOM_DUAS_KEY, data.customDuas);
       }
+      // Apply today's remote checked state
+      const todayRemote = data.checkedByDate[today];
+      if (todayRemote) setChecked(todayRemote);
       setIsSynced(true);
       showToast('Synced across devices. 🌙');
     },
-    [showToast]
+    [showToast, today, setChecked]
   );
 
-  useSync({ user, today, checked, customDuas, streak, onPullComplete: handlePullComplete });
+  // Called by Realtime when another device updates today's progress
+  const handleRemoteCheckedUpdate = useCallback(
+    (remoteChecked: Record<string, boolean>) => {
+      setChecked(remoteChecked);
+    },
+    [setChecked]
+  );
+
+  useSync({
+    user, today, checked, customDuas, streak,
+    onPullComplete: handlePullComplete,
+    onRemoteCheckedUpdate: handleRemoteCheckedUpdate,
+  });
 
   // Briefly flip to "unsynced" on any toggle so UserMenu shows the pulse
   useEffect(() => {
@@ -129,14 +144,6 @@ export default function DuasTracker() {
       eveningEnabled: false, eveningTime: '18:00',
     });
     scheduleNotifications(s);
-  }, []);
-
-  /* ── Missed day prompt (once per session) ── */
-  const missedShown = useRef(false);
-  useEffect(() => {
-    if (missedShown.current) return;
-    missedShown.current = true;
-    setTimeout(() => setActiveModal('missedDay'), 800);
   }, []);
 
   /* ── Handlers ── */
