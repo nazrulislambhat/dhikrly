@@ -1,0 +1,64 @@
+/* ── Legal page prose styles ── */
+.prose-legal h2 {
+  font-family: 'Crimson Pro', Georgia, serif;
+  font-size: 20px;
+  font-weight: 600;
+  color: #92400e;
+  margin-top: 2.5rem;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+}
+
+.prose-legal h3 {
+  font-family: 'Crimson Pro', Georgia, serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: #44403c;
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.prose-legal p {
+  font-size: 14px;
+  line-height: 1.8;
+  color: #57534e;
+  margin-bottom: 1rem;
+}
+
+.prose-legal ul {
+  margin-bottom: 1rem;
+  padding-left: 1.5rem;
+}
+
+.prose-legal ul li {
+  font-size: 14px;
+  line-height: 1.8;
+  color: #57534e;
+  margin-bottom: 0.35rem;
+  list-style-type: disc;
+}
+
+.prose-legal a {
+  color: #b45309;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.prose-legal a:hover {
+  color: #92400e;
+}
+
+.prose-legal .highlight-box {
+  background: #fef3c7;
+  border: 1px solid rgba(180,83,9,0.15);
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-bottom: 1.5rem;
+}
+
+.prose-legal .highlight-box p {
+  color: #92400e;
+  margin-bottom: 0;
+  font-size: 13px;
+}
