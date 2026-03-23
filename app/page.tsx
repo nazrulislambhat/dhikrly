@@ -153,7 +153,7 @@ export default function DuasTracker() {
       allDuas.length > 0 &&
       prevDone.current < allDuas.length
     ) {
-      showToast('All duas completed. BarakAllahu feek. 🌙');
+      showToast('All duas completed. BarakAllahu feek. 🌟');
     }
     prevDone.current = done;
   }, [done, allDuas.length, showToast]);
