@@ -4,12 +4,8 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import DUAS_JSON from '@/data/duas.json';
 import type { Dua, CatEntry, Streak } from '@/types';
 import {
-  load,
-  save,
-  SETTINGS_KEY,
-  CUSTOM_DUAS_KEY,
-  NOTIFICATION_KEY,
-  STREAK_KEY,
+  load, save,
+  SETTINGS_KEY, CUSTOM_DUAS_KEY, NOTIFICATION_KEY, STREAK_KEY,
 } from '@/lib/storage';
 import { getHijriDate, getGregorianDate } from '@/lib/dates';
 import { scheduleNotifications } from '@/components/NotificationSettings';
@@ -22,11 +18,10 @@ import WeeklyHistory from '@/components/WeeklyHistory';
 import StreakHeatmap from '@/components/StreakHeatmap';
 import NotificationSettings from '@/components/NotificationSettings';
 import AddDuaModal from '@/components/AddDuaModal';
-import MissedDayRecovery from '@/components/MissedDayRecovery';
-import ExportReport from '@/components/ExportReport';
 import AuthModal from '@/components/AuthModal';
 import UserMenu from '@/components/UserMenu';
 import PWAProvider from '@/components/PWAProvider';
+import UpdateBanner from '@/components/UpdateBanner';
 
 import { useChecked } from '@/hooks/useChecked';
 import { useStreak } from '@/hooks/useStreak';
@@ -45,13 +40,7 @@ const CATS: CatEntry[] = [
   { key: 'custom', label: 'Custom' },
 ];
 
-type Modal =
-  | 'notifications'
-  | 'addDua'
-  | 'missedDay'
-  | 'export'
-  | 'auth'
-  | null;
+type Modal = 'notifications' | 'addDua' | 'missedDay' | 'auth' | null;
 
 /* ─────────────────────────────────────────────
    MAIN COMPONENT
@@ -59,30 +48,20 @@ type Modal =
 export default function DuasTracker() {
   /* ── Settings ── */
   const [dark, setDark] = useState<boolean>(
-    () =>
-      load<{ dark: boolean; sound: boolean }>(SETTINGS_KEY, {
-        dark: false,
-        sound: true,
-      }).dark,
+    () => load<{ dark: boolean; sound: boolean }>(SETTINGS_KEY, { dark: false, sound: true }).dark
   );
   const [soundEnabled, setSoundEnabled] = useState<boolean>(
-    () =>
-      load<{ dark: boolean; sound: boolean }>(SETTINGS_KEY, {
-        dark: false,
-        sound: true,
-      }).sound ?? true,
+    () => load<{ dark: boolean; sound: boolean }>(SETTINGS_KEY, { dark: false, sound: true }).sound ?? true
   );
 
   /* ── Custom duas ── */
-  const [customDuas, setCustomDuas] = useState<Dua[]>(() =>
-    load<Dua[]>(CUSTOM_DUAS_KEY, []),
+  const [customDuas, setCustomDuas] = useState<Dua[]>(
+    () => load<Dua[]>(CUSTOM_DUAS_KEY, [])
   );
   const allDuas: Dua[] = [...BASE_DUAS, ...customDuas];
 
   /* ── Core hooks ── */
-  const { checked, setChecked, toggle, reset, done, pct, today } = useChecked(
-    allDuas.length,
-  );
+  const { checked, setChecked, toggle, reset, done, pct, today } = useChecked(allDuas.length);
   const streak = useStreak(done, allDuas.length);
   const { toast, showToast } = useToast();
 
@@ -108,7 +87,7 @@ export default function DuasTracker() {
       setIsSynced(true);
       showToast('Synced across devices. 🌙');
     },
-    [showToast, today, setChecked],
+    [showToast, today, setChecked]
   );
 
   // Called by Realtime when another device updates today's progress
@@ -116,15 +95,11 @@ export default function DuasTracker() {
     (remoteChecked: Record<string, boolean>) => {
       setChecked(remoteChecked);
     },
-    [setChecked],
+    [setChecked]
   );
 
   useSync({
-    user,
-    today,
-    checked,
-    customDuas,
-    streak,
+    user, today, checked, customDuas, streak,
     onPullComplete: handlePullComplete,
     onRemoteCheckedUpdate: handleRemoteCheckedUpdate,
   });
@@ -135,7 +110,7 @@ export default function DuasTracker() {
     setIsSynced(false);
     const t = setTimeout(() => setIsSynced(true), 2500);
     return () => clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [checked]);
 
   /* ── UI state ── */
@@ -155,25 +130,32 @@ export default function DuasTracker() {
 
   /* ── Completion toast ── */
   useEffect(() => {
-    if (
-      done === allDuas.length &&
-      allDuas.length > 0 &&
-      prevDone.current < allDuas.length
-    ) {
+    if (done === allDuas.length && allDuas.length > 0 && prevDone.current < allDuas.length) {
       showToast('All duas completed. BarakAllahu feek. 🌙');
     }
     prevDone.current = done;
   }, [done, allDuas.length, showToast]);
 
-  /* ── Schedule notifications ── */
+  /* ── Schedule notifications + re-check on tab focus ── */
   useEffect(() => {
     const s = load<NotifSettings>(NOTIFICATION_KEY, {
-      morningEnabled: false,
-      morningTime: '06:00',
-      eveningEnabled: false,
-      eveningTime: '18:00',
+      morningEnabled: false, morningTime: '06:00',
+      eveningEnabled: false, eveningTime: '18:00',
     });
     scheduleNotifications(s);
+
+    // Re-schedule when user returns to the tab (handles mobile background suspension)
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        const latest = load<NotifSettings>(NOTIFICATION_KEY, {
+          morningEnabled: false, morningTime: '06:00',
+          eveningEnabled: false, eveningTime: '18:00',
+        });
+        scheduleNotifications(latest);
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => document.removeEventListener('visibilitychange', handleVisibility);
   }, []);
 
   /* ── Handlers ── */
@@ -189,7 +171,7 @@ export default function DuasTracker() {
       save(CUSTOM_DUAS_KEY, updated);
       showToast(`"${dua.title}" added.`);
     },
-    [customDuas, showToast],
+    [customDuas, showToast]
   );
 
   const handleDeleteDua = useCallback(
@@ -199,7 +181,7 @@ export default function DuasTracker() {
       save(CUSTOM_DUAS_KEY, updated);
       showToast("Custom du'ā removed.");
     },
-    [customDuas, showToast],
+    [customDuas, showToast]
   );
 
   /* ── Derived counts ── */
@@ -235,6 +217,7 @@ export default function DuasTracker() {
   return (
     <div className={bg}>
       <PWAProvider dark={dark} />
+      <UpdateBanner dark={dark} />
 
       {/* Toast */}
       {toast !== null && (
@@ -248,17 +231,10 @@ export default function DuasTracker() {
         <AuthModal dark={dark} onClose={() => setActiveModal(null)} />
       )}
       {activeModal === 'notifications' && (
-        <NotificationSettings
-          dark={dark}
-          onClose={() => setActiveModal(null)}
-        />
+        <NotificationSettings dark={dark} userId={user?.id ?? null} onClose={() => setActiveModal(null)} />
       )}
       {activeModal === 'addDua' && (
-        <AddDuaModal
-          dark={dark}
-          onAdd={handleAddDua}
-          onClose={() => setActiveModal(null)}
-        />
+        <AddDuaModal dark={dark} onAdd={handleAddDua} onClose={() => setActiveModal(null)} />
       )}
       {activeModal === 'missedDay' && (
         <MissedDayRecovery
@@ -266,43 +242,28 @@ export default function DuasTracker() {
           total={total}
           duaIds={allDuas.map((d) => d.id)}
           onClose={() => setActiveModal(null)}
-          onRecover={() =>
-            showToast('Day marked complete. JazakAllahu khairan.')
-          }
+          onRecover={() => showToast('Day marked complete. JazakAllahu khairan.')}
         />
       )}
-      {activeModal === 'export' && (
-        <ExportReport
-          dark={dark}
-          duas={allDuas}
-          onClose={() => setActiveModal(null)}
-        />
-      )}
-
       <div className="mx-auto max-w-2xl px-4 py-8 pb-16">
+
         {/* ── Header ── */}
         <header className="mb-8">
+
           {/* Top bar: Hijri date left, auth right */}
           <div className="mb-4 flex items-center justify-between">
-            <div
-              className={`text-[11px] uppercase tracking-[0.18em] ${dark ? 'text-amber-400/60' : 'text-amber-600/70'}`}
-            >
+            <div className={`text-[11px] uppercase tracking-[0.18em] ${dark ? 'text-amber-400/60' : 'text-amber-600/70'}`}>
               {getHijriDate()}
             </div>
 
             {authLoading ? (
-              <div
-                className={`h-7 w-24 animate-pulse rounded-full ${dark ? 'bg-white/5' : 'bg-stone-100'}`}
-              />
+              <div className={`h-7 w-24 animate-pulse rounded-full ${dark ? 'bg-white/5' : 'bg-stone-100'}`} />
             ) : user ? (
               <UserMenu
                 user={user}
                 dark={dark}
                 isSynced={isSynced}
-                onSignOut={async () => {
-                  await signOut();
-                  showToast('Signed out.');
-                }}
+                onSignOut={async () => { await signOut(); showToast('Signed out.'); }}
               />
             ) : (
               <button
@@ -320,22 +281,13 @@ export default function DuasTracker() {
 
           {/* Title block */}
           <div className="text-center">
-            <h1
-              className={`font-serif text-[clamp(22px,4vw,32px)] font-normal tracking-wide ${dark ? 'text-amber-400' : 'text-amber-700'}`}
-            >
+            <h1 className={`font-serif text-[clamp(22px,4vw,32px)] font-normal tracking-wide ${dark ? 'text-amber-400' : 'text-amber-700'}`}>
               Daily Adhkār &amp; Du&apos;ā
             </h1>
-            <p
-              className={`mt-1 font-arabic text-xl ${dark ? 'text-amber-400/45' : 'text-amber-600/50'}`}
-              dir="rtl"
-              lang="ar"
-              translate="no"
-            >
+            <p className={`mt-1 font-arabic text-xl ${dark ? 'text-amber-400/45' : 'text-amber-600/50'}`} dir="rtl" lang="ar" translate="no">
               أَذْكَار يَوْمِيَّة
             </p>
-            <p
-              className={`mt-2 text-[11px] ${dark ? 'text-stone-500' : 'text-stone-400'}`}
-            >
+            <p className={`mt-2 text-[11px] ${dark ? 'text-stone-500' : 'text-stone-400'}`}>
               {getGregorianDate()}
             </p>
           </div>
@@ -343,24 +295,13 @@ export default function DuasTracker() {
           {/* Action buttons */}
           <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
             {[
-              {
-                label: dark ? '☀ Light' : '☾ Dark',
-                onClick: () => setDark((d) => !d),
-              },
+              { label: dark ? '☀ Light' : '☾ Dark', onClick: () => setDark((d) => !d) },
               {
                 label: soundEnabled ? '🔊 Sound' : '🔇 Muted',
                 onClick: () => setSoundEnabled((s) => !s),
                 active: soundEnabled,
               },
-              {
-                label: '🔔 Reminders',
-                onClick: () => setActiveModal('notifications'),
-              },
-              { label: '↓ Export', onClick: () => setActiveModal('export') },
-              {
-                label: '↺ Missed Days',
-                onClick: () => setActiveModal('missedDay'),
-              },
+              { label: '🔔 Reminders', onClick: () => setActiveModal('notifications') },
             ].map(({ label, onClick, active }) => (
               <button
                 key={label}
@@ -383,33 +324,17 @@ export default function DuasTracker() {
 
         {/* ── Stats ── */}
         <div className="mb-4 grid grid-cols-4 gap-2">
-          <StatCard label="Total" value={total} accent="gold" dark={dark} />
-          <StatCard label="Done" value={done} accent="green" dark={dark} />
-          <StatCard
-            label="Pending"
-            value={pending}
-            accent={pending > 0 ? 'amber' : 'green'}
-            dark={dark}
-          />
-          <StatCard
-            label="Streak"
-            value={`${streak.current}d`}
-            accent="purple"
-            dark={dark}
-          />
+          <StatCard label="Total"   value={total}   accent="gold"                           dark={dark} />
+          <StatCard label="Done"    value={done}    accent="green"                          dark={dark} />
+          <StatCard label="Pending" value={pending} accent={pending > 0 ? 'amber' : 'green'} dark={dark} />
+          <StatCard label="Streak"  value={`${streak.current}d`} accent="purple"            dark={dark} />
         </div>
 
         {/* ── Progress bar ── */}
-        <div className="mb-1">
-          <ProgressBar pct={pct} dark={dark} />
-        </div>
-        <div
-          className={`mb-5 flex justify-between text-[10px] ${dark ? 'text-stone-600' : 'text-stone-400'}`}
-        >
+        <div className="mb-1"><ProgressBar pct={pct} dark={dark} /></div>
+        <div className={`mb-5 flex justify-between text-[10px] ${dark ? 'text-stone-600' : 'text-stone-400'}`}>
           <span>{pct}% complete</span>
-          <span>
-            {done} / {total}
-          </span>
+          <span>{done} / {total}</span>
         </div>
 
         {/* ── 7-day history ── */}
@@ -428,11 +353,7 @@ export default function DuasTracker() {
         >
           {showHeatmap ? '▲ Hide Heatmap' : '▼ Show Heatmap'}
         </button>
-        {showHeatmap && (
-          <div className="mb-3">
-            <StreakHeatmap dark={dark} total={total} />
-          </div>
-        )}
+        {showHeatmap && <div className="mb-3"><StreakHeatmap dark={dark} total={total} /></div>}
 
         {/* ── Controls ── */}
         <div className="mb-3 flex flex-wrap gap-2">
@@ -451,12 +372,8 @@ export default function DuasTracker() {
             onClick={() => setPriOnly((p) => !p)}
             className={`h-8 rounded-full border px-3 text-[11px] transition-all ${
               priOnly
-                ? dark
-                  ? 'border-amber-400/40 bg-amber-400/15 text-amber-300'
-                  : 'border-amber-400/50 bg-amber-50 text-amber-700'
-                : dark
-                  ? 'border-white/[0.08] text-stone-500 hover:text-stone-300'
-                  : 'border-black/[0.08] text-stone-400 hover:text-stone-600'
+                ? dark ? 'border-amber-400/40 bg-amber-400/15 text-amber-300' : 'border-amber-400/50 bg-amber-50 text-amber-700'
+                : dark ? 'border-white/[0.08] text-stone-500 hover:text-stone-300' : 'border-black/[0.08] text-stone-400 hover:text-stone-600'
             }`}
           >
             ★ Priority
@@ -496,18 +413,12 @@ export default function DuasTracker() {
                 className={[
                   'rounded-full border px-3.5 py-1 font-serif text-[11px] tracking-wide transition-all',
                   active
-                    ? dark
-                      ? 'border-amber-400/40 bg-amber-400/15 text-amber-300'
-                      : 'border-amber-400/50 bg-amber-50 text-amber-700'
-                    : dark
-                      ? 'border-white/[0.07] text-stone-500 hover:text-stone-300'
-                      : 'border-black/[0.07] text-stone-400 hover:text-stone-600',
+                    ? dark ? 'border-amber-400/40 bg-amber-400/15 text-amber-300' : 'border-amber-400/50 bg-amber-50 text-amber-700'
+                    : dark ? 'border-white/[0.07] text-stone-500 hover:text-stone-300' : 'border-black/[0.07] text-stone-400 hover:text-stone-600',
                 ].join(' ')}
               >
                 {label}
-                <span
-                  className={`ml-1.5 text-[9px] ${active ? '' : dark ? 'text-stone-700' : 'text-stone-300'}`}
-                >
+                <span className={`ml-1.5 text-[9px] ${active ? '' : dark ? 'text-stone-700' : 'text-stone-300'}`}>
                   {catDone(key)}/{count}
                 </span>
               </button>
@@ -518,9 +429,7 @@ export default function DuasTracker() {
         {/* ── Dua cards ── */}
         <div className="flex flex-col gap-3">
           {filtered.length === 0 && (
-            <p
-              className={`py-12 text-center text-sm ${dark ? 'text-stone-600' : 'text-stone-400'}`}
-            >
+            <p className={`py-12 text-center text-sm ${dark ? 'text-stone-600' : 'text-stone-400'}`}>
               No duas match your search.
             </p>
           )}
@@ -538,53 +447,20 @@ export default function DuasTracker() {
         </div>
 
         {/* ── Footer ── */}
-        <footer
-          className={`mt-12 border-t pt-6 text-center ${dark ? 'border-white/[0.06]' : 'border-black/[0.06]'}`}
-        >
-          <p
-            className={`font-arabic text-xl ${dark ? 'text-amber-400/30' : 'text-amber-600/30'}`}
-            dir="rtl"
-            lang="ar"
-            translate="no"
-          >
+        <footer className={`mt-12 border-t pt-6 text-center ${dark ? 'border-white/[0.06]' : 'border-black/[0.06]'}`}>
+          <p className={`font-arabic text-xl ${dark ? 'text-amber-400/30' : 'text-amber-600/30'}`} dir="rtl" lang="ar" translate="no">
             بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
           </p>
-          <p
-            className={`mt-2 text-[10px] uppercase tracking-widest ${dark ? 'text-stone-700' : 'text-stone-400'}`}
-          >
+          <p className={`mt-2 text-[10px] uppercase tracking-widest ${dark ? 'text-stone-700' : 'text-stone-400'}`}>
             {user ? `Synced · ${user.email}` : 'Progress saved locally'}
           </p>
-          <div
-            className={`mt-4 flex flex-wrap items-center justify-center gap-4 text-[10px] uppercase tracking-widest ${dark ? 'text-stone-700' : 'text-stone-400'}`}
-          >
-            <a
-              href="/about"
-              className={`transition-colors ${dark ? 'hover:text-stone-500' : 'hover:text-stone-600'}`}
-            >
-              About
-            </a>
-            <a
-              href="/privacy-policy"
-              className={`transition-colors ${dark ? 'hover:text-stone-500' : 'hover:text-stone-600'}`}
-            >
-              Privacy
-            </a>
-            <a
-              href="/terms"
-              className={`transition-colors ${dark ? 'hover:text-stone-500' : 'hover:text-stone-600'}`}
-            >
-              Terms
-            </a>
-            <a
-              href="/contact"
-              className={`transition-colors ${dark ? 'hover:text-stone-500' : 'hover:text-stone-600'}`}
-            >
-              Contact
-            </a>
+          <div className={`mt-4 flex flex-wrap items-center justify-center gap-4 text-[10px] uppercase tracking-widest ${dark ? 'text-stone-700' : 'text-stone-400'}`}>
+            <a href="/about"    className={`transition-colors ${dark ? 'hover:text-stone-500' : 'hover:text-stone-600'}`}>About</a>
+            <a href="/privacy"  className={`transition-colors ${dark ? 'hover:text-stone-500' : 'hover:text-stone-600'}`}>Privacy</a>
+            <a href="/terms"    className={`transition-colors ${dark ? 'hover:text-stone-500' : 'hover:text-stone-600'}`}>Terms</a>
+            <a href="/contact"  className={`transition-colors ${dark ? 'hover:text-stone-500' : 'hover:text-stone-600'}`}>Contact</a>
           </div>
-          <p
-            className={`mt-3 text-[9px] ${dark ? 'text-stone-800' : 'text-stone-300'}`}
-          >
+          <p className={`mt-3 text-[9px] ${dark ? 'text-stone-800' : 'text-stone-300'}`}>
             © {new Date().getFullYear()} Dhikrly
           </p>
         </footer>

@@ -17,8 +17,16 @@ self.addEventListener('install', (event) => {
     caches
       .open(CACHE_NAME)
       .then((cache) => cache.addAll(STATIC_ASSETS))
-      .then(() => self.skipWaiting())
+    // NOTE: We do NOT call skipWaiting() here automatically.
+    // The page controls when to activate the new SW via postMessage.
   );
+});
+
+/* ── Message from page: activate new SW on user's request ── */
+self.addEventListener('message', (event) => {
+  if (event.data === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
 
 /* ── Activate: purge old caches ── */
@@ -88,7 +96,9 @@ self.addEventListener('fetch', (event) => {
 
 /* ── Push Notifications ── */
 self.addEventListener('push', (event) => {
-  const data = event.data?.json() ?? {};
+  let data = {};
+  try { data = event.data?.json() ?? {}; } catch { data = {}; }
+
   const title = data.title || "Daily Adhkār Reminder 🌙";
   const options = {
     body: data.body || "Time for your daily adhkār & du'ā",
@@ -97,7 +107,8 @@ self.addEventListener('push', (event) => {
     tag: data.tag || 'adhkar-reminder',
     renotify: true,
     requireInteraction: false,
-    data: { url: '/' },
+    data: { url: data.url || '/' },
+    vibrate: [200, 100, 200],
   };
   event.waitUntil(self.registration.showNotification(title, options));
 });

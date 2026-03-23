@@ -1,0 +1,55 @@
+{
+  "current": "1.2.0",
+  "releases": [
+    {
+      "version": "1.2.0",
+      "date": "2025-03-23",
+      "title": "Push Notifications & Cross-Device Sync",
+      "added": [
+        "Background push notifications — reminders arrive even when app is closed",
+        "Cross-device sync via Supabase — check a dua on mobile, see it on desktop",
+        "Google sign-in support",
+        "Streak heatmap — 16-week GitHub-style completion calendar",
+        "Custom duas — add your own supplications with full Arabic support",
+        "Missed day recovery — mark past days as complete"
+      ],
+      "improved": [
+        "Notification reminders now use server-side push (no longer requires app to be open)",
+        "Sound feedback on check, uncheck, and full completion",
+        "User avatar with sync status indicator"
+      ],
+      "removed": []
+    },
+    {
+      "version": "1.1.0",
+      "date": "2025-03-15",
+      "title": "PWA & Offline Support",
+      "added": [
+        "Installable as a PWA — add to home screen on iOS and Android",
+        "Full offline support via Service Worker",
+        "Dark and light mode with persisted preference",
+        "7-day history bar chart",
+        "Priority filter (★) for essential duas"
+      ],
+      "improved": [
+        "Arabic typography using Noto Naskh Arabic",
+        "Faster load times with cached assets"
+      ],
+      "removed": []
+    },
+    {
+      "version": "1.0.0",
+      "date": "2025-03-01",
+      "title": "Initial Release",
+      "added": [
+        "14 curated duas with Arabic, English, and transliteration",
+        "Daily completion tracking with streaks",
+        "Morning, Evening, After Ṣalāh, and Anytime session filters",
+        "Search and category filters",
+        "Progress saved locally to device"
+      ],
+      "improved": [],
+      "removed": []
+    }
+  ]
+}
