@@ -1,9 +1,4 @@
-import type {
-  PrayerTimesResult,
-  CalcMethod,
-  SalahLocation,
-} from '@/types/salah';
-import type * as AdhanType from 'adhan';
+import type { PrayerTimesResult, CalcMethod, SalahLocation } from '@/types/salah';
 
 /* Dynamically import adhan to avoid SSR issues */
 async function getAdhan() {
@@ -15,13 +10,13 @@ export async function calculatePrayerTimes(
   location: SalahLocation,
   date: Date,
   method: CalcMethod,
-  asrMethod: 'Standard' | 'Hanafi',
+  asrMethod: 'Standard' | 'Hanafi'
 ): Promise<PrayerTimesResult> {
   const adhan = await getAdhan();
 
   const coords = new adhan.Coordinates(location.lat, location.lng);
 
-  const methodMap: Record<CalcMethod, AdhanType.CalculationParameters> = {
+  const methodMap: Record<CalcMethod, adhan.CalculationParameters> = {
     MuslimWorldLeague: adhan.CalculationMethod.MuslimWorldLeague(),
     Egyptian: adhan.CalculationMethod.Egyptian(),
     Karachi: adhan.CalculationMethod.Karachi(),
@@ -48,9 +43,7 @@ export async function calculatePrayerTimes(
   const nightEnd = new Date(times.fajr);
   nightEnd.setDate(nightEnd.getDate() + 1); // next day fajr
   const nightDuration = nightEnd.getTime() - nightStart.getTime();
-  const lastThirdStart = new Date(
-    nightStart.getTime() + (nightDuration * 2) / 3,
-  );
+  const lastThirdStart = new Date(nightStart.getTime() + (nightDuration * 2) / 3);
 
   return {
     fajr: times.fajr,
@@ -80,11 +73,11 @@ export function getCurrentAndNextPrayer(times: PrayerTimesResult): {
 } {
   const now = new Date();
   const order = [
-    { name: 'fajr', time: times.fajr },
-    { name: 'dhuhr', time: times.dhuhr },
-    { name: 'asr', time: times.asr },
+    { name: 'fajr',    time: times.fajr    },
+    { name: 'dhuhr',   time: times.dhuhr   },
+    { name: 'asr',     time: times.asr     },
     { name: 'maghrib', time: times.maghrib },
-    { name: 'isha', time: times.isha },
+    { name: 'isha',    time: times.isha    },
   ];
 
   let current: string | null = null;
@@ -111,10 +104,7 @@ export function getCurrentAndNextPrayer(times: PrayerTimesResult): {
     nextTime = times.fajr;
   }
 
-  const minutesUntilNext = Math.max(
-    0,
-    Math.round((nextTime.getTime() - now.getTime()) / 60000),
-  );
+  const minutesUntilNext = Math.max(0, Math.round((nextTime.getTime() - now.getTime()) / 60000));
 
   return { current, next, nextTime, minutesUntilNext };
 }
