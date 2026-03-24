@@ -26,7 +26,7 @@ export default function Privacy() {
       <h2>1. Who We Are</h2>
       <p>
         Dhikrly is an Islamic adhkār and duā tracking application accessible at{' '}
-        <a href="https://dhikrly.com">dhikrly.vercel.app</a>. We are an
+        <a href="https://dhikrly.com">https://dhikrly.com</a>. We are an
         independent developer project. For any privacy-related questions, please
         contact us at <a href="mailto:nazrul@dhikrly.com">nazrul@dhikrly.com</a>
         .
