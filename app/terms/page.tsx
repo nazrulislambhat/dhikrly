@@ -219,7 +219,7 @@ export default function TermsPage() {
       <h2>14. Contact</h2>
       <p>
         If you have any questions about these Terms, please contact us at:{' '}
-        <a href="mailto:nazrul@stacknothing.com">nazrul@stacknothing.com</a>
+        <a href="mailto:nazrul@dhikrly.com">nazrul@dhikrly.com</a>
       </p>
     </LegalLayout>
   );

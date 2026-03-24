@@ -25,7 +25,7 @@ export default function ContactPage() {
       <h2>General Enquiries</h2>
       <p>For general questions about Dhikrly, feature requests, or feedback:</p>
       <p>
-        📧 <a href="mailto:nazrul@stacknothing.com">nazrul@stacknothing.com</a>
+        📧 <a href="mailto:nazrul@dhikrly.com">nazrul@dhikrly.com</a>
       </p>
 
       <h2>Privacy & Data Requests</h2>
@@ -34,7 +34,7 @@ export default function ContactPage() {
         deletion:
       </p>
       <p>
-        📧 <a href="mailto:nazrul@stacknothing.com">nazrul@stacknothing.com</a>
+        📧 <a href="mailto:nazrul@dhikrly.com">nazrul@dhikrly.com</a>
       </p>
 
       <h2>Bug Reports</h2>
@@ -43,7 +43,7 @@ export default function ContactPage() {
         promptly:
       </p>
       <p>
-        📧 <a href="mailto:nazrul@stacknothing.com">nazrul@stacknothing.com</a>
+        📧 <a href="mailto:nazrul@dhikrly.com">nazrul@dhikrly.com</a>
       </p>
 
       <h2>Islamic Content</h2>
@@ -53,7 +53,7 @@ export default function ContactPage() {
         reach out. Accuracy in religious content is important to us.
       </p>
       <p>
-        📧 <a href="mailto:nazrul@stacknothing.com">nazrul@stacknothing.com</a>
+        📧 <a href="mailto:nazrul@dhikrly.com">nazrul@dhikrly.com</a>
       </p>
 
       <h2>Response Time</h2>
