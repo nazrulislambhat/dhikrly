@@ -99,9 +99,8 @@ export default function DuasTracker() {
       const todayRemote = data.checkedByDate[today];
       if (todayRemote) setChecked(todayRemote);
       setIsSynced(true);
-      showToast('Synced across devices. 🌙');
     },
-    [showToast, today, setChecked],
+    [today, setChecked],
   );
 
   // Called by Realtime when another device updates today's progress
