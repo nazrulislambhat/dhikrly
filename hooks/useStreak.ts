@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/set-state-in-effect */
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -9,7 +8,7 @@ import type { Streak } from '@/types';
 export function useStreak(done: number, total: number) {
   const today = getTodayKey();
   const [streak, setStreak] = useState<Streak>(() =>
-    load<Streak>(STREAK_KEY, { current: 0, best: 0, lastComplete: '' }),
+    load<Streak>(STREAK_KEY, { current: 0, best: 0, lastComplete: '' })
   );
   const prevDone = useRef(done);
 

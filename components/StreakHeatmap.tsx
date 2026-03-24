@@ -23,7 +23,7 @@ export default function StreakHeatmap({ dark, total }: StreakHeatmapProps) {
   const { weeks, monthLabels } = useMemo(() => {
     const allData = load<Record<string, Record<string, boolean>>>(
       STORAGE_KEY,
-      {},
+      {}
     );
     const todayKey = getTodayKey();
     const todayDate = new Date();
@@ -147,11 +147,13 @@ export default function StreakHeatmap({ dark, total }: StreakHeatmapProps) {
                   <div
                     key={cell.key}
                     className={`relative h-3 w-full cursor-pointer rounded-[2px] transition-all duration-150 hover:scale-125 hover:z-10 ${getCellColor(
-                      cell,
+                      cell
                     )} ${
                       cell.isToday
                         ? 'ring-1 ring-amber-400 ring-offset-1 ' +
-                          (dark ? 'ring-offset-[#0c1a2e]' : 'ring-offset-white')
+                          (dark
+                            ? 'ring-offset-[#0c1a2e]'
+                            : 'ring-offset-white')
                         : ''
                     }`}
                     onMouseEnter={() =>

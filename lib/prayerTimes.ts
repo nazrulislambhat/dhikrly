@@ -1,5 +1,4 @@
 import type { PrayerTimesResult, CalcMethod, SalahLocation } from '@/types/salah';
-import type * as AdhanType from 'adhan';
 
 /* Dynamically import adhan to avoid SSR issues */
 async function getAdhan() {
@@ -17,7 +16,7 @@ export async function calculatePrayerTimes(
 
   const coords = new adhan.Coordinates(location.lat, location.lng);
 
-  const methodMap: Record<CalcMethod, AdhanType.CalculationParameters> = {
+  const methodMap: Record<CalcMethod, adhan.CalculationParameters> = {
     MuslimWorldLeague: adhan.CalculationMethod.MuslimWorldLeague(),
     Egyptian: adhan.CalculationMethod.Egyptian(),
     Karachi: adhan.CalculationMethod.Karachi(),

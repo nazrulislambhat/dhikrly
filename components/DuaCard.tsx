@@ -43,9 +43,7 @@ export default function DuaCard({
     <article
       className={[
         'rounded-2xl border transition-all duration-200 hover:-translate-y-px',
-        dua.priority
-          ? `border-l-[3px] rounded-l-none ${priorityBorderColor}`
-          : '',
+        dua.priority ? `border-l-[3px] rounded-l-none ${priorityBorderColor}` : '',
         checked ? doneCard : baseCard,
       ].join(' ')}
     >
@@ -96,11 +94,7 @@ export default function DuaCard({
             </h3>
             {dua.priority && (
               <span
-                className={
-                  dark
-                    ? 'text-xs text-amber-400/60'
-                    : 'text-xs text-amber-500/70'
-                }
+                className={dark ? 'text-xs text-amber-400/60' : 'text-xs text-amber-500/70'}
               >
                 ★
               </span>
@@ -131,9 +125,7 @@ export default function DuaCard({
             {dua.session.map((s: string) => (
               <SessionPill key={s} label={s} dark={dark} />
             ))}
-            <span
-              className={`text-[10px] ${dark ? 'text-stone-500' : 'text-stone-400'}`}
-            >
+            <span className={`text-[10px] ${dark ? 'text-stone-500' : 'text-stone-400'}`}>
               {dua.count}
             </span>
           </div>

@@ -17,12 +17,7 @@ const ACCENT_CLASSES: Record<Accent, { dark: string; light: string }> = {
   muted: { dark: 'text-stone-400', light: 'text-stone-500' },
 };
 
-export default function StatCard({
-  label,
-  value,
-  dark,
-  accent,
-}: StatCardProps) {
+export default function StatCard({ label, value, dark, accent }: StatCardProps) {
   const cls = ACCENT_CLASSES[accent];
   return (
     <div
