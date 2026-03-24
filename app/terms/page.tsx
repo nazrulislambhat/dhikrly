@@ -25,9 +25,9 @@ export default function TermsPage() {
       <h2>1. Acceptance of Terms</h2>
       <p>
         By accessing or using Dhikrly at{' '}
-        <a href="https://dhikrly.vercel.app">dhikrly.vercel.app</a> (the
-        `App``), you agree to be bound by these Terms and Conditions. If you do
-        not agree, please do not use the App.
+        <a href="https://dhikrly.com">dhikrly.vercel.app</a> (the `App``), you
+        agree to be bound by these Terms and Conditions. If you do not agree,
+        please do not use the App.
       </p>
 
       <h2>2. Description of Service</h2>
