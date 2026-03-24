@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/purity */
 'use client';
 
 import { useMemo } from 'react';
@@ -22,7 +21,7 @@ export default function WeeklyHistory({
   const history: HistoryDay[] = useMemo(() => {
     const allData = load<Record<string, Record<string, boolean>>>(
       STORAGE_KEY,
-      {},
+      {}
     );
     return Array.from({ length: 7 }).map((_, i) => {
       const d = new Date(Date.now() - (6 - i) * 86_400_000);
@@ -52,7 +51,10 @@ export default function WeeklyHistory({
       </p>
       <div className="flex h-12 items-end gap-1.5">
         {history.map((h: HistoryDay) => (
-          <div key={h.key} className="flex flex-1 flex-col items-center gap-1">
+          <div
+            key={h.key}
+            className="flex flex-1 flex-col items-center gap-1"
+          >
             <div
               className={`w-full rounded-sm transition-all duration-300 ${
                 h.isToday

@@ -1,12 +1,11 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import BottomNavWrapper from '@/components/BottomNavWrapper';
-import { Analytics } from '@vercel/analytics/next';
 
 export const metadata: Metadata = {
   title: "Dhikrly — Adhkār, Du'ā & Ṣalāh",
   description:
-    'Track your daily Islamic remembrances, supplications, and prayers. Morning & evening adhkār with streaks, reminders, and salah tracker.',
+    "Track your daily Islamic remembrances, supplications, and prayers. Morning & evening adhkār with streaks, reminders, and salah tracker.",
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
@@ -17,8 +16,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     title: "Dhikrly — Adhkār, Du'ā & Ṣalāh",
-    description:
-      'Track your daily Islamic remembrances, supplications, and prayers.',
+    description: 'Track your daily Islamic remembrances, supplications, and prayers.',
   },
 };
 
@@ -44,10 +42,7 @@ export default function RootLayout({
         <link rel="icon" type="image/png" sizes="32x32" href="/icon-192.png" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta
-          name="apple-mobile-web-app-status-bar-style"
-          content="black-translucent"
-        />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="Dhikrly" />
       </head>
       <body suppressHydrationWarning>

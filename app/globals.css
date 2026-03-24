@@ -1,7 +1,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Noto+Naskh+Arabic:wght@400;500;600&display=swap');
 
-@import 'tailwindcss';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
+/* ── Custom font families ── */
 @layer base {
   :root {
     --font-serif: 'Crimson Pro', Georgia, 'Times New Roman', serif;
@@ -26,7 +29,7 @@
   }
 }
 
-/* â”€â”€ Utility classes â”€â”€ */
+/* ── Utility classes ── */
 @layer utilities {
   .font-serif {
     font-family: var(--font-serif);
@@ -37,7 +40,7 @@
   }
 }
 
-/* â”€â”€ Animations â”€â”€ */
+/* ── Animations ── */
 @keyframes fade-in {
   from {
     opacity: 0;
@@ -53,7 +56,7 @@
   animation: fade-in 0.25s ease-out forwards;
 }
 
-/* â”€â”€ Scrollbar styling â”€â”€ */
+/* ── Scrollbar styling ── */
 @media (min-width: 768px) {
   ::-webkit-scrollbar {
     width: 6px;
@@ -82,7 +85,7 @@
   }
 }
 
-/* â”€â”€ Time input styling â”€â”€ */
+/* ── Time input styling ── */
 input[type='time']::-webkit-calendar-picker-indicator {
   opacity: 0.5;
   cursor: pointer;
@@ -93,13 +96,13 @@ input[type='time']::-webkit-calendar-picker-indicator {
   filter: invert(0.8);
 }
 
-/* â”€â”€ Selection colour â”€â”€ */
+/* ── Selection colour ── */
 ::selection {
   background: rgba(245, 158, 11, 0.2);
   color: inherit;
 }
 
-/* â”€â”€ iOS PWA safe area â”€â”€ */
+/* ── iOS PWA safe area ── */
 @supports (padding-top: env(safe-area-inset-top)) {
   .safe-top {
     padding-top: env(safe-area-inset-top);
@@ -112,7 +115,7 @@ input[type='time']::-webkit-calendar-picker-indicator {
   }
 }
 
-/* â”€â”€ Print styles (PDF export window) â”€â”€ */
+/* ── Print styles (PDF export window) ── */
 @media print {
   * {
     -webkit-print-color-adjust: exact;

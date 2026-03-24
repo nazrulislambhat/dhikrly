@@ -10,7 +10,7 @@ export function useToast(duration = 3500) {
       setToast(msg);
       setTimeout(() => setToast(null), duration);
     },
-    [duration],
+    [duration]
   );
 
   return { toast, showToast };

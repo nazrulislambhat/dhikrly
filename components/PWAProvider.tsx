@@ -1,5 +1,3 @@
-/* eslint-disable react-hooks/set-state-in-effect */
-/* eslint-disable react-hooks/purity */
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -58,7 +56,9 @@ export default function PWAProvider({
   return (
     <div
       className={`fixed bottom-4 left-1/2 z-[9998] w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 rounded-2xl border p-4 shadow-2xl ${
-        dark ? 'border-white/10 bg-[#111f33]' : 'border-stone-200 bg-white'
+        dark
+          ? 'border-white/10 bg-[#111f33]'
+          : 'border-stone-200 bg-white'
       }`}
     >
       <div className="flex items-start gap-3">
@@ -112,7 +112,7 @@ export default function PWAProvider({
           className={`flex-1 rounded-xl py-2 text-[12px] font-medium transition-all active:scale-95 ${
             dark
               ? 'bg-amber-400/20 text-amber-300 hover:bg-amber-400/30'
-              : 'bg-green-500 text-white hover:bg-amber-600'
+              : 'bg-amber-500 text-white hover:bg-amber-600'
           }`}
         >
           Install
