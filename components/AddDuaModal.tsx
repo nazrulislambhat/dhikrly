@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/static-components */
 'use client';
 
 import { useState } from 'react';
@@ -41,15 +40,9 @@ const EMPTY: FormState = {
   priority: false,
 };
 
-export default function AddDuaModal({
-  dark,
-  onAdd,
-  onClose,
-}: AddDuaModalProps) {
+export default function AddDuaModal({ dark, onAdd, onClose }: AddDuaModalProps) {
   const [form, setForm] = useState<FormState>(EMPTY);
-  const [errors, setErrors] = useState<
-    Partial<Record<keyof FormState, string>>
-  >({});
+  const [errors, setErrors] = useState<Partial<Record<keyof FormState, string>>>({});
 
   const validate = (): boolean => {
     const e: typeof errors = {};
@@ -115,16 +108,16 @@ export default function AddDuaModal({
     dir?: string;
   }) => (
     <div className="mb-3">
-      <label
-        className={`mb-1 block text-[11px] uppercase tracking-wide ${label}`}
-      >
+      <label className={`mb-1 block text-[11px] uppercase tracking-wide ${label}`}>
         {lbl}
       </label>
       {multiline ? (
         <textarea
           rows={3}
           value={form[id] as string}
-          onChange={(e) => setForm((p) => ({ ...p, [id]: e.target.value }))}
+          onChange={(e) =>
+            setForm((p) => ({ ...p, [id]: e.target.value }))
+          }
           placeholder={placeholder}
           dir={dir}
           className={`w-full resize-none rounded-xl border px-3 py-2 text-sm outline-none transition-colors ${inputBase} ${
@@ -135,7 +128,9 @@ export default function AddDuaModal({
         <input
           type="text"
           value={form[id] as string}
-          onChange={(e) => setForm((p) => ({ ...p, [id]: e.target.value }))}
+          onChange={(e) =>
+            setForm((p) => ({ ...p, [id]: e.target.value }))
+          }
           placeholder={placeholder}
           dir={dir}
           className={`w-full rounded-xl border px-3 py-2 text-sm outline-none transition-colors ${inputBase} ${
@@ -161,7 +156,7 @@ export default function AddDuaModal({
               dark ? 'text-stone-100' : 'text-stone-800'
             }`}
           >
-            Add Custom Du`ā
+            Add Custom Du'ā
           </h2>
           <button
             onClick={onClose}
@@ -175,11 +170,7 @@ export default function AddDuaModal({
           </button>
         </div>
 
-        <Field
-          id="title"
-          label="English Title *"
-          placeholder="e.g. Dua before eating"
-        />
+        <Field id="title" label="English Title *" placeholder="e.g. Dua before eating" />
         <Field
           id="titleAr"
           label="Arabic Title"
@@ -213,9 +204,7 @@ export default function AddDuaModal({
 
         {/* Category */}
         <div className="mb-3">
-          <label
-            className={`mb-1.5 block text-[11px] uppercase tracking-wide ${label}`}
-          >
+          <label className={`mb-1.5 block text-[11px] uppercase tracking-wide ${label}`}>
             Category
           </label>
           <div className="flex gap-2">
@@ -275,22 +264,20 @@ export default function AddDuaModal({
             className={`relative h-6 w-11 rounded-full transition-colors ${
               form.priority
                 ? dark
-                  ? 'bg-green-500'
-                  : 'bg-green-500'
+                  ? 'bg-amber-500'
+                  : 'bg-amber-500'
                 : dark
                   ? 'bg-stone-700'
                   : 'bg-stone-200'
             }`}
           >
             <span
-              className={`absolute left-0 top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${
+              className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${
                 form.priority ? 'translate-x-5' : 'translate-x-0.5'
               }`}
             />
           </button>
-          <span
-            className={`text-[12px] ${dark ? 'text-stone-400' : 'text-stone-500'}`}
-          >
+          <span className={`text-[12px] ${dark ? 'text-stone-400' : 'text-stone-500'}`}>
             Mark as priority (★)
           </span>
         </div>
@@ -311,10 +298,10 @@ export default function AddDuaModal({
             className={`flex-1 rounded-xl py-2.5 text-sm font-medium transition-all active:scale-[0.98] ${
               dark
                 ? 'bg-amber-400/20 text-amber-300 hover:bg-amber-400/30'
-                : 'bg-green-500 text-white hover:bg-amber-600'
+                : 'bg-amber-500 text-white hover:bg-amber-600'
             }`}
           >
-            Add Du`ā
+            Add Du'ā
           </button>
         </div>
       </div>

@@ -42,7 +42,7 @@ export default function LegalLayout({
       <header className="border-b border-black/[0.06] bg-white py-12">
         <div className="mx-auto max-w-3xl px-6">
           <p className="mb-2 text-[11px] uppercase tracking-[0.18em] text-amber-600/70">
-            Dhikrly · https://dhikrly.com
+            Dhikrly · dhikrly.vercel.app
           </p>
           <h1 className="font-serif text-[clamp(28px,5vw,42px)] font-normal tracking-wide text-amber-700">
             {title}
@@ -67,28 +67,16 @@ export default function LegalLayout({
               بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
             </p>
             <div className="flex gap-6">
-              <Link
-                href="/privacy-policy"
-                className="text-[11px] uppercase tracking-widest text-stone-400 hover:text-stone-600 transition-colors"
-              >
+              <Link href="/privacy" className="text-[11px] uppercase tracking-widest text-stone-400 hover:text-stone-600 transition-colors">
                 Privacy
               </Link>
-              <Link
-                href="/terms"
-                className="text-[11px] uppercase tracking-widest text-stone-400 hover:text-stone-600 transition-colors"
-              >
+              <Link href="/terms" className="text-[11px] uppercase tracking-widest text-stone-400 hover:text-stone-600 transition-colors">
                 Terms
               </Link>
-              <Link
-                href="/contact"
-                className="text-[11px] uppercase tracking-widest text-stone-400 hover:text-stone-600 transition-colors"
-              >
+              <Link href="/contact" className="text-[11px] uppercase tracking-widest text-stone-400 hover:text-stone-600 transition-colors">
                 Contact
               </Link>
-              <Link
-                href="/"
-                className="text-[11px] uppercase tracking-widest text-stone-400 hover:text-stone-600 transition-colors"
-              >
+              <Link href="/" className="text-[11px] uppercase tracking-widest text-stone-400 hover:text-stone-600 transition-colors">
                 App
               </Link>
             </div>

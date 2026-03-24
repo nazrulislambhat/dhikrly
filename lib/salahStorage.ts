@@ -69,7 +69,7 @@ export function saveSalahSettings(s: SalahSettings): void {
 }
 
 export function computeDayScore(log: DayLog): number {
-  const prayers = Object.values(log.prayers) as PrayerStatus[];
+  const prayers = Object.values(log.prayers) as (string | null)[];
   const prayed = prayers.filter(p => isPrayed(p)).length;
   return prayed / 5;
 }

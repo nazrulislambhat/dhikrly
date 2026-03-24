@@ -3,13 +3,7 @@
 import { useEffect, useRef, useCallback } from 'react';
 import type { User } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
-import {
-  load,
-  save,
-  STORAGE_KEY,
-  CUSTOM_DUAS_KEY,
-  STREAK_KEY,
-} from '@/lib/storage';
+import { load, save, STORAGE_KEY, CUSTOM_DUAS_KEY, STREAK_KEY } from '@/lib/storage';
 import type { Dua, Streak } from '@/types';
 
 /* ── Offline queue ─────────────────────────────────────────────────── */
@@ -25,7 +19,7 @@ interface QueueItem {
 function enqueue(item: QueueItem) {
   const q = load<QueueItem[]>(QUEUE_KEY, []);
   const filtered = q.filter(
-    (i) => !(i.type === item.type && i.date === item.date),
+    (i) => !(i.type === item.type && i.date === item.date)
   );
   filtered.push(item);
   if (filtered.length > 90) filtered.splice(0, filtered.length - 90);
@@ -44,13 +38,13 @@ function clearQueue() {
 async function pushProgress(
   userId: string,
   date: string,
-  checked: Record<string, boolean>,
+  checked: Record<string, boolean>
 ): Promise<boolean> {
   const { error } = await supabase
     .from('daily_progress')
     .upsert(
       { user_id: userId, date, checked, updated_at: new Date().toISOString() },
-      { onConflict: 'user_id,date' },
+      { onConflict: 'user_id,date' }
     );
   return !error;
 }
@@ -58,9 +52,9 @@ async function pushProgress(
 async function pushCustomDuas(userId: string, duas: Dua[]): Promise<boolean> {
   await supabase.from('custom_duas').delete().eq('user_id', userId);
   if (duas.length === 0) return true;
-  const { error } = await supabase
-    .from('custom_duas')
-    .insert(duas.map((d) => ({ user_id: userId, local_id: d.id, dua: d })));
+  const { error } = await supabase.from('custom_duas').insert(
+    duas.map((d) => ({ user_id: userId, local_id: d.id, dua: d }))
+  );
   return !error;
 }
 
@@ -69,7 +63,7 @@ async function pushStreak(userId: string, streak: Streak): Promise<boolean> {
     .from('user_data')
     .upsert(
       { user_id: userId, streak, updated_at: new Date().toISOString() },
-      { onConflict: 'user_id' },
+      { onConflict: 'user_id' }
     );
   return !error;
 }
@@ -145,17 +139,13 @@ export function useSync({
       const results = await Promise.all(
         items.map(async (item) => {
           if (item.type === 'progress' && item.date)
-            return pushProgress(
-              userId,
-              item.date,
-              item.payload as Record<string, boolean>,
-            );
+            return pushProgress(userId, item.date, item.payload as Record<string, boolean>);
           if (item.type === 'custom_duas')
             return pushCustomDuas(userId, item.payload as Dua[]);
           if (item.type === 'streak')
             return pushStreak(userId, item.payload as Streak);
           return true;
-        }),
+        })
       );
       if (results.every(Boolean)) clearQueue();
     } finally {
@@ -170,20 +160,13 @@ export function useSync({
     (async () => {
       const remote = await pullFromSupabase(user.id);
 
-      const localAll = load<Record<string, Record<string, boolean>>>(
-        STORAGE_KEY,
-        {},
-      );
+      const localAll = load<Record<string, Record<string, boolean>>>(STORAGE_KEY, {});
       const merged = { ...localAll, ...remote.checkedByDate };
       save(STORAGE_KEY, merged);
 
       let mergedStreak = remote.streak;
       if (remote.streak) {
-        const localStreak = load<Streak>(STREAK_KEY, {
-          current: 0,
-          best: 0,
-          lastComplete: '',
-        });
+        const localStreak = load<Streak>(STREAK_KEY, { current: 0, best: 0, lastComplete: '' });
         mergedStreak = {
           current: Math.max(localStreak.current, remote.streak.current),
           best: Math.max(localStreak.best, remote.streak.best),
@@ -201,9 +184,7 @@ export function useSync({
           remote.customDuas.length > 0
             ? remote.customDuas
             : load<Dua[]>(CUSTOM_DUAS_KEY, []),
-        streak:
-          mergedStreak ??
-          load<Streak>(STREAK_KEY, { current: 0, best: 0, lastComplete: '' }),
+        streak: mergedStreak ?? load<Streak>(STREAK_KEY, { current: 0, best: 0, lastComplete: '' }),
       });
 
       await flushQueue(user.id);
@@ -235,10 +216,7 @@ export function useSync({
       if (incoming === current) return;
 
       // Another device made a change — apply it
-      const all = load<Record<string, Record<string, boolean>>>(
-        STORAGE_KEY,
-        {},
-      );
+      const all = load<Record<string, Record<string, boolean>>>(STORAGE_KEY, {});
       all[today] = data.checked as Record<string, boolean>;
       save(STORAGE_KEY, all);
       onRemoteCheckedUpdate(data.checked as Record<string, boolean>);
@@ -251,12 +229,7 @@ export function useSync({
   /* ── Debounced push on local checked change ──────────────────────── */
   useEffect(() => {
     if (!user) {
-      enqueue({
-        type: 'progress',
-        date: today,
-        payload: checked,
-        queuedAt: Date.now(),
-      });
+      enqueue({ type: 'progress', date: today, payload: checked, queuedAt: Date.now() });
       return;
     }
 
@@ -266,12 +239,7 @@ export function useSync({
       if (navigator.onLine) {
         await pushProgress(user.id, today, checked);
       } else {
-        enqueue({
-          type: 'progress',
-          date: today,
-          payload: checked,
-          queuedAt: Date.now(),
-        });
+        enqueue({ type: 'progress', date: today, payload: checked, queuedAt: Date.now() });
       }
     }, 800); // 800ms debounce — fast enough to feel real-time
 
@@ -283,30 +251,15 @@ export function useSync({
 
   /* ── Push custom duas ────────────────────────────────────────────── */
   useEffect(() => {
-    if (!user) {
-      enqueue({
-        type: 'custom_duas',
-        payload: customDuas,
-        queuedAt: Date.now(),
-      });
-      return;
-    }
+    if (!user) { enqueue({ type: 'custom_duas', payload: customDuas, queuedAt: Date.now() }); return; }
     if (navigator.onLine) pushCustomDuas(user.id, customDuas);
-    else
-      enqueue({
-        type: 'custom_duas',
-        payload: customDuas,
-        queuedAt: Date.now(),
-      });
+    else enqueue({ type: 'custom_duas', payload: customDuas, queuedAt: Date.now() });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [customDuas]);
 
   /* ── Push streak ─────────────────────────────────────────────────── */
   useEffect(() => {
-    if (!user) {
-      enqueue({ type: 'streak', payload: streak, queuedAt: Date.now() });
-      return;
-    }
+    if (!user) { enqueue({ type: 'streak', payload: streak, queuedAt: Date.now() }); return; }
     if (navigator.onLine) pushStreak(user.id, streak);
     else enqueue({ type: 'streak', payload: streak, queuedAt: Date.now() });
     // eslint-disable-next-line react-hooks/exhaustive-deps
