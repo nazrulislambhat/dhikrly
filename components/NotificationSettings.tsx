@@ -76,12 +76,16 @@ function Toggle({
       onClick={onToggle}
       className={`relative h-6 w-11 rounded-full transition-colors ${
         enabled
-          ? color === 'amber' ? 'bg-amber-500' : 'bg-violet-500'
-          : dark ? 'bg-stone-700' : 'bg-stone-200'
+          ? color === 'amber'
+            ? 'bg-green-700'
+            : 'bg-green-700'
+          : dark
+            ? 'bg-stone-700'
+            : 'bg-stone-200'
       }`}
     >
       <span
-        className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${
+        className={`absolute left-0 top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${
           enabled ? 'translate-x-5' : 'translate-x-0.5'
         }`}
       />

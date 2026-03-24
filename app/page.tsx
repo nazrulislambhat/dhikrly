@@ -349,10 +349,6 @@ export default function DuasTracker() {
                 label: '🔔 Reminders',
                 onClick: () => setActiveModal('notifications'),
               },
-              {
-                label: '↺ Missed Days',
-                onClick: () => setActiveModal('missedDay'),
-              },
             ].map(({ label, onClick, active }) => (
               <button
                 key={label}
