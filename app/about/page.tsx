@@ -78,7 +78,7 @@ export default function AboutPage() {
       <p>
         If you notice any error in the religious content, we sincerely welcome
         your correction. Please email us at{' '}
-        <a href="mailto:nazrul@stacknothing.com">nazrul@stacknothing.com</a>.
+        <a href="mailto:nazrul@dhikrly.com">nazrul@dhikrly.com</a>.
       </p>
 
       <h2>Privacy First</h2>
@@ -100,7 +100,7 @@ export default function AboutPage() {
         love to hear from you.
       </p>
       <p>
-        📧 <a href="mailto:nazrul@stacknothing.com">nazrul@stacknothing.com</a>
+        📧 <a href="mailto:nazrul@dhikrly.com">nazrul@dhikrly.com</a>
       </p>
 
       <h2>Du`ā</h2>
