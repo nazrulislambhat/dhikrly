@@ -153,7 +153,7 @@ export default function DuasTracker() {
       allDuas.length > 0 &&
       prevDone.current < allDuas.length
     ) {
-      showToast('All duas completed. BarakAllahu feek. 🌟');
+      showToast('All duas completed. BarakAllahu feek. 🌙');
     }
     prevDone.current = done;
   }, [done, allDuas.length, showToast]);
@@ -272,7 +272,7 @@ export default function DuasTracker() {
         />
       )}
 
-      <div className="mx-auto max-w-2xl px-4 py-8 pb-16">
+      <div className="mx-auto max-w-2xl px-4 py-8 pb-28">
         {/* ── Header ── */}
         <header className="mb-8">
           {/* Top bar: Hijri date left, auth right */}
@@ -348,6 +348,10 @@ export default function DuasTracker() {
               {
                 label: '🔔 Reminders',
                 onClick: () => setActiveModal('notifications'),
+              },
+              {
+                label: '↺ Missed Days',
+                onClick: () => setActiveModal('missedDay'),
               },
             ].map(({ label, onClick, active }) => (
               <button

@@ -1,155 +1,116 @@
-# Daily Adhkār & Du'ā Tracker — ذِكْرلي
+# Dhikrly — ذِكْرلي
 
-A minimal, gamified daily tracker for Islamic adhkār and du'ā — built with Next.js 15, TypeScript, and Tailwind CSS v4.
+Daily Adhkār, Du'ā & Ṣalāh tracker. Offline-first PWA with cross-device sync.
 
-![Daily Adhkār & Du'ā Tracker](./public/logo.png)
+**Live:** [dhikrly.vercel.app](https://dhikrly.vercel.app)
 
 ---
 
 ## Features
 
-- **14 duas & athkār** — full Arabic text, transliteration, and English meaning on every card
-- **3-tab layout per card** — Arabic (default) · English · Transliteration
-- **Daily checkbox tracker** — mark each dua complete with a satisfying check animation
-- **Streak counter** — tracks consecutive days of full completion
-- **7-day history chart** — visual bar chart of your weekly completion rate
-- **Light & dark mode** — persisted to `localStorage`, no flash on load
-- **Search & filter** — by category (Qur'ān / Athkār / Du'ā) or priority
-- **Hijri + Gregorian date** — shown in the header
-- **Fully responsive** — works on mobile, tablet, and desktop
-- **Zero backend** — all data stored locally in the browser
+**Adhkār & Du'ā**
+- 14 curated duas — Arabic, English, transliteration
+- Daily completion tracking with streaks & 16-week heatmap
+- Custom duas, missed day recovery, morning/evening reminders
+- Background push notifications (server-side, works when app is closed)
+
+**Ṣalāh Tracker**
+- Accurate prayer times via GPS or city selection (adhan.js)
+- 5 daily prayers with Prayed / Jamā'ah / Delayed / Missed status
+- Sunnah, Tahajjud, and Nafl tracking
+- Prayer insights dashboard with weekly chart
+- Nearby masjid finder (OpenStreetMap, no API key needed)
+
+**Platform**
+- Installable PWA — works offline, add to home screen
+- Cross-device sync (Supabase) — sign in with Email or Google
+- In-app update notifications with changelog
+- Dark / light mode
 
 ---
 
 ## Tech Stack
 
-| Layer | Library |
+| | |
 |---|---|
-| Framework | Next.js 15 (App Router) |
+| Framework | Next.js 16 (App Router) |
 | Language | TypeScript |
-| Styling | Tailwind CSS v4 |
-| Fonts | Crimson Pro · Scheherazade New (via `next/font/google`) |
-| Storage | `localStorage` (no database) |
+| Styling | Tailwind CSS v3 |
+| Prayer Times | adhan.js |
+| Charts | Recharts |
+| Auth & Sync | Supabase |
+| Push | web-push + Vercel Cron |
+| Fonts | Crimson Pro · Noto Naskh Arabic |
 
 ---
 
 ## Project Structure
 
 ```
-dhikrly/
+src/
 ├── app/
-│   ├── layout.tsx          # Root layout — fonts, metadata, favicon, dark-mode script
-│   ├── page.tsx            # Entry point — renders <DuasTracker />
-│   └── globals.css         # Tailwind v4 @import + @theme + base styles
+│   ├── page.tsx              # Adhkār & Du'ā page
+│   ├── salah/page.tsx        # Ṣalāh tracker page
+│   ├── api/
+│   │   ├── cron/notifications/  # Vercel cron — sends push at scheduled times
+│   │   └── push/                # Subscribe / unsubscribe endpoints
+│   ├── privacy · terms · contact · about
+│   └── globals.css
 ├── components/
-│   └── duas-tracker.tsx    # Main component — all UI logic
-├── public/
-│   ├── logo.svg            # Full lockup logo (SVG)
-│   ├── logo.png            # Logo 960×320px
-│   ├── logo@2x.png         # Logo 1440×480px (retina)
-│   ├── favicon.svg         # Crescent + star favicon (SVG)
-│   ├── favicon.ico         # Multi-size ICO (16/32/48px)
-│   ├── favicon-16x16.png
-│   ├── favicon-32x32.png
-│   ├── favicon-48x48.png
-│   ├── favicon-128x128.png
-│   ├── favicon-180x180.png # Apple touch icon
-│   ├── favicon-192x192.png # Android / PWA
-│   └── favicon-512x512.png # PWA splash
-├── postcss.config.mjs      # @tailwindcss/postcss plugin
-├── tailwind.config.ts      # darkMode: "class" + content paths
-├── tsconfig.json
-└── package.json
+│   ├── salah/                # PrayerCard, SunnahPanel, TahajjudPanel, etc.
+│   ├── AuthModal.tsx
+│   ├── BottomNav.tsx
+│   ├── NotificationSettings.tsx
+│   └── UpdateBanner.tsx
+├── hooks/
+│   ├── useChecked.ts · useStreak.ts · useSync.ts
+│   ├── usePrayerTimes.ts · useSalahLog.ts · useSalahSync.ts
+│   └── usePushSubscription.ts · useAppUpdate.ts
+├── lib/
+│   ├── prayerTimes.ts · salahStorage.ts · storage.ts
+│   ├── sounds.ts · dates.ts
+│   └── supabase.ts · supabase-admin.ts
+├── types/
+│   ├── index.ts              # Adhkār types
+│   └── salah.ts              # Ṣalāh types
+└── data/duas.json
+public/
+├── sw.js                     # Service worker
+├── manifest.json             # PWA manifest
+└── changelog.json            # Edit on every deploy for update banner
 ```
 
 ---
 
 ## Getting Started
 
-### Prerequisites
-
-- Node.js 18+
-- npm 9+
-
-### Install & run
-
 ```bash
-# Clone the repo
 git clone https://github.com/nazrulislambhat/dhikrly.git
 cd dhikrly
-
-# Install dependencies
 npm install
-
-# Start the dev server
+cp .env.local.example .env.local   # fill in your keys
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+---
 
-### Build for production
-
-```bash
-npm run build
-npm start
+# Site URL
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
 ```
 
 ---
-
-## Deployment
-
-The app is a standard Next.js project and deploys to Vercel with zero configuration.
-
-```bash
-# Install Vercel CLI
-npm i -g vercel
-
-# Deploy
-vercel
 ```
+## Supabase Setup
 
-Or connect your GitHub repo to [vercel.com](https://vercel.com) and it deploys automatically on every push.
+1. Run `supabase-schema.sql` in Supabase SQL Editor
+2. Enable Email + Google providers in Authentication → Providers
+3. Add your domain to Authentication → URL Configuration
 
 ---
 
-## Tailwind v4 Notes
+## Deploying an Update
 
-This project uses **Tailwind CSS v4**, which has a different setup from v3:
-
-| | v3 | v4 (this project) |
-|---|---|---|
-| PostCSS plugin | `tailwindcss` | `@tailwindcss/postcss` |
-| CSS entry point | `@tailwind base/components/utilities` | `@import "tailwindcss"` |
-| Theme extensions | `tailwind.config.ts extend: {}` | `globals.css @theme {}` |
-| Custom fonts | config `fontFamily` | `@theme { --font-display: ... }` |
-
-Custom fonts and animations are declared in `globals.css` under `@theme`:
-
-```css
-@theme {
-  --font-display: "Crimson Pro", Georgia, serif;
-  --font-arabic:  "Scheherazade New", "Traditional Arabic", serif;
-  --animate-fade-in: fade-in 0.25s ease forwards;
-}
-```
-
-This auto-generates the `font-display`, `font-arabic`, and `animate-fade-in` utility classes.
-
----
-
-## Dark Mode
-
-Dark mode is class-based (`html.dark`). An inline script in `layout.tsx` reads `localStorage` before React hydrates, so there is never a flash of the wrong theme:
-
-```ts
-// layout.tsx 
-(function () {
-  var s = JSON.parse(localStorage.getItem('duas_settings_v3') || '{}');
-  document.documentElement.classList.add(s.dark === false ? 'light' : 'dark');
-})();
-```
-
-The root `<div>` in the component uses `suppressHydrationWarning` to prevent React from warning about the intentional server/client className difference.
+Edit `public/changelog.json` — bump `"current"` and add a release entry. Users see an update pill within 5 minutes of deployment.
 
 ---
 
@@ -157,36 +118,11 @@ The root `<div>` in the component uses `suppressHydrationWarning` to prevent Rea
 
 | Key | Contents |
 |---|---|
-| `duas_checked_v3` | `Record<dateString, Record<duaId, boolean>>` — 60 days of history |
-| `duas_streak_v3` | `{ current, best, lastComplete }` |
-| `duas_settings_v3` | `{ dark: boolean }` |
-
----
-
-## Duas Included
-
-| # | Title | Category | When |
-|---|---|---|---|
-| 1 | Ayat al-Kursi | Qur'ān | After every Fard Ṣalāh · Before sleep |
-| 2 | Surah Al-Ikhlāṣ | Qur'ān | 3× morning & evening |
-| 3 | Surah Al-Falaq | Qur'ān | 3× morning & evening |
-| 4 | Surah An-Nās | Qur'ān | 3× morning & evening |
-| 5 | Tasbīḥ of the Heart | Athkār | 3× every morning |
-| 6 | Ḥasbiyallāh | Athkār | 7× morning · 7× evening |
-| 7 | Du'ā for Beneficial Knowledge | Du'ā | 1× after Fajr |
-| 8 | Du'ā of Yūnus | Du'ā | In hardship |
-| 9 | Refuge from Worry & Debt | Du'ā | 1× morning & evening |
-| 10 | Du'ā by the Greatest Name | Du'ā | 1× with full presence |
-| 11 | Du'ā for Sufficiency Through Ḥalāl | Du'ā | 1× after Fajr |
-| 12 | Du'ā for Glory & Provision | Du'ā | Seeking provision |
-| 13 | Du'ā of Mūsā | Du'ā | In need |
-| 14 | Du'ā for Good in Both Worlds | Du'ā | After every du'ā |
-
----
-
-## License
-
-MIT — free to use, modify, and distribute.
+| `duas_checked_v3` | Daily adhkār completion (90 days) |
+| `duas_streak_v3` | Current & best streak |
+| `duas_settings_v3` | Dark mode, sound preference |
+| `salah_log_v1` | Daily prayer logs (120 days) |
+| `salah_settings_v1` | Location, calc method, tracking toggles |
 
 ---
 

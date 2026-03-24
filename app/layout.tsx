@@ -1,108 +1,54 @@
 import type { Metadata, Viewport } from 'next';
-import { Crimson_Pro, Scheherazade_New } from 'next/font/google';
 import './globals.css';
+import BottomNavWrapper from '@/components/BottomNavWrapper';
 
-/* ── Google Fonts ─────────────────────────────────────────────── */
-const crimsonPro = Crimson_Pro({
-  subsets: ['latin'],
-  weight: ['400', '600'],
-  style: ['normal', 'italic'],
-  variable: '--font-crimson',
-  display: 'swap',
-});
-
-const scheherazade = Scheherazade_New({
-  subsets: ['arabic'],
-  weight: ['400', '700'],
-  variable: '--font-scheherazade',
-  display: 'swap',
-});
-
-/* ── Metadata ─────────────────────────────────────────────────── */
 export const metadata: Metadata = {
-  title: "Dhikrly: Daily Adhkār & Du'ā Tracker",
+  title: "Dhikrly — Adhkār, Du'ā & Ṣalāh",
   description:
-    "A minimal daily tracker for Islamic adhkār and du'ā — with full Arabic text, transliteration, English meaning, streaks, and light/dark mode.",
-  keywords: [
-    'adhkar',
-    'dua',
-    'islamic',
-    'daily dhikr',
-    'quran',
-    'tracker',
-    'wird',
-  ],
-  authors: [{ name: 'Duas Tracker' }],
-  robots: 'index, follow',
-  openGraph: {
-    title: "Daily Adhkār & Du'ā Tracker",
-    description:
-      'Track your daily duas with streaks, full Arabic text, and transliteration.',
-    type: 'website',
-    locale: 'en_US',
+    "Track your daily Islamic remembrances, supplications, and prayers. Morning & evening adhkār with streaks, reminders, and salah tracker.",
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'Dhikrly',
   },
-  icons: {
-    icon: [
-      { url: '/favicon.ico', sizes: 'any' },
-      { url: '/favicon.svg', type: 'image/svg+xml' },
-      { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
-      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
-      { url: '/favicon-48x48.png', sizes: '48x48', type: 'image/png' },
-      { url: '/favicon-128x128.png', sizes: '128x128', type: 'image/png' },
-      { url: '/favicon-192x192.png', sizes: '192x192', type: 'image/png' },
-    ],
-    apple: '/favicon-180x180.png',
-    shortcut: '/favicon-192x192.png',
+  formatDetection: { telephone: false },
+  openGraph: {
+    type: 'website',
+    title: "Dhikrly — Adhkār, Du'ā & Ṣalāh",
+    description: 'Track your daily Islamic remembrances, supplications, and prayers.',
   },
 };
 
 export const viewport: Viewport = {
+  themeColor: '#0c1a2e',
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
-  themeColor: [
-    { media: '(prefers-color-scheme: dark)', color: '#0c1a2e' },
-    { media: '(prefers-color-scheme: light)', color: '#fafaf9' },
-  ],
+  userScalable: false,
 };
 
-/* ── Root Layout ──────────────────────────────────────────────── */
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <html
-      lang="en"
-      dir="ltr"
-      translate="no"
-      className={`${crimsonPro.variable} ${scheherazade.variable}`}
-      suppressHydrationWarning
-    >
+    <html lang="en" suppressHydrationWarning>
       <head>
-        {/*
-          Reads localStorage BEFORE React hydrates so the
-          correct .dark / .light class is on <html> immediately,
-          preventing any flash-of-wrong-theme.
-        */}
-        <meta name="google" content="notranslate" />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function () {
-                try {
-                  var s = JSON.parse(localStorage.getItem('duas_settings_v3') || '{}');
-                  document.documentElement.classList.add(s.dark === false ? 'light' : 'dark');
-                } catch (e) {
-                  document.documentElement.classList.add('dark');
-                }
-              })();
-            `,
-          }}
-        />
+        <link rel="apple-touch-icon" href="/icon-192.png" />
+        <link rel="apple-touch-icon" sizes="152x152" href="/icon-192.png" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/icon-192.png" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/icon-192.png" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content="Dhikrly" />
       </head>
-      <body className="antialiased">{children}</body>
+      <body suppressHydrationWarning>
+        {children}
+        <BottomNavWrapper />
+      </body>
     </html>
   );
 }
