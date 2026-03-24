@@ -4,7 +4,7 @@
 
 Daily Adhkār, Du'ā & Ṣalāh tracker. Offline-first PWA with cross-device sync.
 
-**Live:** [dhikrly.vercel.app](https://dhikrly.com)
+**Live:** [https://dhikrly.com](https://dhikrly.com)
 
 ---
 
@@ -173,7 +173,7 @@ git push origin main
 ### Rules
 
 - **Never push directly to `main`** — always go through `develop`
-- `main` = what's live on [dhikrly.vercel.app](https://dhikrly.com)
+- `main` = what's live on [https://dhikrly.com](https://dhikrly.com)
 - `develop` = staging / integration — should always be deployable
 - Branch names use lowercase kebab-case: `feature/qibla-compass`, `fix/prayer-time-offset`
 - Commit messages follow [Conventional Commits](https://www.conventionalcommits.org): `feat:`, `fix:`, `chore:`, `docs:`
