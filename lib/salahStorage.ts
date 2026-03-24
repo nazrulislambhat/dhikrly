@@ -1,4 +1,8 @@
-import type { DayLog, SalahSettings, PrayerName } from '@/types/salah';
+import type { DayLog, SalahSettings, PrayerName, PrayerStatus } from '@/types/salah';
+
+/** Delayed counts as prayed — the prayer was performed, just not on time */
+export const isPrayed = (s: PrayerStatus): boolean =>
+  s === 'prayed' || s === 'jamah' || s === 'delayed';
 
 const LOG_KEY = 'salah_log_v1';
 const SETTINGS_KEY = 'salah_settings_v1';
@@ -66,7 +70,7 @@ export function saveSalahSettings(s: SalahSettings): void {
 
 export function computeDayScore(log: DayLog): number {
   const prayers = Object.values(log.prayers) as (string | null)[];
-  const prayed = prayers.filter(p => p === 'prayed' || p === 'jamah').length;
+  const prayed = prayers.filter(p => isPrayed(p)).length;
   return prayed / 5;
 }
 

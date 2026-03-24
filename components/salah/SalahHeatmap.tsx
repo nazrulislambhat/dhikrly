@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { getAllLogs, computeDayScore } from '@/lib/salahStorage';
+import { getAllLogs, computeDayScore, isPrayed } from '@/lib/salahStorage';
 import type { HeatmapCell } from '@/types/salah';
 
 interface SalahHeatmapProps { dark: boolean; }
@@ -24,7 +24,7 @@ export default function SalahHeatmap({ dark }: SalahHeatmapProps) {
       const log = all[date];
       const score = log ? computeDayScore(log) : 0;
       const prayers = log ? Object.values(log.prayers) : [];
-      const fard = prayers.filter(p => p === 'prayed' || p === 'jamah').length;
+      const fard = prayers.filter(p => isPrayed(p)).length;
       cells.push({ date, score, fard, isToday: date === todayStr, isFuture: d > today });
     }
 

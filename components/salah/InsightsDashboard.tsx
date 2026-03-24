@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell,
 } from 'recharts';
-import { getRecentLogs, computeDayScore } from '@/lib/salahStorage';
+import { getRecentLogs, computeDayScore, isPrayed } from '@/lib/salahStorage';
 import type { WeekBar } from '@/types/salah';
 
 interface InsightsDashboardProps { dark: boolean; }
@@ -17,7 +17,7 @@ export default function InsightsDashboard({ dark }: InsightsDashboardProps) {
     // Week bars
     const weekBars: WeekBar[] = logs7.map(log => {
       const prayers = Object.values(log.prayers);
-      const fard = prayers.filter(p => p === 'prayed' || p === 'jamah').length;
+      const fard = prayers.filter(p => isPrayed(p)).length;
       const jamah = prayers.filter(p => p === 'jamah').length;
       const sunnah = Object.values(log.sunnah).filter(Boolean).length;
       const d = new Date(log.date + 'T12:00:00');
@@ -33,16 +33,14 @@ export default function InsightsDashboard({ dark }: InsightsDashboardProps) {
     const avg7  = logs7.reduce((s, l) => s + computeDayScore(l), 0) / 7;
     const perfect30 = logs30.filter(l => computeDayScore(l) === 1).length;
 
-    const fajrOnTime30 = logs30.filter(l =>
-      l.prayers.fajr === 'prayed' || l.prayers.fajr === 'jamah'
-    ).length;
+    const fajrOnTime30 = logs30.filter(l => isPrayed(l.prayers.fajr)).length;
 
     const tahajjudDays = logs30.filter(l => l.tahajjud.prayed).length;
 
     // Fajr rate this vs last week
-    const fajrThisWeek = logs7.filter(l => l.prayers.fajr === 'prayed' || l.prayers.fajr === 'jamah').length;
+    const fajrThisWeek = logs7.filter(l => isPrayed(l.prayers.fajr)).length;
     const prevWeek = getRecentLogs(14).slice(0, 7);
-    const fajrLastWeek = prevWeek.filter(l => l.prayers.fajr === 'prayed' || l.prayers.fajr === 'jamah').length;
+    const fajrLastWeek = prevWeek.filter(l => isPrayed(l.prayers.fajr)).length;
 
     const insights = [];
 

@@ -33,7 +33,7 @@ Daily Adhkār, Du'ā & Ṣalāh tracker. Offline-first PWA with cross-device syn
 
 | | |
 |---|---|
-| Framework | Next.js 16 (App Router) |
+| Framework | Next.js 14 (App Router) |
 | Language | TypeScript |
 | Styling | Tailwind CSS v3 |
 | Prayer Times | adhan.js |
@@ -94,12 +94,28 @@ npm run dev
 
 ---
 
+## Environment Variables
+
+```bash
+# Supabase (required for sync)
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+
+# VAPID — generate with: npx web-push generate-vapid-keys
+NEXT_PUBLIC_VAPID_PUBLIC_KEY=
+VAPID_PRIVATE_KEY=
+VAPID_EMAIL=mailto:hello@dhikrly.app
+
+# Cron secret — any random string (openssl rand -hex 32)
+CRON_SECRET=
+
 # Site URL
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
 ```
 
 ---
-```
+
 ## Supabase Setup
 
 1. Run `supabase-schema.sql` in Supabase SQL Editor
@@ -114,7 +130,78 @@ Edit `public/changelog.json` — bump `"current"` and add a release entry. Users
 
 ---
 
-## localStorage Keys
+## Git Branching Strategy
+
+```
+main          ← production (Vercel auto-deploys from here)
+develop       ← integration branch (all PRs merge here first)
+feature/*     ← new features
+fix/*         ← bug fixes
+chore/*       ← dependency updates, refactors, docs
+```
+
+### Workflow
+
+```bash
+# 1. Branch off develop
+git checkout develop
+git pull origin develop
+git checkout -b feature/tasbih-counter
+
+# 2. Build & commit
+git add .
+git commit -m "feat: add tasbih counter with haptic feedback"
+
+# 3. Push and open PR → develop
+git push origin feature/tasbih-counter
+# Open PR: feature/tasbih-counter → develop
+
+# 4. After review & CI passes, merge to develop
+
+# 5. When ready to release, merge develop → main
+git checkout main
+git merge develop
+git push origin main
+# Vercel deploys automatically
+```
+
+### Rules
+
+- **Never push directly to `main`** — always go through `develop`
+- `main` = what's live on [dhikrly.vercel.app](https://dhikrly.vercel.app)
+- `develop` = staging / integration — should always be deployable
+- Branch names use lowercase kebab-case: `feature/qibla-compass`, `fix/prayer-time-offset`
+- Commit messages follow [Conventional Commits](https://www.conventionalcommits.org): `feat:`, `fix:`, `chore:`, `docs:`
+- **Update `public/changelog.json`** when merging to `main` — bumps the version and triggers the in-app update banner for users
+
+---
+
+### Near-term
+| Feature | Description |
+|---|---|
+| **Qibla Compass** | Device orientation API — points toward Makkah from anywhere, no external service |
+| **Tasbih Counter** | Tap counter for dhikr (33×, 99×) with haptic feedback and auto-reset at target |
+| **Prayer Time Card** | Share today's prayer times as an image (Canvas API) — for WhatsApp/Instagram |
+| **Azan Audio** | Play azan at prayer time when app is open |
+| **Better Arabic Input** | Arabic keyboard helper for custom dua entry |
+
+### Mid-term
+| Feature | Description |
+|---|---|
+| **Hijri Calendar** | Month view with completion dots — a visual prayer journal |
+| **Ramadan Mode** | Suhoor/Iftar times, Tarawih tracker, 30-day Quran completion tracker |
+| **Multi-language UI** | Urdu, Turkish, Indonesian — Arabic content already in place |
+| **Family Streaks** | Shared accountability groups — see members' completion without seeing their duas |
+| **Offline Quran Juz** | One Juz per day, stored locally, with completion tracking |
+
+### Long-term
+| Feature | Description |
+|---|---|
+| **AI Dua Suggestions** | Context-aware suggestions based on time, occasion (travel, illness, rain) |
+| **Apple Watch / Wear OS** | Companion app — next prayer time and quick logging from the wrist |
+| **Imam Dashboard** | Masjids push prayer time corrections and announcements to followers |
+
+---
 
 | Key | Contents |
 |---|---|
