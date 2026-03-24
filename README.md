@@ -1,6 +1,6 @@
 # Dhikrly — ذِكْرلي
 
-![App]([/public/og-image.png])
+[![App]([/public/og-image.png])](https://raw.githubusercontent.com/nazrulislambhat/dhikrly/main/public/og-image.png)
 
 Daily Adhkār, Du'ā & Ṣalāh tracker. Offline-first PWA with cross-device sync.
 
