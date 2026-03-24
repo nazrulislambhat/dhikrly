@@ -76,8 +76,12 @@ function Toggle({
       onClick={onToggle}
       className={`relative h-6 w-11 rounded-full transition-colors ${
         enabled
-          ? color === 'amber' ? 'bg-amber-500' : 'bg-violet-500'
-          : dark ? 'bg-stone-700' : 'bg-stone-200'
+          ? color === 'amber'
+            ? 'bg-green-700'
+            : 'bg-green-700'
+          : dark
+            ? 'bg-stone-700'
+            : 'bg-stone-200'
       }`}
     >
       <span
