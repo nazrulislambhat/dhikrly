@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import BottomNavWrapper from '@/components/BottomNavWrapper';
+import { Analytics } from '@vercel/analytics/next';
 
 export const metadata: Metadata = {
   title: "Dhikrly — Adhkār, Du'ā & Ṣalāh",
@@ -48,6 +49,7 @@ export default function RootLayout({
       <body suppressHydrationWarning>
         {children}
         <BottomNavWrapper />
+        <Analytics />
       </body>
     </html>
   );
