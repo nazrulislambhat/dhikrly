@@ -1,5 +1,7 @@
 # Dhikrly — ذِكْرلي
 
+![App]([https://raw.githubusercontent.com/username/repo-name/main/public/image.png](https://raw.githubusercontent.com/nazrulislambhat/dhikrly/refs/heads/main/public/og-image.png))
+
 Daily Adhkār, Du'ā & Ṣalāh tracker. Offline-first PWA with cross-device sync.
 
 **Live:** [dhikrly.vercel.app](https://dhikrly.vercel.app)
