@@ -4,19 +4,21 @@
 
 Daily Adhkār, Du'ā & Ṣalāh tracker. Offline-first PWA with cross-device sync.
 
-**Live:** [dhikrly.vercel.app](https://dhikrly.vercel.app)
+**Live:** [dhikrly.vercel.app](https://dhikrly.com)
 
 ---
 
 ## Features
 
 **Adhkār & Du'ā**
+
 - 14 curated duas — Arabic, English, transliteration
 - Daily completion tracking with streaks & 16-week heatmap
 - Custom duas, missed day recovery, morning/evening reminders
 - Background push notifications (server-side, works when app is closed)
 
 **Ṣalāh Tracker**
+
 - Accurate prayer times via GPS or city selection (adhan.js)
 - 5 daily prayers with Prayed / Jamā'ah / Delayed / Missed status
 - Sunnah, Tahajjud, and Nafl tracking
@@ -24,6 +26,7 @@ Daily Adhkār, Du'ā & Ṣalāh tracker. Offline-first PWA with cross-device syn
 - Nearby masjid finder (OpenStreetMap, no API key needed)
 
 **Platform**
+
 - Installable PWA — works offline, add to home screen
 - Cross-device sync (Supabase) — sign in with Email or Google
 - In-app update notifications with changelog
@@ -33,16 +36,16 @@ Daily Adhkār, Du'ā & Ṣalāh tracker. Offline-first PWA with cross-device syn
 
 ## Tech Stack
 
-| | |
-|---|---|
-| Framework | Next.js 14 (App Router) |
-| Language | TypeScript |
-| Styling | Tailwind CSS v3 |
-| Prayer Times | adhan.js |
-| Charts | Recharts |
-| Auth & Sync | Supabase |
-| Push | web-push + Vercel Cron |
-| Fonts | Crimson Pro · Noto Naskh Arabic |
+|              |                                 |
+| ------------ | ------------------------------- |
+| Framework    | Next.js 14 (App Router)         |
+| Language     | TypeScript                      |
+| Styling      | Tailwind CSS v3                 |
+| Prayer Times | adhan.js                        |
+| Charts       | Recharts                        |
+| Auth & Sync  | Supabase                        |
+| Push         | web-push + Vercel Cron          |
+| Fonts        | Crimson Pro · Noto Naskh Arabic |
 
 ---
 
@@ -170,7 +173,7 @@ git push origin main
 ### Rules
 
 - **Never push directly to `main`** — always go through `develop`
-- `main` = what's live on [dhikrly.vercel.app](https://dhikrly.vercel.app)
+- `main` = what's live on [dhikrly.vercel.app](https://dhikrly.com)
 - `develop` = staging / integration — should always be deployable
 - Branch names use lowercase kebab-case: `feature/qibla-compass`, `fix/prayer-time-offset`
 - Commit messages follow [Conventional Commits](https://www.conventionalcommits.org): `feat:`, `fix:`, `chore:`, `docs:`
@@ -179,40 +182,43 @@ git push origin main
 ---
 
 ### Near-term
-| Feature | Description |
-|---|---|
-| **Qibla Compass** | Device orientation API — points toward Makkah from anywhere, no external service |
-| **Tasbih Counter** | Tap counter for dhikr (33×, 99×) with haptic feedback and auto-reset at target |
-| **Prayer Time Card** | Share today's prayer times as an image (Canvas API) — for WhatsApp/Instagram |
-| **Azan Audio** | Play azan at prayer time when app is open |
-| **Better Arabic Input** | Arabic keyboard helper for custom dua entry |
+
+| Feature                 | Description                                                                      |
+| ----------------------- | -------------------------------------------------------------------------------- |
+| **Qibla Compass**       | Device orientation API — points toward Makkah from anywhere, no external service |
+| **Tasbih Counter**      | Tap counter for dhikr (33×, 99×) with haptic feedback and auto-reset at target   |
+| **Prayer Time Card**    | Share today's prayer times as an image (Canvas API) — for WhatsApp/Instagram     |
+| **Azan Audio**          | Play azan at prayer time when app is open                                        |
+| **Better Arabic Input** | Arabic keyboard helper for custom dua entry                                      |
 
 ### Mid-term
-| Feature | Description |
-|---|---|
-| **Hijri Calendar** | Month view with completion dots — a visual prayer journal |
-| **Ramadan Mode** | Suhoor/Iftar times, Tarawih tracker, 30-day Quran completion tracker |
-| **Multi-language UI** | Urdu, Turkish, Indonesian — Arabic content already in place |
-| **Family Streaks** | Shared accountability groups — see members' completion without seeing their duas |
-| **Offline Quran Juz** | One Juz per day, stored locally, with completion tracking |
+
+| Feature               | Description                                                                      |
+| --------------------- | -------------------------------------------------------------------------------- |
+| **Hijri Calendar**    | Month view with completion dots — a visual prayer journal                        |
+| **Ramadan Mode**      | Suhoor/Iftar times, Tarawih tracker, 30-day Quran completion tracker             |
+| **Multi-language UI** | Urdu, Turkish, Indonesian — Arabic content already in place                      |
+| **Family Streaks**    | Shared accountability groups — see members' completion without seeing their duas |
+| **Offline Quran Juz** | One Juz per day, stored locally, with completion tracking                        |
 
 ### Long-term
-| Feature | Description |
-|---|---|
-| **AI Dua Suggestions** | Context-aware suggestions based on time, occasion (travel, illness, rain) |
-| **Apple Watch / Wear OS** | Companion app — next prayer time and quick logging from the wrist |
-| **Imam Dashboard** | Masjids push prayer time corrections and announcements to followers |
+
+| Feature                   | Description                                                               |
+| ------------------------- | ------------------------------------------------------------------------- |
+| **AI Dua Suggestions**    | Context-aware suggestions based on time, occasion (travel, illness, rain) |
+| **Apple Watch / Wear OS** | Companion app — next prayer time and quick logging from the wrist         |
+| **Imam Dashboard**        | Masjids push prayer time corrections and announcements to followers       |
 
 ---
 
-| Key | Contents |
-|---|---|
-| `duas_checked_v3` | Daily adhkār completion (90 days) |
-| `duas_streak_v3` | Current & best streak |
-| `duas_settings_v3` | Dark mode, sound preference |
-| `salah_log_v1` | Daily prayer logs (120 days) |
+| Key                 | Contents                                |
+| ------------------- | --------------------------------------- |
+| `duas_checked_v3`   | Daily adhkār completion (90 days)       |
+| `duas_streak_v3`    | Current & best streak                   |
+| `duas_settings_v3`  | Dark mode, sound preference             |
+| `salah_log_v1`      | Daily prayer logs (120 days)            |
 | `salah_settings_v1` | Location, calc method, tracking toggles |
 
 ---
 
-*May Allah accept it from all of us. آمين*
+_May Allah accept it from all of us. آمين_
