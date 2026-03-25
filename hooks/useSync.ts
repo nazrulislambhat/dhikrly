@@ -126,11 +126,13 @@ export function useSync({
 }: UseSyncOptions) {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isSyncing = useRef(false);
-  // lastPushedChecked = what we confirmed reached Supabase
-  // pendingChecked    = what we INTEND to push, set immediately on every change
-  //                     prevents poll from overwriting during the debounce window
-  const lastPushedChecked = useRef<string>('');
-  const pendingChecked = useRef<string>('');
+  // lastPushedChecked = what we have CONFIRMED reached Supabase
+  // pendingChecked    = what we INTEND to push (set synchronously on every change)
+  //
+  // KEY RULE: if pending !== lastPushed, we have unsaved local changes.
+  //           Skip the poll entirely — don't let Supabase's stale data overwrite us.
+  const lastPushedChecked = useRef<string>('__init__');
+  const pendingChecked = useRef<string>('__init__');
 
   /* ── Flush offline queue ─────────────────────────────────────────── */
   const flushQueue = useCallback(async (userId: string) => {
@@ -184,9 +186,10 @@ export function useSync({
       });
       save(STORAGE_KEY, mergedByDate);
 
-      // Seed pendingChecked so first poll doesn't overwrite
-      pendingChecked.current = JSON.stringify(mergedByDate[todayKey] ?? {});
-      lastPushedChecked.current = JSON.stringify(remote.checkedByDate[todayKey] ?? {});
+      // Seed both refs from today's remote data so poll starts in "clean" state
+      const todayRemoteStr = JSON.stringify(mergedByDate[todayKey] ?? {});
+      lastPushedChecked.current = todayRemoteStr;
+      pendingChecked.current = todayRemoteStr;
 
       let mergedStreak = remote.streak;
       if (remote.streak) {
@@ -217,11 +220,14 @@ export function useSync({
   }, [user?.id]);
 
   /* ── Poll for remote changes every 5 seconds ────────────────────── */
-  // Replaces Realtime subscription — works on Supabase free tier.
   useEffect(() => {
     if (!user) return;
 
     const poll = async () => {
+      // If we have unsaved local changes, skip — Supabase still has stale data
+      // and applying it would undo the user's actions
+      if (pendingChecked.current !== lastPushedChecked.current) return;
+
       const { data } = await supabase
         .from('daily_progress')
         .select('checked, updated_at')
@@ -233,29 +239,28 @@ export function useSync({
 
       const incoming = JSON.stringify(data.checked);
 
-      // Ignore if this is what we confirmed pushed
-      if (incoming === lastPushedChecked.current) return;
-
-      // Ignore if we have a local change not yet pushed (debounce window)
-      if (incoming === pendingChecked.current) return;
-
-      // Ignore if it already matches current screen state
+      // Nothing new from remote
       if (incoming === JSON.stringify(checked)) return;
 
-      // Genuine change from another device — apply it
+      // Remote has a different state — this is a genuine change from another device
       const all = load<Record<string, Record<string, boolean>>>(STORAGE_KEY, {});
       all[today] = data.checked as Record<string, boolean>;
       save(STORAGE_KEY, all);
+      // Update our refs so we don't bounce back
+      lastPushedChecked.current = incoming;
+      pendingChecked.current = incoming;
       onRemoteCheckedUpdate(data.checked as Record<string, boolean>);
     };
 
     const interval = setInterval(poll, 5000);
     return () => clearInterval(interval);
-  }, [user?.id, today, checked, onRemoteCheckedUpdate]);
+  // Intentionally exclude `checked` — we use refs for dirty-state tracking
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id, today]);
 
   /* ── Debounced push on local checked change ──────────────────────── */
   useEffect(() => {
-    // Set pendingChecked IMMEDIATELY so poll ignores this value during debounce
+    // Mark as dirty IMMEDIATELY — poll will skip until this is pushed
     pendingChecked.current = JSON.stringify(checked);
 
     if (!user) {
@@ -267,7 +272,10 @@ export function useSync({
     debounceRef.current = setTimeout(async () => {
       if (navigator.onLine) {
         const ok = await pushProgress(user.id, today, checked);
-        if (ok) lastPushedChecked.current = JSON.stringify(checked);
+        if (ok) {
+          // Only mark as clean once confirmed saved to Supabase
+          lastPushedChecked.current = JSON.stringify(checked);
+        }
       } else {
         enqueue({ type: 'progress', date: today, payload: checked, queuedAt: Date.now() });
       }
