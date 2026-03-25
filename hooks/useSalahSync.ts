@@ -29,7 +29,7 @@ function clearQueue() {
   try { localStorage.removeItem(SALAH_QUEUE_KEY); } catch { /* */ }
 }
 
-/* ── Supabase push/pull ── */
+/* ── Supabase helpers ── */
 async function pushLog(userId: string, log: DayLog): Promise<boolean> {
   const { error } = await supabase
     .from('salah_progress')
@@ -69,15 +69,13 @@ export function useSalahSync({
 }: UseSalahSyncOptions) {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isFlushing = useRef(false);
-
-  // ── KEY FIX ──────────────────────────────────────────────────────────
-  // lastPushed tracks what we have confirmed pushed to Supabase.
-  // pendingLocal tracks what we INTEND to push (set immediately on change).
-  // Poll only applies remote data if it differs from BOTH — this prevents
-  // the poll from overwriting local changes during the debounce window.
-  const lastPushed = useRef<string>('');
-  const pendingLocal = useRef<string>('');
-  // ─────────────────────────────────────────────────────────────────────
+  // lastPushed  = what we confirmed reached Supabase
+  // pendingLocal = what we intend to push (set synchronously on every change)
+  //
+  // KEY RULE: if pending !== lastPushed, we have unsaved local changes.
+  //           Skip the poll — Supabase still has stale data.
+  const lastPushed = useRef<string>('__init__');
+  const pendingLocal = useRef<string>('__init__');
 
   /* ── Flush offline queue ── */
   const flushQueue = useCallback(async (userId: string) => {
@@ -98,32 +96,34 @@ export function useSalahSync({
     if (!user) return;
     (async () => {
       const remoteLogs = await pullAllLogs(user.id);
-      if (remoteLogs.length === 0) return;
+      if (remoteLogs.length === 0) {
+        // No remote data — seed refs as clean so polling works immediately
+        const todayStr = JSON.stringify(log);
+        lastPushed.current = todayStr;
+        pendingLocal.current = todayStr;
+        return;
+      }
 
       const todayStr = new Date().toISOString().slice(0, 10);
 
       remoteLogs.forEach(remoteLog => {
         if (remoteLog.date === todayStr) {
-          // For today: only apply if remote has more prayers logged
           const localAll = getAllLogs();
           const localLog = localAll[todayStr];
           const remoteCount = Object.values(remoteLog.prayers).filter(Boolean).length;
           const localCount = localLog ? Object.values(localLog.prayers).filter(Boolean).length : 0;
-          if (remoteCount > localCount) {
-            saveDayLog(remoteLog);
-          }
+          if (remoteCount > localCount) saveDayLog(remoteLog);
         } else {
-          // Past days: remote always wins
           saveDayLog(remoteLog);
         }
       });
 
-      // Seed refs so first poll doesn't overwrite
+      // Seed refs from today's resolved state so first poll starts clean
       const todayRemote = remoteLogs.find(l => l.date === todayStr);
-      if (todayRemote) {
-        lastPushed.current = JSON.stringify(todayRemote);
-        pendingLocal.current = JSON.stringify(todayRemote);
-      }
+      const resolvedLog = todayRemote ?? log;
+      const seedStr = JSON.stringify(resolvedLog);
+      lastPushed.current = seedStr;
+      pendingLocal.current = seedStr;
 
       onPullComplete(remoteLogs);
       await flushQueue(user.id);
@@ -136,6 +136,9 @@ export function useSalahSync({
     if (!user) return;
 
     const poll = async () => {
+      // If we have unsaved local changes, skip — Supabase has stale data
+      if (pendingLocal.current !== lastPushed.current) return;
+
       const { data } = await supabase
         .from('salah_progress')
         .select('log, updated_at')
@@ -147,35 +150,31 @@ export function useSalahSync({
 
       const incoming = JSON.stringify(data.log);
 
-      // Ignore if this is what we just pushed
-      if (incoming === lastPushed.current) return;
-
-      // ── KEY FIX: ignore if we have a local change not yet pushed ──
-      // pendingLocal is set immediately when log changes (before debounce fires)
-      // so any poll during the debounce window is correctly ignored
-      if (incoming === pendingLocal.current) return;
-
-      // Also ignore if it matches current UI state (no actual diff)
+      // Nothing new
       if (incoming === JSON.stringify(log)) return;
 
-      // Genuine remote change from another device — apply it
+      // Genuine remote change from another device
       const remoteLog: DayLog = {
         ...emptyDay(today),
         ...(data.log as Partial<DayLog>),
         date: today,
       };
       saveDayLog(remoteLog);
+      // Update refs so we don't bounce
+      lastPushed.current = incoming;
+      pendingLocal.current = incoming;
       onRemoteLogUpdate(remoteLog);
     };
 
     const interval = setInterval(poll, 5000);
     return () => clearInterval(interval);
-  }, [user?.id, today, log, onRemoteLogUpdate]);
+  // Intentionally exclude `log` — we use refs for dirty-state tracking
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id, today]);
 
   /* ── Debounced push on log change ── */
   useEffect(() => {
-    // ── KEY FIX: update pendingLocal IMMEDIATELY (synchronously) ──
-    // This means the poll can never overwrite changes made in the last 800ms
+    // Mark as dirty IMMEDIATELY
     pendingLocal.current = JSON.stringify(log);
 
     if (!user) {
@@ -187,7 +186,10 @@ export function useSalahSync({
     debounceRef.current = setTimeout(async () => {
       if (navigator.onLine) {
         const ok = await pushLog(user.id, log);
-        if (ok) lastPushed.current = JSON.stringify(log);
+        if (ok) {
+          // Mark as clean only after confirmed save
+          lastPushed.current = JSON.stringify(log);
+        }
       } else {
         enqueue({ date: today, log, queuedAt: Date.now() });
       }
