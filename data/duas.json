@@ -166,5 +166,41 @@
     "transliteration": "Rabbanā ātinā fid-dunyā ḥasanah wa fil-ākhirati ḥasanah wa qinā 'adhāban-nār.",
     "en": "Our Lord, give us good in this world and good in the Hereafter, and protect us from the punishment of the Fire.",
     "ar": "رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الْآخِرَةِ حَسَنَةً وَقِنَا عَذَابَ النَّارِ"
+  },
+  {
+    "id": "Istighfar",
+    "category": "dua",
+    "session": ["Anytime"],
+    "priority": false,
+    "count": "100x daily · expiates sins",
+    "title": "Du'ā for Forgiveness",
+    "titleAr": "أَسْـتَـغْـفِـرُ اللهَ وَ أَ تُـوبُ إِ لَـْيهِ",
+    "transliteration": "Astaghfirullah wa atubu ilaihi",
+    "en": "Allah is free from imperfection, and I begin with praising Him. I beg forgiveness from Allah and I turn to Him in repentance.",
+    "ar": "أَسْتَغْفِرُ اللهَ وَأَتُوبُ إِلَيْهِ"
+  },
+  {
+    "id": "salawat",
+    "category": "athkar",
+    "session": ["Daily"],
+    "priority": true,
+    "count": "100× daily",
+    "title": "Ṣalawāt upon the Prophet ﷺ",
+    "titleAr": "الصلاة على النبي",
+    "transliteration": "Allāhumma ṣalli 'alā Muḥammadin wa 'alā āli Muḥammad, kamā ṣallayta 'alā Ibrāhīma wa 'alā āli Ibrāhīm, innaka ḥamīdun majīd. Allāhumma bārik 'alā Muḥammadin wa 'alā āli Muḥammad, kamā bārakta 'alā Ibrāhīma wa 'alā āli Ibrāhīm, innaka ḥamīdun majīd.",
+    "en": "O Allah, send Your prayers upon Muhammad and upon the family of Muhammad, as You sent prayers upon Ibrahim and upon the family of Ibrahim. Indeed, You are Praiseworthy and Glorious. O Allah, bless Muhammad and the family of Muhammad as You blessed Ibrahim and the family of Ibrahim. Indeed, You are Praiseworthy and Glorious.",
+    "ar": "اللَّهُمَّ صَلِّ عَلَى مُحَمَّدٍ وَعَلَى آلِ مُحَمَّدٍ كَمَا صَلَّيْتَ عَلَىٰ إِبْرَاهِيمَ وَعَلَىٰ آلِ إِبْرَاهِيمَ إِنَّكَ حَمِيدٌ مَجِيدٌ، اللَّهُمَّ بَارِكْ عَلَىٰ مُحَمَّدٍ وَعَلَىٰ آلِ مُحَمَّدٍ كَمَا بَارَكْتَ عَلَىٰ إِبْرَاهِيمَ وَعَلَىٰ آلِ إِبْرَاهِيمَ إِنَّكَ حَمِيدٌ مَجِيدٌ"
+  },
+  {
+    "id": "hasbunallah",
+    "category": "athkar",
+    "session": ["Daily"],
+    "priority": true,
+    "count": "100× daily",
+    "title": "Ḥasbunallāh wa ni‘mal wakīl",
+    "titleAr": "حسبنا الله ونعم الوكيل",
+    "transliteration": "Ḥasbunallāhu wa ni‘mal-wakīl",
+    "en": "Allah is sufficient for us, and He is the best disposer of affairs.",
+    "ar": "حَسْبُنَا اللَّهُ وَنِعْمَ الْوَكِيلُ"
   }
 ]
