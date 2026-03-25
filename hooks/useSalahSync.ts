@@ -8,17 +8,12 @@ import type { DayLog } from '@/types/salah';
 
 const SALAH_QUEUE_KEY = 'salah_sync_queue_v1';
 
-/* ── Offline queue ─────────────────────────────────────────────────── */
-interface QueueItem {
-  date: string;
-  log: DayLog;
-  queuedAt: number;
-}
+/* ── Offline queue ── */
+interface QueueItem { date: string; log: DayLog; queuedAt: number; }
 
 function enqueue(item: QueueItem) {
   try {
-    const raw = localStorage.getItem(SALAH_QUEUE_KEY);
-    const q: QueueItem[] = raw ? JSON.parse(raw) : [];
+    const q: QueueItem[] = JSON.parse(localStorage.getItem(SALAH_QUEUE_KEY) || '[]');
     const filtered = q.filter(i => i.date !== item.date);
     filtered.push(item);
     if (filtered.length > 90) filtered.splice(0, filtered.length - 90);
@@ -27,17 +22,14 @@ function enqueue(item: QueueItem) {
 }
 
 function dequeue(): QueueItem[] {
-  try {
-    const raw = localStorage.getItem(SALAH_QUEUE_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch { return []; }
+  try { return JSON.parse(localStorage.getItem(SALAH_QUEUE_KEY) || '[]'); } catch { return []; }
 }
 
 function clearQueue() {
   try { localStorage.removeItem(SALAH_QUEUE_KEY); } catch { /* */ }
 }
 
-/* ── Supabase push / pull ─────────────────────────────────────────── */
+/* ── Supabase push/pull ── */
 async function pushLog(userId: string, log: DayLog): Promise<boolean> {
   const { error } = await supabase
     .from('salah_progress')
@@ -55,36 +47,37 @@ async function pullAllLogs(userId: string): Promise<DayLog[]> {
     .eq('user_id', userId)
     .order('date', { ascending: false })
     .limit(120);
-
   if (error || !data) return [];
   return data.map(row => ({
-    ...(emptyDay(row.date)),
+    ...emptyDay(row.date),
     ...(row.log as Partial<DayLog>),
     date: row.date,
   }));
 }
 
-/* ── Main hook ─────────────────────────────────────────────────────── */
+/* ── Main hook ── */
 interface UseSalahSyncOptions {
   user: User | null;
   today: string;
   log: DayLog;
-  /** Called after initial pull — update local state with remote data */
   onPullComplete: (logs: DayLog[]) => void;
-  /** Called when another device updates today's log */
   onRemoteLogUpdate: (log: DayLog) => void;
 }
 
 export function useSalahSync({
-  user,
-  today,
-  log,
-  onPullComplete,
-  onRemoteLogUpdate,
+  user, today, log, onPullComplete, onRemoteLogUpdate,
 }: UseSalahSyncOptions) {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const lastPushed = useRef<string>('');
   const isFlushing = useRef(false);
+
+  // ── KEY FIX ──────────────────────────────────────────────────────────
+  // lastPushed tracks what we have confirmed pushed to Supabase.
+  // pendingLocal tracks what we INTEND to push (set immediately on change).
+  // Poll only applies remote data if it differs from BOTH — this prevents
+  // the poll from overwriting local changes during the debounce window.
+  const lastPushed = useRef<string>('');
+  const pendingLocal = useRef<string>('');
+  // ─────────────────────────────────────────────────────────────────────
 
   /* ── Flush offline queue ── */
   const flushQueue = useCallback(async (userId: string) => {
@@ -103,24 +96,34 @@ export function useSalahSync({
   /* ── Initial pull on login ── */
   useEffect(() => {
     if (!user) return;
-
     (async () => {
       const remoteLogs = await pullAllLogs(user.id);
       if (remoteLogs.length === 0) return;
 
-      // Merge: remote wins, save each to localStorage
+      const todayStr = new Date().toISOString().slice(0, 10);
+
       remoteLogs.forEach(remoteLog => {
-        const localAll = getAllLogs();
-        // Remote wins if it has more prayers logged
-        const localLog = localAll[remoteLog.date];
-        const remoteCount = Object.values(remoteLog.prayers).filter(Boolean).length;
-        const localCount = localLog
-          ? Object.values(localLog.prayers).filter(Boolean).length
-          : 0;
-        if (remoteCount >= localCount) {
+        if (remoteLog.date === todayStr) {
+          // For today: only apply if remote has more prayers logged
+          const localAll = getAllLogs();
+          const localLog = localAll[todayStr];
+          const remoteCount = Object.values(remoteLog.prayers).filter(Boolean).length;
+          const localCount = localLog ? Object.values(localLog.prayers).filter(Boolean).length : 0;
+          if (remoteCount > localCount) {
+            saveDayLog(remoteLog);
+          }
+        } else {
+          // Past days: remote always wins
           saveDayLog(remoteLog);
         }
       });
+
+      // Seed refs so first poll doesn't overwrite
+      const todayRemote = remoteLogs.find(l => l.date === todayStr);
+      if (todayRemote) {
+        lastPushed.current = JSON.stringify(todayRemote);
+        pendingLocal.current = JSON.stringify(todayRemote);
+      }
 
       onPullComplete(remoteLogs);
       await flushQueue(user.id);
@@ -143,9 +146,19 @@ export function useSalahSync({
       if (!data) return;
 
       const incoming = JSON.stringify(data.log);
+
+      // Ignore if this is what we just pushed
       if (incoming === lastPushed.current) return;
+
+      // ── KEY FIX: ignore if we have a local change not yet pushed ──
+      // pendingLocal is set immediately when log changes (before debounce fires)
+      // so any poll during the debounce window is correctly ignored
+      if (incoming === pendingLocal.current) return;
+
+      // Also ignore if it matches current UI state (no actual diff)
       if (incoming === JSON.stringify(log)) return;
 
+      // Genuine remote change from another device — apply it
       const remoteLog: DayLog = {
         ...emptyDay(today),
         ...(data.log as Partial<DayLog>),
@@ -161,6 +174,10 @@ export function useSalahSync({
 
   /* ── Debounced push on log change ── */
   useEffect(() => {
+    // ── KEY FIX: update pendingLocal IMMEDIATELY (synchronously) ──
+    // This means the poll can never overwrite changes made in the last 800ms
+    pendingLocal.current = JSON.stringify(log);
+
     if (!user) {
       enqueue({ date: today, log, queuedAt: Date.now() });
       return;
@@ -168,9 +185,9 @@ export function useSalahSync({
 
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(async () => {
-      lastPushed.current = JSON.stringify(log);
       if (navigator.onLine) {
-        await pushLog(user.id, log);
+        const ok = await pushLog(user.id, log);
+        if (ok) lastPushed.current = JSON.stringify(log);
       } else {
         enqueue({ date: today, log, queuedAt: Date.now() });
       }
