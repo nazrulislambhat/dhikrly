@@ -12,40 +12,16 @@
     "ar": "اللّهُ لَا إِلٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ لَا تَأْخُذُهُ سِنَةٌ وَلَا نَوْمٌ لَهُ مَا فِي السَّمَاوَاتِ وَمَا فِي الْأَرْضِ مَنْ ذَا الَّذِي يَشْفَعُ عِندَهُ إِلَّا بِإِذْنِهِ يَعْلَمُ مَا بَيْنَ أَيْدِيهِمْ وَمَا خَلْفَهُمْ وَلَا يُحِيطُونَ بِشَيْءٍ مِّنْ عِلْمِهِ إِلَّا بِمَا شَاءَ وَسِعَ كُرْسِيُّهُ السَّمَاوَاتِ وَالْأَرْضَ وَلَا يَئُودُهُ حِفْظُهُمَا وَهُوَ الْعَلِيُّ الْعَظِيمُ"
   },
   {
-    "id": "ikhlas",
-    "category": "quran",
-    "session": ["Morning", "Evening"],
-    "priority": true,
-    "count": "3× morning & evening · equals ⅓ Qur'ān",
-    "title": "Surah Al-Ikhlāṣ",
-    "titleAr": "سورة الإخلاص",
-    "transliteration": "Bismillāhir-raḥmānir-raḥīm. Qul huwal-lāhu aḥad. Allāhuṣ-ṣamad. Lam yalid wa lam yūlad. Wa lam yakun lahū kufuwan aḥad.",
-    "en": "Say: He is Allah, the One. Allah, the Eternal Refuge. He neither begets nor is born. Nor is there to Him any equivalent.",
-    "ar": "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ ۝ قُلْ هُوَ اللَّهُ أَحَدٌ ۝ اللَّهُ الصَّمَدُ ۝ لَمْ يَلِدْ وَلَمْ يُولَدْ ۝ وَلَمْ يَكُن لَّهُ كُفُوًا أَحَدٌ"
-  },
-  {
-    "id": "falaq",
-    "category": "quran",
-    "session": ["Morning", "Evening"],
-    "priority": true,
-    "count": "3× morning & evening",
-    "title": "Surah Al-Falaq",
-    "titleAr": "سورة الفلق",
-    "transliteration": "Bismillāhir-raḥmānir-raḥīm. Qul a'ūdhu birabbil-falaq. Min sharri mā khalaq. Wa min sharri ghāsiqin idhā waqab. Wa min sharrin-naffāthāti fil-'uqad. Wa min sharri ḥāsidin idhā ḥasad.",
-    "en": "Say: I seek refuge in the Lord of daybreak. From the evil of that which He created. From the evil of darkness when it settles. From the evil of those who blow on knots. And from the evil of an envier when he envies.",
-    "ar": "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ ۝ قُلْ أَعُوذُ بِرَبِّ الْفَلَقِ ۝ مِن شَرِّ مَا خَلَقَ ۝ وَمِن شَرِّ غَاسِقٍ إِذَا وَقَبَ ۝ وَمِن شَرِّ النَّفَّاثَاتِ فِي الْعُقَدِ ۝ وَمِن شَرِّ حَاسِدٍ إِذَا حَسَدَ"
-  },
-  {
-    "id": "nas",
-    "category": "quran",
-    "session": ["Morning", "Evening"],
-    "priority": true,
-    "count": "3× morning & evening",
-    "title": "Surah An-Nās",
-    "titleAr": "سورة الناس",
-    "transliteration": "Bismillāhir-raḥmānir-raḥīm. Qul a'ūdhu birabbin-nās. Malikin-nās. Ilāhin-nās. Min sharril-waswāsil-khannās. Alladhī yuwaswisu fī ṣudūrin-nās. Minal-jinnati wan-nās.",
-    "en": "Say: I seek refuge in the Lord of mankind. The Sovereign of mankind. The God of mankind. From the evil of the retreating whisperer. Who whispers in the breasts of mankind. From among the jinn and mankind.",
-    "ar": "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ ۝ قُلْ أَعُوذُ بِرَبِّ النَّاسِ ۝ مَلِكِ النَّاسِ ۝ إِلَٰهِ النَّاسِ ۝ مِن شَرِّ الْوَسْوَاسِ الْخَنَّاسِ ۝ الَّذِي يُوَسْوِسُ فِي صُدُورِ النَّاسِ ۝ مِنَ الْجِنَّةِ وَالنَّاسِ"
+    "id": "LaHawlaAliyulAzeem",
+    "category": "dua",
+    "session": ["Anytime"],
+    "priority": false,
+    "count": "100x daily · reliance upon Allah",
+    "title": "Du'ā of Strength & Trust",
+    "titleAr": "لاَ حَوْلَ وَلاَ قُوَّةَ إِلاَّ بِاللَّهِ الْعَلِيِّ الْعَظِيمِ",
+    "transliteration": "La hawla wa la quwwata illa billahil ‘Aliyyil ‘Azeem",
+    "en": "There is no power and no strength except with Allah, the Most High, the Most عظیم.",
+    "ar": "لاَ حَوْلَ وَلاَ قُوَّةَ إِلاَّ بِاللَّهِ الْعَلِيِّ الْعَظِيمِ"
   },
   {
     "id": "tasbih",
@@ -179,6 +155,43 @@
     "en": "Allah is free from imperfection, and I begin with praising Him. I beg forgiveness from Allah and I turn to Him in repentance.",
     "ar": "أَسْتَغْفِرُ اللهَ وَأَتُوبُ إِلَيْهِ"
   },
+  {
+    "id": "ikhlas",
+    "category": "quran",
+    "session": ["Morning", "Evening"],
+    "priority": true,
+    "count": "3× morning & evening · equals ⅓ Qur'ān",
+    "title": "Surah Al-Ikhlāṣ",
+    "titleAr": "سورة الإخلاص",
+    "transliteration": "Bismillāhir-raḥmānir-raḥīm. Qul huwal-lāhu aḥad. Allāhuṣ-ṣamad. Lam yalid wa lam yūlad. Wa lam yakun lahū kufuwan aḥad.",
+    "en": "Say: He is Allah, the One. Allah, the Eternal Refuge. He neither begets nor is born. Nor is there to Him any equivalent.",
+    "ar": "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ ۝ قُلْ هُوَ اللَّهُ أَحَدٌ ۝ اللَّهُ الصَّمَدُ ۝ لَمْ يَلِدْ وَلَمْ يُولَدْ ۝ وَلَمْ يَكُن لَّهُ كُفُوًا أَحَدٌ"
+  },
+  {
+    "id": "falaq",
+    "category": "quran",
+    "session": ["Morning", "Evening"],
+    "priority": true,
+    "count": "3× morning & evening",
+    "title": "Surah Al-Falaq",
+    "titleAr": "سورة الفلق",
+    "transliteration": "Bismillāhir-raḥmānir-raḥīm. Qul a'ūdhu birabbil-falaq. Min sharri mā khalaq. Wa min sharri ghāsiqin idhā waqab. Wa min sharrin-naffāthāti fil-'uqad. Wa min sharri ḥāsidin idhā ḥasad.",
+    "en": "Say: I seek refuge in the Lord of daybreak. From the evil of that which He created. From the evil of darkness when it settles. From the evil of those who blow on knots. And from the evil of an envier when he envies.",
+    "ar": "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ ۝ قُلْ أَعُوذُ بِرَبِّ الْفَلَقِ ۝ مِن شَرِّ مَا خَلَقَ ۝ وَمِن شَرِّ غَاسِقٍ إِذَا وَقَبَ ۝ وَمِن شَرِّ النَّفَّاثَاتِ فِي الْعُقَدِ ۝ وَمِن شَرِّ حَاسِدٍ إِذَا حَسَدَ"
+  },
+  {
+    "id": "nas",
+    "category": "quran",
+    "session": ["Morning", "Evening"],
+    "priority": true,
+    "count": "3× morning & evening",
+    "title": "Surah An-Nās",
+    "titleAr": "سورة الناس",
+    "transliteration": "Bismillāhir-raḥmānir-raḥīm. Qul a'ūdhu birabbin-nās. Malikin-nās. Ilāhin-nās. Min sharril-waswāsil-khannās. Alladhī yuwaswisu fī ṣudūrin-nās. Minal-jinnati wan-nās.",
+    "en": "Say: I seek refuge in the Lord of mankind. The Sovereign of mankind. The God of mankind. From the evil of the retreating whisperer. Who whispers in the breasts of mankind. From among the jinn and mankind.",
+    "ar": "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ ۝ قُلْ أَعُوذُ بِرَبِّ النَّاسِ ۝ مَلِكِ النَّاسِ ۝ إِلَٰهِ النَّاسِ ۝ مِن شَرِّ الْوَسْوَاسِ الْخَنَّاسِ ۝ الَّذِي يُوَسْوِسُ فِي صُدُورِ النَّاسِ ۝ مِنَ الْجِنَّةِ وَالنَّاسِ"
+  },
+
   {
     "id": "salawat",
     "category": "athkar",
