@@ -32,6 +32,7 @@ import { useStreak } from '@/hooks/useStreak';
 import { useToast } from '@/hooks/useToast';
 import { useAuth } from '@/hooks/useAuth';
 import { useSync } from '@/hooks/useSync';
+import TasbihCounter from '@/components/TasbihCounter';
 
 /* ── Static data ── */
 const BASE_DUAS = DUAS_JSON as Dua[];
@@ -47,8 +48,8 @@ const CATS: CatEntry[] = [
 type Modal = 'notifications' | 'addDua' | 'missedDay' | 'auth' | null;
 
 /* ─────────────────────────────────────────────
-   MAIN COMPONENT
-───────────────────────────────────────────── */
+    MAIN COMPONENT
+  ───────────────────────────────────────────── */
 export default function DuasTracker() {
   /* ── Settings ── */
   const [dark, setDark] = useState<boolean>(
@@ -523,7 +524,9 @@ export default function DuasTracker() {
             />
           ))}
         </div>
-
+        <div className="mt-12">
+          <TasbihCounter />
+        </div>
         {/* ── Footer ── */}
         <footer
           className={`mt-12 border-t pt-6 text-center ${dark ? 'border-white/[0.06]' : 'border-black/[0.06]'}`}
