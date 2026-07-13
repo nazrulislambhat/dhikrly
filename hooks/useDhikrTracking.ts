@@ -109,17 +109,7 @@ function archivePreviousDay(
 }
 
 export function useDhikrTracking(duas: Dua[], userId?: string | null) {
-  const duaSignature = useMemo(
-    () =>
-      duas
-        .map((dua) => `${dua.id}:${dua.title}:${dua.count}:${dua.category}`)
-        .join('|'),
-    [duas],
-  );
-  const trackedEntries = useMemo(
-    () => buildTrackedEntries(duas),
-    [duaSignature],
-  );
+  const trackedEntries = useMemo(() => buildTrackedEntries(duas), [duas]);
   const storageKey = useMemo(() => getStorageKey(userId), [userId]);
 
   const [state, setState] = useState<DhikrTrackingState>(() => {
@@ -129,16 +119,12 @@ export function useDhikrTracking(duas: Dua[], userId?: string | null) {
 
   useEffect(() => {
     const loaded = load<DhikrTrackingState | null>(storageKey, null);
-    setState(normalizeState(loaded, trackedEntries));
-  }, [storageKey, trackedEntries]);
-
-  useEffect(() => {
+    const next = normalizeState(loaded, trackedEntries);
     setState((prev) => {
-      const today = getTodayKey();
-      if (prev.date !== today) {
-        return archivePreviousDay(prev, trackedEntries);
+      if (prev.date === next.date && prev.entries === next.entries) {
+        return prev;
       }
-      return normalizeState(prev, trackedEntries);
+      return next;
     });
   }, [storageKey, trackedEntries]);
 
