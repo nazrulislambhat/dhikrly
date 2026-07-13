@@ -91,16 +91,7 @@ export default function DuasTracker() {
 
   /* ── Auth ── */
   const { user, loading: authLoading, signOut } = useAuth();
-  const {
-    trackedEntries,
-    trackedCounts,
-    history,
-    increment,
-    resetAll,
-    setTarget,
-    position,
-    setPosition,
-  } = useDhikrTracking(allDuas, user?.id ?? null);
+  const { history } = useDhikrTracking(allDuas, user?.id ?? null);
 
   /* ── Sync ── */
   const [isSynced, setIsSynced] = useState(true);
@@ -157,8 +148,6 @@ export default function DuasTracker() {
   const [activeModal, setActiveModal] = useState<Modal>(null);
   const [showHeatmap, setShowHeatmap] = useState(false);
   const [showDhikrHistory, setShowDhikrHistory] = useState(false);
-  const [isDraggingCounter, setIsDraggingCounter] = useState(false);
-  const dragOffset = useRef({ x: 0, y: 0 });
 
   const prevDone = useRef(done);
 
@@ -258,88 +247,6 @@ export default function DuasTracker() {
     }
     return true;
   });
-
-  const floatingEntry = trackedEntries[0];
-  const floatingCount = trackedCounts[floatingEntry?.id ?? '']?.count ?? 0;
-  const floatingTarget = trackedCounts[floatingEntry?.id ?? '']?.target ?? 100;
-
-  const triggerCounterFeedback = useCallback(
-    (nextCount: number, target: number) => {
-      if (nextCount < target || typeof window === 'undefined') return;
-
-      if ('vibrate' in navigator) {
-        navigator.vibrate([18, 20, 30]);
-      }
-
-      if (soundEnabled && typeof window !== 'undefined') {
-        const AudioContextClass =
-          window.AudioContext ||
-          (
-            window as typeof window & {
-              webkitAudioContext?: typeof AudioContext;
-            }
-          ).webkitAudioContext;
-        if (AudioContextClass) {
-          const audioContext = new AudioContextClass();
-          const oscillator = audioContext.createOscillator();
-          const gainNode = audioContext.createGain();
-          oscillator.type = 'sine';
-          oscillator.frequency.setValueAtTime(880, audioContext.currentTime);
-          gainNode.gain.setValueAtTime(0.0001, audioContext.currentTime);
-          gainNode.gain.exponentialRampToValueAtTime(
-            0.04,
-            audioContext.currentTime + 0.01,
-          );
-          gainNode.gain.exponentialRampToValueAtTime(
-            0.0001,
-            audioContext.currentTime + 0.16,
-          );
-          oscillator.connect(gainNode);
-          gainNode.connect(audioContext.destination);
-          oscillator.start();
-          oscillator.stop(audioContext.currentTime + 0.18);
-          setTimeout(() => audioContext.close(), 220);
-        }
-      }
-    },
-    [soundEnabled],
-  );
-
-  const handleCounterPointerDown = (
-    event: ReactPointerEvent<HTMLDivElement>,
-  ) => {
-    if ((event.target as HTMLElement).closest('button, input')) return;
-    dragOffset.current = {
-      x: event.clientX - position.x,
-      y: event.clientY - position.y,
-    };
-    setIsDraggingCounter(true);
-  };
-
-  useEffect(() => {
-    if (!isDraggingCounter) return;
-
-    const handlePointerMove = (event: PointerEvent) => {
-      const nextX = Math.min(
-        Math.max(event.clientX - dragOffset.current.x, 16),
-        window.innerWidth - 220,
-      );
-      const nextY = Math.min(
-        Math.max(event.clientY - dragOffset.current.y, 16),
-        window.innerHeight - 220,
-      );
-      setPosition({ x: nextX, y: nextY });
-    };
-
-    const handlePointerUp = () => setIsDraggingCounter(false);
-
-    window.addEventListener('pointermove', handlePointerMove);
-    window.addEventListener('pointerup', handlePointerUp);
-    return () => {
-      window.removeEventListener('pointermove', handlePointerMove);
-      window.removeEventListener('pointerup', handlePointerUp);
-    };
-  }, [isDraggingCounter, position.x, position.y, setPosition]);
 
   const bg = dark
     ? 'min-h-screen bg-[#0c1a2e] text-stone-200'
@@ -671,76 +578,6 @@ export default function DuasTracker() {
             )}
           </div>
         )}
-
-        <div
-          className={`fixed flex flex-col gap-2 rounded-2xl border p-3 shadow-2xl ${
-            dark
-              ? 'border-amber-400/20 bg-[#14253d] text-stone-100'
-              : 'border-amber-200/70 bg-white text-stone-800'
-          }`}
-          style={{ left: position.x, top: position.y }}
-        >
-          <div
-            className="flex cursor-grab items-center justify-between text-[10px] uppercase tracking-[0.2em]"
-            onPointerDown={handleCounterPointerDown}
-          >
-            <span className="opacity-70">Drag</span>
-            <button
-              type="button"
-              onClick={(event) => {
-                event.stopPropagation();
-                resetAll();
-              }}
-              className={`rounded-full px-2 py-1 text-[9px] ${
-                dark
-                  ? 'bg-white/8 text-stone-300 hover:bg-white/12'
-                  : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
-              }`}
-            >
-              Reset
-            </button>
-          </div>
-
-          <label className="text-[8px] uppercase rounded-full tracking-[0.18em] opacity-70">
-            Goal
-            <input
-              type="number"
-              min="1"
-              value={floatingTarget}
-              onChange={(event) =>
-                setTarget(
-                  floatingEntry?.id ?? 'floating-counter',
-                  Number(event.target.value) || 1,
-                )
-              }
-              className={`mt-1 w-full rounded-full border px-2.5 py-2 text-sm outline-none ${
-                dark
-                  ? 'border-white/10 bg-white/5 text-stone-100'
-                  : 'border-black/10 bg-stone-50 text-stone-800'
-              }`}
-            />
-          </label>
-
-          <button
-            type="button"
-            onClick={() => {
-              const id = floatingEntry?.id ?? 'floating-counter';
-              const nextCount = (trackedCounts[id]?.count ?? 0) + 1;
-              increment(id);
-              triggerCounterFeedback(nextCount, floatingTarget);
-            }}
-            className={`flex h-12 items-center justify-center rounded-full text-xl font-semibold transition-all active:scale-95 ${
-              dark
-                ? 'bg-emerald-500/20 text-emerald-200 hover:bg-emerald-500/30'
-                : 'bg-red-100 text-red-700 hover:bg-red-200'
-            }`}
-          >
-            {floatingCount}
-          </button>
-          <p className="text-center text-[10px] uppercase tracking-[0.2em] opacity-70">
-            Tap to count
-          </p>
-        </div>
 
         {/* ── Dua cards ── */}
         <div className="flex flex-col gap-3">
