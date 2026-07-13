@@ -20,10 +20,16 @@ export interface DhikrDaySnapshot {
   entries: DhikrRecord[];
 }
 
+interface CounterPosition {
+  x: number;
+  y: number;
+}
+
 interface DhikrTrackingState {
   date: string;
   entries: Record<string, DhikrRecord>;
   history: DhikrDaySnapshot[];
+  position: CounterPosition;
 }
 
 function getStorageKey(userId?: string | null): string {
@@ -35,16 +41,16 @@ function parseTarget(value: string): number {
   return match ? Number.parseInt(match[1], 10) : 0;
 }
 
-function buildTrackedEntries(duas: Dua[]): DhikrRecord[] {
-  return duas
-    .filter((dua) => parseTarget(dua.count) >= 100)
-    .map((dua) => ({
-      id: dua.id,
-      label: dua.title,
-      target: parseTarget(dua.count),
+function buildTrackedEntries(_duas: Dua[]): DhikrRecord[] {
+  return [
+    {
+      id: 'floating-counter',
+      label: 'Floating counter',
+      target: 100,
       count: 0,
       lastUpdated: null,
-    }));
+    },
+  ];
 }
 
 function normalizeState(
@@ -70,6 +76,7 @@ function normalizeState(
     date: raw?.date ?? today,
     entries,
     history: history.filter((snapshot) => snapshot && snapshot.date),
+    position: raw?.position ?? { x: 24, y: 24 },
   };
 }
 
@@ -105,6 +112,7 @@ function archivePreviousDay(
     date: getTodayKey(),
     entries: resetEntries,
     history: nextHistory,
+    position: prevState.position,
   };
 }
 
@@ -149,6 +157,27 @@ export function useDhikrTracking(duas: Dua[], userId?: string | null) {
         },
       };
     });
+  }, []);
+
+  const setTarget = useCallback((id: string, target: number) => {
+    setState((prev) => {
+      const entry = prev.entries[id];
+      if (!entry) return prev;
+      return {
+        ...prev,
+        entries: {
+          ...prev.entries,
+          [id]: {
+            ...entry,
+            target: Math.max(1, target),
+          },
+        },
+      };
+    });
+  }, []);
+
+  const setPosition = useCallback((position: CounterPosition) => {
+    setState((prev) => ({ ...prev, position }));
   }, []);
 
   const resetOne = useCallback((id: string) => {
@@ -218,6 +247,9 @@ export function useDhikrTracking(duas: Dua[], userId?: string | null) {
     totalCount,
     totalTarget,
     today: state.date,
+    position: state.position,
+    setPosition,
+    setTarget,
     increment,
     resetOne,
     resetAll,
