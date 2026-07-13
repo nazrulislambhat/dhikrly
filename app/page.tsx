@@ -38,7 +38,6 @@ import { useStreak } from '@/hooks/useStreak';
 import { useToast } from '@/hooks/useToast';
 import { useAuth } from '@/hooks/useAuth';
 import { useSync } from '@/hooks/useSync';
-import { useDhikrTracking } from '@/hooks/useDhikrTracking';
 
 /* ── Static data ── */
 const BASE_DUAS = DUAS_JSON as Dua[];
@@ -91,7 +90,6 @@ export default function DuasTracker() {
 
   /* ── Auth ── */
   const { user, loading: authLoading, signOut } = useAuth();
-  const { history } = useDhikrTracking(allDuas, user?.id ?? null);
 
   /* ── Sync ── */
   const [isSynced, setIsSynced] = useState(true);
@@ -147,7 +145,6 @@ export default function DuasTracker() {
   const [priOnly, setPriOnly] = useState(false);
   const [activeModal, setActiveModal] = useState<Modal>(null);
   const [showHeatmap, setShowHeatmap] = useState(false);
-  const [showDhikrHistory, setShowDhikrHistory] = useState(false);
 
   const prevDone = useRef(done);
 
@@ -513,71 +510,6 @@ export default function DuasTracker() {
             );
           })}
         </div>
-
-        <div className="mb-4 flex items-center justify-end">
-          <a
-            href="/history"
-            className={`rounded-full border px-2.5 py-1 text-[10px] transition-all ${
-              dark
-                ? 'border-amber-400/20 text-amber-300 hover:text-amber-200'
-                : 'border-amber-400/40 text-amber-700 hover:text-amber-800'
-            }`}
-          >
-            History
-          </a>
-        </div>
-
-        <button
-          onClick={() => setShowDhikrHistory((v) => !v)}
-          className={`mb-4 w-full rounded-xl border px-4 py-2.5 text-[11px] uppercase tracking-widest transition-all ${
-            dark
-              ? 'border-white/[0.07] text-stone-600 hover:text-stone-400'
-              : 'border-black/[0.06] text-stone-400 hover:text-stone-600'
-          }`}
-        >
-          {showDhikrHistory ? '▲ Hide Dhikr History' : '▼ Show Dhikr History'}
-        </button>
-        {showDhikrHistory && (
-          <div
-            className={`mb-5 rounded-2xl border p-4 ${dark ? 'border-white/[0.08] bg-white/[0.03]' : 'border-black/[0.06] bg-white shadow-sm'}`}
-          >
-            <p className="mb-3 text-[11px] uppercase tracking-[0.24em] text-amber-500/70">
-              History
-            </p>
-            {history.length === 0 ? (
-              <p
-                className={`text-sm ${dark ? 'text-stone-500' : 'text-stone-400'}`}
-              >
-                Your dhikr history will appear here after you start counting.
-              </p>
-            ) : (
-              <div className="flex flex-col gap-2">
-                {history.map((snapshot) => (
-                  <div
-                    key={snapshot.date}
-                    className={`rounded-xl border px-3 py-2 ${dark ? 'border-white/[0.06] bg-black/[0.12]' : 'border-black/[0.06] bg-stone-50'}`}
-                  >
-                    <div
-                      className={`mb-1 text-[11px] uppercase tracking-[0.2em] ${dark ? 'text-stone-500' : 'text-stone-400'}`}
-                    >
-                      {snapshot.date}
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {snapshot.entries.map((entry) => (
-                        <span
-                          key={`${snapshot.date}-${entry.id}`}
-                          className={`rounded-full px-2.5 py-1 text-[10px] ${dark ? 'bg-amber-400/10 text-amber-300' : 'bg-amber-100 text-amber-700'}`}
-                        >
-                          {entry.label}: {entry.count}/{entry.target}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
 
         {/* ── Dua cards ── */}
         <div className="flex flex-col gap-3">

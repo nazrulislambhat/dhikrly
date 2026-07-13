@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
-import BottomNavWrapper from '@/components/BottomNavWrapper';
 import { Analytics } from '@vercel/analytics/next';
 
 export const metadata: Metadata = {
@@ -50,10 +49,7 @@ export default function RootLayout({
         />
         <meta name="apple-mobile-web-app-title" content="Dhikrly" />
       </head>
-      <body suppressHydrationWarning>
-        {children}
-        <BottomNavWrapper />
-      </body>
+      <body suppressHydrationWarning>{children}</body>
     </html>
   );
 }
