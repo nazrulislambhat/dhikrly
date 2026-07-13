@@ -9,7 +9,7 @@ interface BottomNavProps {
 
 const TABS = [
   { href: '/', label: 'Adhkār', icon: '🤲' },
-  { href: '/salah', label: 'Ṣalāh', icon: '🕌' },
+  { href: '/history', label: 'History', icon: '🕯️' },
 ];
 
 export default function BottomNav({ dark }: BottomNavProps) {

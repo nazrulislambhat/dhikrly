@@ -13,6 +13,9 @@ interface DuaCardProps {
   onDelete?: (id: string) => void;
   dark: boolean;
   soundEnabled?: boolean;
+  dhikrCount?: number;
+  dhikrTarget?: number;
+  onDhikrIncrement?: (id: string) => void;
 }
 
 export default function DuaCard({
@@ -22,8 +25,81 @@ export default function DuaCard({
   onDelete,
   dark,
   soundEnabled = true,
+  dhikrCount,
+  dhikrTarget,
+  onDhikrIncrement,
 }: DuaCardProps) {
   const [activeTab, setActiveTab] = useState<TabLabel>('Arabic');
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  const stopDua = () => {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+    window.speechSynthesis.cancel();
+    setIsPlaying(false);
+  };
+
+  const getPreferredArabicVoice = (): Promise<SpeechSynthesisVoice | null> => {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
+      return Promise.resolve(null);
+    }
+
+    return new Promise((resolve) => {
+      const pickVoice = () => {
+        const voices = window.speechSynthesis.getVoices();
+        const preferredVoice = voices.find(
+          (voice) =>
+            /mishary|alafasy|rashid|arab/i.test(voice.name) &&
+            /^(ar|ar-sa|ar-ae|ar-eg|ar-jo|ar-kw|ar-qa|ar-bh|ar-om|ar-ye)/i.test(
+              voice.lang,
+            ),
+        );
+        const fallbackVoice = voices.find((voice) =>
+          voice.lang.startsWith('ar'),
+        );
+        resolve(preferredVoice ?? fallbackVoice ?? null);
+      };
+
+      pickVoice();
+      if (window.speechSynthesis.getVoices().length > 0) return;
+
+      const handleVoicesChanged = () => {
+        pickVoice();
+        window.speechSynthesis.onvoiceschanged = null;
+      };
+
+      window.speechSynthesis.onvoiceschanged = handleVoicesChanged;
+      window.setTimeout(() => {
+        if (window.speechSynthesis.onvoiceschanged === handleVoicesChanged) {
+          pickVoice();
+          window.speechSynthesis.onvoiceschanged = null;
+        }
+      }, 600);
+    });
+  };
+
+  const playDua = async () => {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+
+    if (isPlaying) {
+      stopDua();
+      return;
+    }
+
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(
+      dua.ar || dua.transliteration || dua.en,
+    );
+    const preferredVoice = await getPreferredArabicVoice();
+
+    utterance.lang = 'ar-SA';
+    utterance.voice = preferredVoice ?? null;
+    utterance.rate = 0.9;
+    utterance.pitch = 1;
+    utterance.onend = () => setIsPlaying(false);
+    utterance.onerror = () => setIsPlaying(false);
+    window.speechSynthesis.speak(utterance);
+    setIsPlaying(true);
+  };
 
   const baseCard = dark
     ? 'bg-white/[0.04] border-white/[0.08]'
@@ -155,6 +231,38 @@ export default function DuaCard({
           >
             {checked ? 'Done' : 'Pending'}
           </span>
+          <button
+            onClick={(event) => {
+              event.stopPropagation();
+              void playDua();
+            }}
+            aria-label={isPlaying ? `Pause ${dua.title}` : `Play ${dua.title}`}
+            className={`rounded-full px-2.5 py-1 text-[10px] transition-all ${
+              dark
+                ? 'bg-amber-400/15 text-amber-300 hover:bg-amber-400/25'
+                : 'bg-amber-100 text-amber-700 hover:bg-amber-200'
+            }`}
+          >
+            {isPlaying ? '⏸ Pause' : '▶ Play'}
+          </button>
+          {typeof dhikrTarget === 'number' &&
+            dhikrTarget >= 100 &&
+            onDhikrIncrement && (
+              <button
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onDhikrIncrement(dua.id);
+                }}
+                aria-label={`Count ${dua.title}`}
+                className={`flex h-10 w-10 items-center justify-center rounded-full text-[10px] font-semibold shadow-sm transition-all active:scale-95 ${
+                  dark
+                    ? 'bg-emerald-500/20 text-emerald-200 ring-1 ring-emerald-400/20 hover:bg-emerald-500/30'
+                    : 'bg-emerald-100 text-emerald-700 ring-1 ring-emerald-200 hover:bg-emerald-200'
+                }`}
+              >
+                +1
+              </button>
+            )}
           {dua.custom && onDelete && (
             <button
               onClick={() => onDelete(dua.id)}
