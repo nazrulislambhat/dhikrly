@@ -13,9 +13,6 @@ interface DuaCardProps {
   onDelete?: (id: string) => void;
   dark: boolean;
   soundEnabled?: boolean;
-  dhikrCount?: number;
-  dhikrTarget?: number;
-  onDhikrIncrement?: (id: string) => void;
 }
 
 export default function DuaCard({
@@ -25,9 +22,6 @@ export default function DuaCard({
   onDelete,
   dark,
   soundEnabled = true,
-  dhikrCount,
-  dhikrTarget,
-  onDhikrIncrement,
 }: DuaCardProps) {
   const [activeTab, setActiveTab] = useState<TabLabel>('Arabic');
   const [isPlaying, setIsPlaying] = useState(false);
@@ -245,24 +239,6 @@ export default function DuaCard({
           >
             {isPlaying ? '⏸ Pause' : '▶ Play'}
           </button>
-          {typeof dhikrTarget === 'number' &&
-            dhikrTarget >= 100 &&
-            onDhikrIncrement && (
-              <button
-                onClick={(event) => {
-                  event.stopPropagation();
-                  onDhikrIncrement(dua.id);
-                }}
-                aria-label={`Count ${dua.title}`}
-                className={`flex h-10 w-10 items-center justify-center rounded-full text-[10px] font-semibold shadow-sm transition-all active:scale-95 ${
-                  dark
-                    ? 'bg-emerald-500/20 text-emerald-200 ring-1 ring-emerald-400/20 hover:bg-emerald-500/30'
-                    : 'bg-emerald-100 text-emerald-700 ring-1 ring-emerald-200 hover:bg-emerald-200'
-                }`}
-              >
-                +1
-              </button>
-            )}
           {dua.custom && onDelete && (
             <button
               onClick={() => onDelete(dua.id)}
