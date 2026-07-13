@@ -1,6 +1,22 @@
 {
-  "current": "1.4.1",
+  "current": "1.4.2",
   "releases": [
+    {
+      "version": "1.4.2",
+      "date": "2026-07-13",
+      "title": "Dhikr Enhancements",
+      "added": [
+        "Daily dhikr counters for repeated adhkār with targets above 100",
+        "Manual reset and daily reset for dhikr counters",
+        "History view for saved dhikr counts",
+        "Play and pause controls for each du'a with Arabic audio playback"
+      ],
+      "improved": [
+        "Bottom navigation now includes a dedicated History tab",
+        "Audio playback now prefers an Arabic reciter voice for a more natural recitation"
+      ],
+      "removed": ["Removed the old tasbih counter section from the main screen"]
+    },
     {
       "version": "1.4.1",
       "date": "2025-03-24",
