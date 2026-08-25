@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from 'react';
 
-const STORAGE_KEY = "tasbih_counter_v1";
+const STORAGE_KEY = 'tasbih_counter_v1';
 
-export type TasbihTarget = 33 | 99 | 100;
+export type TasbihTarget = 33 | 99 | 100 | 1000;
 
-const VALID_TARGETS: TasbihTarget[] = [33, 99, 100];
+const VALID_TARGETS: TasbihTarget[] = [33, 99, 100, 1000];
 
 interface TasbihState {
   count: number;
@@ -21,7 +21,7 @@ const DEFAULT_STATE: TasbihState = {
 };
 
 function loadState(): TasbihState {
-  if (typeof window === "undefined") return DEFAULT_STATE;
+  if (typeof window === 'undefined') return DEFAULT_STATE;
 
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
@@ -33,9 +33,9 @@ function loadState(): TasbihState {
       : DEFAULT_STATE.target;
 
     return {
-      count: typeof parsed.count === "number" ? parsed.count : 0,
+      count: typeof parsed.count === 'number' ? parsed.count : 0,
       target,
-      rounds: typeof parsed.rounds === "number" ? parsed.rounds : 0,
+      rounds: typeof parsed.rounds === 'number' ? parsed.rounds : 0,
     };
   } catch {
     return DEFAULT_STATE;
@@ -43,7 +43,7 @@ function loadState(): TasbihState {
 }
 
 function saveState(state: TasbihState) {
-  if (typeof window === "undefined") return;
+  if (typeof window === 'undefined') return;
 
   try {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -54,7 +54,7 @@ function saveState(state: TasbihState) {
 }
 
 function vibrate(pattern: number | number[]) {
-  if (typeof window === "undefined" || !("vibrate" in navigator)) return;
+  if (typeof window === 'undefined' || !('vibrate' in navigator)) return;
 
   try {
     navigator.vibrate(pattern);

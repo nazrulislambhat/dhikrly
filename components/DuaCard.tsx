@@ -71,30 +71,6 @@ export default function DuaCard({
     });
   };
 
-  const playDua = async () => {
-    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
-
-    if (isPlaying) {
-      stopDua();
-      return;
-    }
-
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(
-      dua.ar || dua.transliteration || dua.en,
-    );
-    const preferredVoice = await getPreferredArabicVoice();
-
-    utterance.lang = 'ar-SA';
-    utterance.voice = preferredVoice ?? null;
-    utterance.rate = 0.9;
-    utterance.pitch = 1;
-    utterance.onend = () => setIsPlaying(false);
-    utterance.onerror = () => setIsPlaying(false);
-    window.speechSynthesis.speak(utterance);
-    setIsPlaying(true);
-  };
-
   const baseCard = dark
     ? 'bg-white/[0.04] border-white/[0.08]'
     : 'bg-white border-black/[0.09] shadow-sm';
@@ -225,20 +201,7 @@ export default function DuaCard({
           >
             {checked ? 'Done' : 'Pending'}
           </span>
-          <button
-            onClick={(event) => {
-              event.stopPropagation();
-              void playDua();
-            }}
-            aria-label={isPlaying ? `Pause ${dua.title}` : `Play ${dua.title}`}
-            className={`rounded-full px-2.5 py-1 text-[10px] transition-all ${
-              dark
-                ? 'bg-amber-400/15 text-amber-300 hover:bg-amber-400/25'
-                : 'bg-amber-100 text-amber-700 hover:bg-amber-200'
-            }`}
-          >
-            {isPlaying ? '⏸ Pause' : '▶ Play'}
-          </button>
+
           {dua.custom && onDelete && (
             <button
               onClick={() => onDelete(dua.id)}
