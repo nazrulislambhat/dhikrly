@@ -32,7 +32,7 @@ import AuthModal from '@/components/AuthModal';
 import UserMenu from '@/components/UserMenu';
 import PWAProvider from '@/components/PWAProvider';
 import UpdateBanner from '@/components/UpdateBanner';
-
+import TasbihCounter from '@/components/TasbihCounter';
 import { useChecked } from '@/hooks/useChecked';
 import { useStreak } from '@/hooks/useStreak';
 import { useToast } from '@/hooks/useToast';
@@ -430,6 +430,10 @@ export default function DuasTracker() {
           </div>
         )}
 
+        {/* ── Tasbeeh ── */}
+        <div className='mt-2 mb-4'>
+          <TasbihCounter />
+        </div>
         {/* ── Controls ── */}
         <div className="mb-3 flex flex-wrap gap-2">
           <input
