@@ -45,7 +45,7 @@ export default function TasbihCounter() {
         type="button"
         onClick={increment}
         aria-label={`Count dhikr, ${count} of ${target}`}
-        className="relative flex h-30 w-30 select-none items-center justify-center rounded-full bg-emerald-50 text-emerald-900 shadow-inner transition-transform active:scale-95 dark:bg-emerald-950/40 dark:text-emerald-50"
+        className="relative flex h-54 w-54 select-none items-center justify-center rounded-full bg-emerald-50 text-emerald-900 shadow-inner transition-transform active:scale-95 dark:bg-emerald-950/40 dark:text-emerald-50"
       >
         <svg className="absolute inset-0 -rotate-90" viewBox="0 0 200 200">
           <circle
