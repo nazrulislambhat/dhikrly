@@ -93,9 +93,17 @@ export default function LegalLayout({
               </Link>
             </div>
           </div>
-          <p className="mt-4 text-[10px] text-stone-300">
-            © {new Date().getFullYear()} Dhikrly. All rights reserved.
-          </p>
+          <div>
+            <p className="mt-4 text-[10px] text-stone-400">
+              © {new Date().getFullYear()} Dhikrly. All rights reserved.
+            </p>
+            <a
+              className="mt-4 text-[10px] text-primary border-b-[0.5] pb-[1]"
+              href="https://stacknothing.com"
+            >
+              StackNothing LLC
+            </a>
+          </div>
         </div>
       </footer>
     </div>
