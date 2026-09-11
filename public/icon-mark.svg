@@ -1,57 +1,22 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <radialGradient id="bg" cx="50%" cy="45%" r="65%">
-      <stop offset="0%" stop-color="#142236"/>
-      <stop offset="100%" stop-color="#0a1520"/>
+    <radialGradient id="bg" cx="50%" cy="38%" r="75%">
+      <stop offset="0%" stop-color="#1B4238"/>
+      <stop offset="100%" stop-color="#0D211D"/>
     </radialGradient>
-    <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#fcd47a"/>
-      <stop offset="50%" stop-color="#f59e0b"/>
-      <stop offset="100%" stop-color="#d97706"/>
-    </linearGradient>
-    <filter id="glow">
-      <feGaussianBlur stdDeviation="8" result="blur"/>
-      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    <filter id="glow" x="-200%" y="-200%" width="500%" height="500%">
+      <feGaussianBlur stdDeviation="10" result="b"/>
+      <feMerge>
+        <feMergeNode in="b"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
     </filter>
   </defs>
 
-  <!-- Rounded square background -->
-  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <rect width="512" height="512" rx="114" fill="url(#bg)"/>
 
-  <!-- Subtle outer ring -->
-  <circle cx="256" cy="256" r="210" stroke="#f59e0b" stroke-width="1.5" fill="none" opacity="0.12"/>
-  <circle cx="256" cy="256" r="175" stroke="#f59e0b" stroke-width="1" fill="none" opacity="0.07"/>
+  <path d="M 92 342 Q 256 128 420 342" fill="none" stroke="#C6A15B" stroke-width="24" stroke-linecap="round"/>
 
-  <!-- 8-pointed star centered -->
-  <g transform="translate(256, 256)" filter="url(#glow)">
-    <!-- Soft glow layer -->
-    <polygon
-      points="0,-160 38,-95 113,-113 95,-38 160,0 95,38 113,113 38,95 0,160 -38,95 -113,113 -95,38 -160,0 -95,-38 -113,-113 -38,-95"
-      fill="#f59e0b"
-      opacity="0.12"
-    />
-
-    <!-- Main star -->
-    <polygon
-      points="0,-142 34,-84 100,-100 84,-34 142,0 84,34 100,100 34,84 0,142 -34,84 -100,100 -84,34 -142,0 -84,-34 -100,-100 -34,-84"
-      fill="url(#gold)"
-    />
-
-    <!-- Octagon overlay for depth -->
-    <polygon
-      points="0,-66 46,-46 66,0 46,46 0,66 -46,46 -66,0 -46,-46"
-      fill="#0c1a2e"
-      opacity="0.75"
-    />
-
-    <!-- Inner small star -->
-    <polygon
-      points="0,-44 11,-26 30,-30 26,-11 44,0 26,11 30,30 11,26 0,44 -11,26 -30,30 -26,11 -44,0 -26,-11 -30,-30 -11,-26"
-      fill="url(#gold)"
-    />
-
-    <!-- Center -->
-    <circle r="11" fill="#fcd47a"/>
-    <circle r="4" fill="#fff" opacity="0.6"/>
-  </g>
+  <circle cx="322.4" cy="251.8" r="30" fill="#E8C77E" filter="url(#glow)"/>
+  <circle cx="322.4" cy="251.8" r="11" fill="#FCF3DE"/>
 </svg>
