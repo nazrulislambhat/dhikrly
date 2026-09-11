@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
-import { Analytics } from '@vercel/analytics/next';
 
 export const metadata: Metadata = {
   title: "Dhikrly — Adhkār, Du'ā & Ṣalāh",
