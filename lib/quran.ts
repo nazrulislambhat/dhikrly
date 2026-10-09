@@ -40,6 +40,8 @@ export interface QuranSettings {
   showTranslation: boolean;
   autoPlayNext: boolean;
   playbackMode: 'verse' | 'surah';
+  playbackRate: number;
+  repeatVerse: boolean;
   surah: number;
 }
 
@@ -73,6 +75,8 @@ export const DEFAULT_QURAN_SETTINGS: QuranSettings = {
   showTranslation: true,
   autoPlayNext: false,
   playbackMode: 'verse',
+  playbackRate: 1,
+  repeatVerse: false,
   surah: 1,
 };
 

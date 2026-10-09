@@ -53,28 +53,6 @@
     box-decoration-break: clone;
   }
 
-  @media (max-width: 1023px) {
-    .quran-settings-card {
-      grid-row: 1;
-    }
-
-    .quran-reader {
-      grid-row: 2;
-    }
-  }
-
-  @media (min-width: 1024px) {
-    .quran-reader {
-      grid-column: 1;
-      grid-row: 1;
-    }
-
-    .quran-settings-card {
-      grid-column: 2;
-      grid-row: 1;
-    }
-  }
-
   .app-mobile-theme {
     display: none;
   }
@@ -387,6 +365,7 @@ html:not(.dark) {
 .quran-player-info {
   display: grid;
   min-width: 0;
+  grid-column: 1 / -1;
   gap: 0.15rem;
 }
 
@@ -409,7 +388,9 @@ html:not(.dark) {
 
 .quran-player-controls {
   display: flex;
+  grid-column: 1 / -1;
   align-items: center;
+  justify-content: space-between;
   gap: 0.35rem;
 }
 
@@ -432,6 +413,38 @@ html:not(.dark) {
   cursor: not-allowed;
 }
 
+.quran-player-controls button.is-active {
+  background: rgb(255 176 48 / 18%);
+  color: #874d14;
+}
+
+.quran-player-speed {
+  display: flex;
+  grid-column: 1 / -1;
+  align-items: center;
+  justify-self: end;
+  gap: 0.4rem;
+  color: #78716c;
+  font-size: 0.65rem;
+  white-space: nowrap;
+}
+
+.quran-player-speed select {
+  min-height: 2rem;
+  border: 1px solid rgb(135 77 20 / 16%);
+  border-radius: 0.65rem;
+  background: var(--app-surface);
+  padding: 0 0.5rem;
+  color: var(--app-ink);
+  font: inherit;
+  font-size: 0.7rem;
+}
+
+.quran-reader > div:has(> article[data-ayah]) {
+  margin-inline: auto;
+  max-width: 58rem;
+}
+
 .quran-player-controls .quran-player-play {
   width: 2.55rem;
   height: 2.55rem;
@@ -449,6 +462,21 @@ html:not(.dark) {
 
 .dark .quran-player-meta {
   color: #a8a29e;
+}
+
+.dark .quran-player-controls button.is-active {
+  background: rgb(231 185 95 / 18%);
+  color: #e7b95f;
+}
+
+.dark .quran-player-speed {
+  color: #a8a29e;
+}
+
+.dark .quran-player-speed select {
+  border-color: rgb(255 255 255 / 12%);
+  background: #13253a;
+  color: #e7e5e4;
 }
 
 .dark .quran-player-controls .quran-player-play {
@@ -555,9 +583,23 @@ html:not(.dark) {
     left: calc(50% + 8.25rem);
     width: min(calc(100vw - 19rem), 58rem);
     transform: translateX(-50%);
-    grid-template-columns: minmax(0, 1fr) auto minmax(12rem, 0.9fr);
+    grid-template-columns: minmax(0, 1fr) auto auto minmax(12rem, 0.9fr);
     gap: 1rem;
     padding: 0.8rem 1rem;
+  }
+
+  .quran-player-info,
+  .quran-player-controls,
+  .quran-player-speed {
+    grid-column: auto;
+  }
+
+  .quran-player-controls {
+    justify-content: flex-start;
+  }
+
+  .quran-player-speed {
+    justify-self: start;
   }
 
   .quran-player-progress {
