@@ -6,16 +6,88 @@
   :root {
     --font-serif: 'Crimson Pro', Georgia, 'Times New Roman', serif;
     --font-arabic: 'Noto Naskh Arabic', 'Traditional Arabic', Arial, sans-serif;
+    --font-ui: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --app-accent: #b77924;
+    --app-bg: #f6f5f1;
+    --app-surface: #ffffff;
+    --app-ink: #272b2a;
+  }
+
+  .quran-settings > summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .quran-settings > summary::after {
+    float: right;
+    color: var(--app-accent);
+    content: '⌄';
+    font-size: 1.1rem;
+  }
+
+  .quran-settings[open] > summary::after {
+    content: '⌃';
+  }
+
+  .quran-ayah-text {
+    scroll-margin-top: 1.5rem;
+    overflow-wrap: anywhere;
+  }
+
+  @media (max-width: 1023px) {
+    .quran-settings-card {
+      grid-row: 1;
+    }
+
+    .quran-reader {
+      grid-row: 2;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .quran-reader {
+      grid-column: 1;
+      grid-row: 1;
+    }
+
+    .quran-settings-card {
+      grid-column: 2;
+      grid-row: 1;
+    }
+  }
+
+  .app-mobile-theme {
+    display: none;
   }
 
   html {
     scroll-behavior: smooth;
+    background: var(--app-bg);
   }
 
   body {
-    font-family: var(--font-serif);
+    min-height: 100dvh;
+    background: var(--app-bg);
+    color: var(--app-ink);
+    font-family: var(--font-ui);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+
+  button,
+  a,
+  input,
+  select,
+  textarea {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  button {
+    touch-action: manipulation;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--app-accent);
+    outline-offset: 3px;
   }
 
   /* Arabic-specific reset */
@@ -23,6 +95,309 @@
   [dir='rtl'] {
     font-family: var(--font-arabic);
     line-height: 1.9;
+  }
+}
+
+html.dark {
+  --app-bg: #0b1724;
+  --app-surface: #101f32;
+  --app-ink: #e7e5e4;
+  --app-accent: #e7b95f;
+  color-scheme: dark;
+}
+
+html:not(.dark) {
+  color-scheme: light;
+}
+
+.app-shell {
+  min-height: 100dvh;
+}
+
+.app-sidebar {
+  display: none;
+}
+
+.app-shell-main {
+  min-width: 0;
+  min-height: 100dvh;
+  padding-bottom: calc(5.75rem + env(safe-area-inset-bottom));
+}
+
+.app-mobile-brand {
+  display: flex;
+  min-height: 3.75rem;
+  align-items: center;
+  justify-content: space-between;
+  padding: max(0.5rem, env(safe-area-inset-top)) 1rem 0.5rem;
+  border-bottom: 1px solid rgb(120 113 108 / 10%);
+}
+
+.dark .app-mobile-brand {
+  border-color: rgb(255 255 255 / 7%);
+}
+
+.app-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  text-decoration: none;
+}
+
+.app-brand-mark {
+  display: grid;
+  width: 2.25rem;
+  height: 2.25rem;
+  place-items: center;
+  border: 1px solid rgb(183 121 36 / 25%);
+  border-radius: 0.8rem;
+  background: linear-gradient(145deg, rgb(245 211 151 / 55%), rgb(183 121 36 / 10%));
+  color: #8f5b1b;
+  font-family: var(--font-arabic);
+  font-size: 1.5rem;
+}
+
+.dark .app-brand-mark {
+  border-color: rgb(231 185 95 / 25%);
+  background: linear-gradient(145deg, rgb(231 185 95 / 18%), rgb(231 185 95 / 5%));
+  color: #e7b95f;
+}
+
+.app-brand-name {
+  display: block;
+  color: var(--app-ink);
+  font-family: var(--font-serif);
+  font-size: 1.25rem;
+  line-height: 1.1;
+}
+
+.app-brand-caption {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.65rem;
+}
+
+.app-nav-caption {
+  margin: 2.5rem 0 0.7rem;
+  padding: 0 0.8rem;
+  font-size: 0.63rem;
+  font-weight: 650;
+  letter-spacing: 0.13em;
+}
+
+.app-sidebar-nav {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.app-nav-item {
+  position: relative;
+  display: flex;
+  min-height: 2.9rem;
+  align-items: center;
+  gap: 0.8rem;
+  border-radius: 0.9rem;
+  padding: 0 0.85rem;
+  font-size: 0.9rem;
+  text-decoration: none;
+  transition: background-color 160ms ease, color 160ms ease;
+}
+
+.app-nav-item > span:first-child {
+  width: 1.3rem;
+  color: #b77924;
+  font-size: 1.05rem;
+  text-align: center;
+}
+
+.dark .app-nav-item > span:first-child,
+.dark .app-nav-item.is-active {
+  color: #e7b95f;
+}
+
+.app-nav-item:hover,
+.app-nav-item.is-active {
+  background: rgb(183 121 36 / 9%);
+  color: var(--app-ink);
+}
+
+.dark .app-nav-item:hover,
+.dark .app-nav-item.is-active {
+  background: rgb(231 185 95 / 11%);
+}
+
+.app-nav-indicator {
+  position: absolute;
+  right: 0.75rem;
+  width: 0.35rem;
+  height: 0.35rem;
+  border-radius: 50%;
+  background: #b77924;
+}
+
+.dark .app-nav-indicator {
+  background: #e7b95f;
+}
+
+.app-sidebar-note {
+  display: grid;
+  gap: 0.4rem;
+  margin-top: auto;
+  padding: 1rem 0.8rem 0;
+  font-size: 0.75rem;
+}
+
+.app-sidebar-note .font-arabic {
+  color: var(--app-accent);
+  font-size: 1.35rem;
+}
+
+.app-theme-toggle {
+  display: flex;
+  min-height: 2.75rem;
+  align-items: center;
+  gap: 0.7rem;
+  margin-top: 0.8rem;
+  border: 0;
+  border-radius: 0.9rem;
+  background: transparent;
+  padding: 0 0.8rem;
+  font: inherit;
+  font-size: 0.8rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.app-theme-toggle:hover {
+  background: rgb(120 113 108 / 8%);
+  color: var(--app-ink);
+}
+
+.app-mobile-theme {
+  display: grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  flex: 0 0 2.5rem;
+  place-items: center;
+  margin-left: 0.4rem;
+  border: 1px solid rgb(120 113 108 / 15%);
+  border-radius: 0.85rem;
+  background: var(--app-surface);
+  color: var(--app-accent);
+  font-size: 1.15rem;
+  cursor: pointer;
+}
+
+.app-mobile-brand .app-brand {
+  margin-right: auto;
+}
+
+.app-mobile-brand > span {
+  margin-right: 0.5rem;
+}
+
+.app-bottom-nav {
+  position: fixed;
+  z-index: 40;
+  right: 0.75rem;
+  bottom: max(0.65rem, env(safe-area-inset-bottom));
+  left: 0.75rem;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.35rem;
+  border: 1px solid rgb(120 113 108 / 15%);
+  border-radius: 1.25rem;
+  padding: 0.4rem;
+  box-shadow: 0 12px 36px rgb(20 26 25 / 12%);
+  backdrop-filter: blur(18px);
+}
+
+.app-bottom-nav-item {
+  display: flex;
+  min-height: 3.1rem;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15rem;
+  border-radius: 0.9rem;
+  color: #78716c;
+  font-size: 0.68rem;
+  font-weight: 550;
+  text-decoration: none;
+}
+
+.app-bottom-nav-item > span:first-child {
+  font-size: 1.05rem;
+  line-height: 1;
+}
+
+.app-bottom-nav-item.is-active {
+  background: rgb(183 121 36 / 10%);
+  color: #8f5b1b;
+}
+
+.dark .app-bottom-nav {
+  border-color: rgb(255 255 255 / 9%);
+  box-shadow: 0 12px 36px rgb(0 0 0 / 30%);
+}
+
+.dark .app-bottom-nav-item {
+  color: #a8a29e;
+}
+
+.dark .app-bottom-nav-item.is-active {
+  background: rgb(231 185 95 / 13%);
+  color: #e7b95f;
+}
+
+@media (min-width: 1024px) {
+  .app-shell {
+    display: flex;
+    align-items: stretch;
+  }
+
+  .app-sidebar {
+    position: sticky;
+    top: 0;
+    display: flex;
+    width: 16.5rem;
+    height: 100dvh;
+    flex: 0 0 16.5rem;
+    flex-direction: column;
+    border-right: 1px solid;
+    padding: 1.5rem 1.15rem;
+    backdrop-filter: blur(20px);
+  }
+
+  .app-sidebar .app-brand {
+    padding: 0 0.25rem;
+  }
+
+  .app-sidebar .app-brand-mark {
+    width: 2.6rem;
+    height: 2.6rem;
+    border-radius: 0.95rem;
+    font-size: 1.7rem;
+  }
+
+  .app-sidebar .app-brand-name {
+    font-size: 1.45rem;
+  }
+
+  .app-shell-main {
+    flex: 1;
+    padding-bottom: 2rem;
+  }
+
+  .app-mobile-brand,
+  .app-bottom-nav {
+    display: none;
+  }
+}
+
+@media (max-width: 420px) {
+  .app-mobile-brand > span {
+    display: none;
   }
 }
 
@@ -34,6 +409,10 @@
 
   .font-arabic {
     font-family: var(--font-arabic);
+  }
+
+  .font-ui {
+    font-family: var(--font-ui);
   }
 }
 
@@ -117,5 +496,16 @@ input[type='time']::-webkit-calendar-picker-indicator {
   * {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      scroll-behavior: auto !important;
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
   }
 }
