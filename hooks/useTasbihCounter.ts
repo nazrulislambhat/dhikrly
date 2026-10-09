@@ -1,55 +1,49 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  changeTasbihTarget,
+  DEFAULT_TASBIH_STATE,
+  incrementTasbih,
+  normalizeTasbihState,
+  resetTasbih,
+  undoTasbih,
+  type TasbihState,
+  type TasbihTarget,
+} from '@/lib/tasbih';
+
+export type { TasbihTarget } from '@/lib/tasbih';
 
 const STORAGE_KEY = 'tasbih_counter_v1';
 
-export type TasbihTarget = 33 | 99 | 100 | 1000;
-
-const VALID_TARGETS: TasbihTarget[] = [33, 99, 100, 1000];
-
-interface TasbihState {
-  count: number;
-  target: TasbihTarget;
-  rounds: number;
+interface LoadedTasbih {
+  state: TasbihState;
+  error: string | null;
 }
 
-const DEFAULT_STATE: TasbihState = {
-  count: 0,
-  target: 33,
-  rounds: 0,
-};
-
-function loadState(): TasbihState {
-  if (typeof window === 'undefined') return DEFAULT_STATE;
-
+function loadState(): LoadedTasbih {
+  if (typeof window === 'undefined') return { state: DEFAULT_TASBIH_STATE, error: null };
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return DEFAULT_STATE;
-
-    const parsed = JSON.parse(raw);
-    const target = VALID_TARGETS.includes(parsed.target)
-      ? (parsed.target as TasbihTarget)
-      : DEFAULT_STATE.target;
-
     return {
-      count: typeof parsed.count === 'number' ? parsed.count : 0,
-      target,
-      rounds: typeof parsed.rounds === 'number' ? parsed.rounds : 0,
+      state: raw ? normalizeTasbihState(JSON.parse(raw)) : DEFAULT_TASBIH_STATE,
+      error: null,
     };
   } catch {
-    return DEFAULT_STATE;
+    return {
+      state: DEFAULT_TASBIH_STATE,
+      error: 'Saved counter data could not be read. Your new count may not persist.',
+    };
   }
 }
 
-function saveState(state: TasbihState) {
-  if (typeof window === 'undefined') return;
-
+function saveState(state: TasbihState): string | null {
+  if (typeof window === 'undefined') return null;
   try {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    return null;
   } catch {
-    // localStorage can throw in private browsing / when quota is exceeded.
-    // Losing persistence isn't fatal here, so we swallow it silently.
+    return 'Counter changes could not be saved on this device.';
   }
 }
 
@@ -64,63 +58,63 @@ function vibrate(pattern: number | number[]) {
 }
 
 /**
- * Manages tap-to-count dhikr state: current count, selected target (33/99/100),
- * completed round tally, haptic feedback, and localStorage persistence.
- * Mirrors the pattern used by useStreak / useSalahLog elsewhere in the app.
+ * Manages a recoverable tap-to-count dhikr state and device-local persistence.
  */
 export function useTasbihCounter() {
-  const [state, setState] = useState<TasbihState>(DEFAULT_STATE);
-  const [justCompleted, setJustCompleted] = useState(false);
-  const hydrated = useRef(false);
+  const [state, setState] = useState<TasbihState>(DEFAULT_TASBIH_STATE);
+  const [storageError, setStorageError] = useState<string | null>(null);
+  const stateRef = useRef(DEFAULT_TASBIH_STATE);
 
   // Hydrate from localStorage after mount to avoid SSR/client mismatch.
   useEffect(() => {
+    const loaded = loadState();
+    stateRef.current = loaded.state;
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setState(loadState());
-    hydrated.current = true;
+    setState(loaded.state);
+    setStorageError(loaded.error);
   }, []);
 
-  useEffect(() => {
-    if (!hydrated.current) return;
-    saveState(state);
-  }, [state]);
+  const commit = useCallback((update: (current: TasbihState) => TasbihState) => {
+    const next = update(stateRef.current);
+    stateRef.current = next;
+    setState(next);
+    setStorageError(saveState(next));
+  }, []);
 
   const increment = useCallback(() => {
-    setState((prev) => {
-      const nextCount = prev.count + 1;
-
-      if (nextCount >= prev.target) {
+    commit((prev) => {
+      const next = incrementTasbih(prev);
+      if (next.rounds > prev.rounds) {
         vibrate([30, 40, 30, 40, 60]);
-        setJustCompleted(true);
-        window.setTimeout(() => setJustCompleted(false), 1200);
-        return { ...prev, count: 0, rounds: prev.rounds + 1 };
+      } else {
+        vibrate(15);
       }
-
-      vibrate(15);
-      return { ...prev, count: nextCount };
+      return next;
     });
-  }, []);
+  }, [commit]);
 
   const reset = useCallback(() => {
-    setState((prev) => ({ ...prev, count: 0 }));
-  }, []);
+    commit(resetTasbih);
+  }, [commit]);
 
   const setTarget = useCallback((target: TasbihTarget) => {
-    setState((prev) => ({ ...prev, target, count: 0 }));
-  }, []);
+    commit((prev) => changeTasbihTarget(prev, target));
+  }, [commit]);
 
-  const resetRounds = useCallback(() => {
-    setState((prev) => ({ ...prev, rounds: 0 }));
-  }, []);
+  const undo = useCallback(() => {
+    commit(undoTasbih);
+  }, [commit]);
 
   return {
     count: state.count,
     target: state.target,
     rounds: state.rounds,
-    justCompleted,
+    justCompleted: state.target !== null && state.count >= state.target,
+    canUndo: state.previousCount !== null && state.previousRounds !== null,
+    storageError,
     increment,
+    undo,
     reset,
     setTarget,
-    resetRounds,
   };
 }
