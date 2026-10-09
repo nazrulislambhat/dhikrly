@@ -66,13 +66,15 @@ export function formatTime(date: Date, timezone?: string): string {
   });
 }
 
-export function getCurrentAndNextPrayer(times: PrayerTimesResult): {
+export function getCurrentAndNextPrayer(
+  times: PrayerTimesResult,
+  now = new Date(),
+): {
   current: string | null;
   next: string;
   nextTime: Date;
   minutesUntilNext: number;
 } {
-  const now = new Date();
   const order = [
     { name: 'fajr',    time: times.fajr    },
     { name: 'dhuhr',   time: times.dhuhr   },
