@@ -25,6 +25,13 @@ Daily Adhkār, Du'ā & Ṣalāh tracker. Offline-first PWA with cross-device syn
 - Prayer insights dashboard with weekly chart
 - Nearby masjid finder (OpenStreetMap, no API key needed)
 
+**Qur’an Reader**
+
+- Complete 114-surah reader with selectable translations across available languages
+- Verse-by-verse recitation from multiple qāriʾs
+- Adjustable Arabic text size, translation visibility, and continuous playback
+- Reading preferences and a verse bookmark saved on the device
+
 **Platform**
 
 - Installable PWA — works offline, add to home screen

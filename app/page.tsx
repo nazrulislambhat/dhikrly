@@ -6,10 +6,10 @@ import {
   useCallback,
   useMemo,
   useRef,
-  type PointerEvent as ReactPointerEvent,
 } from 'react';
 import DUAS_JSON from '@/data/duas.json';
 import type { Dua, CatEntry, Streak } from '@/types';
+import AppShell from '@/components/AppShell';
 import {
   load,
   save,
@@ -92,8 +92,6 @@ export default function DuasTracker() {
   const { user, loading: authLoading, signOut } = useAuth();
 
   /* ── Sync ── */
-  const [isSynced, setIsSynced] = useState(true);
-
   const handlePullComplete = useCallback(
     (data: {
       checkedByDate: Record<string, Record<string, boolean>>;
@@ -107,7 +105,6 @@ export default function DuasTracker() {
       // Apply today's remote checked state
       const todayRemote = data.checkedByDate[today];
       if (todayRemote) setChecked(todayRemote);
-      setIsSynced(true);
     },
     [today, setChecked],
   );
@@ -120,7 +117,7 @@ export default function DuasTracker() {
     [setChecked],
   );
 
-  useSync({
+  const { status: syncStatus } = useSync({
     user,
     today,
     checked,
@@ -129,15 +126,6 @@ export default function DuasTracker() {
     onPullComplete: handlePullComplete,
     onRemoteCheckedUpdate: handleRemoteCheckedUpdate,
   });
-
-  // Briefly flip to "unsynced" on any toggle so UserMenu shows the pulse
-  useEffect(() => {
-    if (!user) return;
-    setIsSynced(false);
-    const t = setTimeout(() => setIsSynced(true), 2500);
-    return () => clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [checked]);
 
   /* ── UI state ── */
   const [filter, setFilter] = useState('all');
@@ -251,8 +239,9 @@ export default function DuasTracker() {
 
   return (
     <div className={bg}>
-      <PWAProvider dark={dark} />
-      <UpdateBanner dark={dark} />
+      <AppShell active="adhkar" dark={dark} onToggleDark={() => setDark((value) => !value)}>
+        <PWAProvider dark={dark} />
+        <UpdateBanner dark={dark} />
 
       {/* Toast */}
       {toast !== null && (
@@ -280,7 +269,7 @@ export default function DuasTracker() {
         />
       )}
 
-      <div className="mx-auto max-w-2xl px-4 py-8 pb-28">
+      <div className="mx-auto w-full max-w-5xl px-4 py-5 pb-10 sm:px-6 sm:py-8 lg:px-10">
         {/* ── Header ── */}
         <header className="mb-8">
           {/* Top bar: Hijri date left, auth right */}
@@ -299,7 +288,7 @@ export default function DuasTracker() {
               <UserMenu
                 user={user}
                 dark={dark}
-                isSynced={isSynced}
+                syncStatus={syncStatus}
                 onSignOut={async () => {
                   await signOut();
                   showToast('Signed out.');
@@ -344,10 +333,6 @@ export default function DuasTracker() {
           {/* Action buttons */}
           <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
             {[
-              {
-                label: dark ? '☀ Light' : '☾ Dark',
-                onClick: () => setDark((d) => !d),
-              },
               {
                 label: soundEnabled ? '🔊 Sound' : '🔇 Muted',
                 onClick: () => setSoundEnabled((s) => !s),
@@ -516,7 +501,7 @@ export default function DuasTracker() {
         </div>
 
         {/* ── Dua cards ── */}
-        <div className="flex flex-col gap-3">
+        <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
           {filtered.length === 0 && (
             <p
               className={`py-12 text-center text-sm ${dark ? 'text-stone-600' : 'text-stone-400'}`}
@@ -551,7 +536,9 @@ export default function DuasTracker() {
           <p
             className={`mt-2 text-[10px] uppercase tracking-widest ${dark ? 'text-stone-700' : 'text-stone-400'}`}
           >
-            {user ? `Synced · ${user.email}` : 'Progress saved locally'}
+            {user
+              ? `${syncStatus === 'synced' ? 'All changes synced' : syncStatus === 'syncing' ? 'Syncing changes…' : syncStatus === 'offline' ? 'Waiting for connection' : 'Sync failed; retrying'} · ${user.email}`
+              : 'Progress saved locally'}
           </p>
           <div
             className={`mt-4 flex flex-wrap items-center justify-center gap-4 text-[10px] uppercase tracking-widest ${dark ? 'text-stone-700' : 'text-stone-400'}`}
@@ -588,6 +575,7 @@ export default function DuasTracker() {
           </p>
         </footer>
       </div>
+      </AppShell>
     </div>
   );
 }
