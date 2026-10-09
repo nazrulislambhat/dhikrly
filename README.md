@@ -30,7 +30,8 @@ Daily Adhkār, Du'ā & Ṣalāh tracker. Offline-first PWA with cross-device syn
 - Complete 114-surah reader with selectable translations across available languages
 - Verse-by-verse or continuous full-surah recitation from multiple qāriʾs
 - Adjustable Arabic text size, translation visibility, and reading preferences in a dedicated settings section
-- Recitation player with active verse and word highlighting
+- Recitation player with active verse and word highlighting, playback speed, and verse repeat
+- Reader preferences and saved bookmarks in an on-demand settings drawer
 - Saved reading position, multiple verse bookmarks, and a configurable daily reading goal
 
 **Platform**

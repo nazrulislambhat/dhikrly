@@ -34,6 +34,8 @@ interface QuranEditionSurah extends QuranSurah {
   ayahs: { number: number; numberInSurah: number; text: string; audio?: string }[];
 }
 
+const PLAYBACK_RATES = [0.5, 0.75, 1, 1.25, 1.5, 2] as const;
+
 async function fetchQuran<T>(query: string, signal?: AbortSignal): Promise<T> {
   const response = await fetch(`/api/quran?${query}`, { signal });
   const result = (await response.json()) as T | { error?: string };
@@ -70,10 +72,16 @@ export default function QuranPage() {
   const [dark, setDark] = useState(
     () => load<{ dark: boolean }>(SETTINGS_KEY, { dark: false }).dark,
   );
-  const [settings, setSettings] = useState<QuranSettings>(() => ({
-    ...DEFAULT_QURAN_SETTINGS,
-    ...load<Partial<QuranSettings>>(QURAN_SETTINGS_KEY, {}),
-  }));
+  const [settings, setSettings] = useState<QuranSettings>(() => {
+    const saved = load<Partial<QuranSettings>>(QURAN_SETTINGS_KEY, {});
+    return {
+      ...DEFAULT_QURAN_SETTINGS,
+      ...saved,
+      playbackRate:
+        PLAYBACK_RATES.find((rate) => rate === saved.playbackRate) ??
+        DEFAULT_QURAN_SETTINGS.playbackRate,
+    };
+  });
   const [surahs, setSurahs] = useState<QuranSurah[]>([]);
   const [languages, setLanguages] = useState<string[]>([]);
   const [translations, setTranslations] = useState<QuranEdition[]>([]);
@@ -86,6 +94,7 @@ export default function QuranPage() {
   );
   const [chapterLoading, setChapterLoading] = useState(false);
   const [chapterError, setChapterError] = useState('');
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [bookmarks, setBookmarks] = useState<QuranBookmark[]>(() => {
     const savedBookmarks = load<QuranBookmark[]>(QURAN_BOOKMARKS_KEY, []);
     if (savedBookmarks.length > 0) return savedBookmarks;
@@ -113,6 +122,8 @@ export default function QuranPage() {
   const [audioError, setAudioError] = useState('');
   const [jumpToAyah, setJumpToAyah] = useState<QuranLocation | null>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const settingsButtonRef = useRef<HTMLButtonElement>(null);
+  const settingsCloseButtonRef = useRef<HTMLButtonElement>(null);
 
   const visibleChapter =
     chapter?.surah.number === settings.surah &&
@@ -314,6 +325,10 @@ export default function QuranPage() {
   ]);
 
   useEffect(() => {
+    if (audioRef.current) audioRef.current.playbackRate = settings.playbackRate;
+  }, [activeAudio, settings.playbackRate]);
+
+  useEffect(() => {
     if (!activeAudio || !shouldPlay || !audioRef.current) return;
     void audioRef.current.play().catch((error: unknown) => {
       console.error('Quran recitation could not be played:', error);
@@ -321,6 +336,23 @@ export default function QuranPage() {
       setAudioError('Audio could not be played. Check your connection and try again.');
     });
   }, [activeAudio, shouldPlay]);
+
+  useEffect(() => {
+    if (!settingsOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    const previouslyFocused = document.activeElement;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setSettingsOpen(false);
+    };
+    document.body.style.overflow = 'hidden';
+    settingsCloseButtonRef.current?.focus();
+    document.addEventListener('keydown', closeOnEscape);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener('keydown', closeOnEscape);
+      if (previouslyFocused instanceof HTMLElement) previouslyFocused.focus();
+    };
+  }, [settingsOpen]);
 
   useEffect(() => {
     if (!shouldPlay || activeAyah === null) return;
@@ -479,6 +511,15 @@ export default function QuranPage() {
   };
 
   const handleAudioEnded = useCallback(() => {
+    if (settings.repeatVerse && audioRef.current) {
+      audioRef.current.currentTime = 0;
+      void audioRef.current.play().catch((error: unknown) => {
+        console.error('Quran verse repeat could not be played:', error);
+        setShouldPlay(false);
+        setAudioError('Audio could not be replayed. Check your connection and try again.');
+      });
+      return;
+    }
     const verses = visibleChapter?.verses ?? [];
     const index = verses.findIndex((verse) => verse.number === activeAyah);
     const nextVerse = verses[index + 1];
@@ -489,7 +530,7 @@ export default function QuranPage() {
       setContinuousSurah(false);
       updatePlaybackPosition();
     }
-  }, [activeAyah, continuousSurah, playVerse, settings.autoPlayNext, updatePlaybackPosition, visibleChapter]);
+  }, [activeAyah, continuousSurah, playVerse, settings.autoPlayNext, settings.repeatVerse, updatePlaybackPosition, visibleChapter]);
 
   const formatTime = (time: number) => {
     if (!Number.isFinite(time) || time < 0) return '0:00';
@@ -502,6 +543,7 @@ export default function QuranPage() {
   const lastReadSurah = progress.lastRead
     ? surahs.find((surah) => surah.number === progress.lastRead?.surah)
     : undefined;
+  const currentSurah = surahs.find((item) => item.number === settings.surah);
 
   const toggleBookmark = (location: QuranLocation) => {
     setBookmarks((current) => {
@@ -553,58 +595,54 @@ export default function QuranPage() {
         dark={dark}
         onToggleDark={() => setDark((value) => !value)}
       >
-        <div className="mx-auto w-full max-w-6xl px-4 py-5 pb-10 sm:px-6 sm:py-8 lg:px-10">
-          <header className="mb-6 flex flex-wrap items-start justify-between gap-4">
-            <div>
-              <p className={`text-xs font-semibold uppercase tracking-[0.16em] ${dark ? 'text-amber-300/70' : 'text-amber-700/70'}`}>
+        <div className="mx-auto w-full max-w-5xl px-4 py-4 pb-12 sm:px-6 sm:py-7 lg:px-10">
+          <header className="mb-5 flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <p className={`text-[10px] font-semibold uppercase tracking-[0.16em] ${dark ? 'text-amber-300/70' : 'text-amber-700/70'}`}>
                 The Noble Qur’an
               </p>
-              <h1 className={`mt-1 font-serif text-3xl sm:text-4xl ${dark ? 'text-amber-300' : 'text-amber-800'}`}>
-                Read &amp; listen
+              <h1 className={`mt-0.5 truncate font-serif text-2xl font-semibold sm:text-3xl ${dark ? 'text-amber-300' : 'text-amber-800'}`}>
+                {currentSurah?.englishName ?? 'Read & listen'}
               </h1>
-              <p className={`mt-1 max-w-xl text-sm ${muted}`}>
-                Explore all 114 surahs, listen to trusted reciters, and choose the translation and reading settings that work for you.
+              <p className={`mt-0.5 text-xs ${muted}`}>
+                {progress.lastRead && lastReadSurah
+                  ? `Last read: ${lastReadSurah.englishName} · Verse ${progress.lastRead.ayah}`
+                  : 'Read, listen, and reflect'}
               </p>
             </div>
-            {progress.lastRead && (
+            <div className="flex shrink-0 items-center gap-2">
+              {progress.lastRead && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (progress.lastRead) openLocation(progress.lastRead);
+                  }}
+                  className={`hidden min-h-11 rounded-xl border px-3 text-xs font-medium sm:block ${card}`}
+                >
+                  Continue reading
+                </button>
+              )}
               <button
                 type="button"
-                onClick={() => {
-                  if (progress.lastRead) openLocation(progress.lastRead);
-                }}
-                className={`rounded-xl border px-4 py-2 text-sm font-medium ${card}`}
+                ref={settingsButtonRef}
+                onClick={() => setSettingsOpen(true)}
+                aria-label="Open Quran settings"
+                title="Quran settings"
+                className={`grid h-11 w-11 place-items-center rounded-xl border text-lg ${card}`}
               >
-                Continue reading · {lastReadSurah?.englishName ?? `Surah ${progress.lastRead.surah}`} {progress.lastRead.ayah}
+                ⚙
               </button>
-            )}
+            </div>
           </header>
 
-          <section className={`mb-5 rounded-2xl border p-4 sm:p-5 ${card}`} aria-label="Daily Quran reading goal">
+          <section className={`mb-4 rounded-2xl border px-4 py-3 ${card}`} aria-label="Daily Quran reading progress">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <h2 className="text-sm font-semibold">Today’s reading</h2>
-                <p className={`mt-1 text-xs ${muted}`}>
-                  {todayVerseCount} of {dailyGoal} verses read
-                  {todayVerseCount >= dailyGoal ? ' · Goal complete' : ''}
+                <h2 className="text-xs font-semibold">Today’s reading</h2>
+                <p className={`mt-0.5 text-[11px] ${muted}`}>
+                  {todayVerseCount} of {dailyGoal} verses · {goalProgress}% of daily goal
                 </p>
               </div>
-              <label className={`flex items-center gap-2 text-xs ${muted}`}>
-                Daily goal
-                <input
-                  type="number"
-                  min={1}
-                  max={500}
-                  value={dailyGoal}
-                  aria-label="Daily verse goal"
-                  onChange={(event) => {
-                    const value = Number(event.target.value);
-                    if (Number.isInteger(value) && value >= 1 && value <= 500) {
-                      setDailyGoal(value);
-                    }
-                  }}
-                  className={`${selectClass} w-20`}
-                />
-              </label>
             </div>
             <div
               className={`mt-3 h-2 overflow-hidden rounded-full ${dark ? 'bg-white/10' : 'bg-stone-100'}`}
@@ -627,7 +665,7 @@ export default function QuranPage() {
             </div>
           )}
 
-          <div className="quran-layout grid gap-5 lg:grid-cols-[minmax(0,1fr)_19rem] lg:items-start">
+          <div className="quran-layout">
             <section className="quran-reader min-w-0" aria-label="Quran reader">
               <div className={`mb-4 grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-2 rounded-2xl border p-3 ${card}`}>
                 <label className="sr-only" htmlFor="surah-select">Choose a surah</label>
@@ -807,7 +845,56 @@ export default function QuranPage() {
               )}
             </section>
 
-            <aside className={`quran-settings-card rounded-2xl border p-4 sm:p-5 lg:sticky lg:top-6 ${card}`}>
+            {settingsOpen && (
+              <div
+                className="fixed inset-0 z-[60] flex items-end bg-stone-950/45 backdrop-blur-sm lg:items-stretch lg:justify-end"
+                onClick={(event) => {
+                  if (event.target === event.currentTarget) setSettingsOpen(false);
+                }}
+              >
+              <aside
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="quran-settings-title"
+                className={`max-h-[90dvh] w-full overflow-y-auto rounded-t-3xl border p-5 shadow-2xl lg:h-full lg:max-h-none lg:w-[27rem] lg:rounded-none lg:rounded-l-3xl ${card}`}
+              >
+              <div className={`sticky top-0 z-10 -mx-5 -mt-5 mb-5 flex items-center justify-between border-b px-5 py-4 ${
+                dark ? 'border-white/10 bg-[#0c1a2e]' : 'border-stone-200 bg-[var(--app-surface)]'
+              }`}>
+                <div>
+                  <h2 id="quran-settings-title" className="text-base font-semibold">Reader settings</h2>
+                  <p className={`mt-0.5 text-xs ${muted}`}>Personalize reading and recitation</p>
+                </div>
+                <button
+                  type="button"
+                  ref={settingsCloseButtonRef}
+                  aria-label="Close Quran settings"
+                  onClick={() => setSettingsOpen(false)}
+                  className={`grid h-10 w-10 place-items-center rounded-xl border ${card}`}
+                >
+                  ×
+                </button>
+              </div>
+              <section className={`mb-5 rounded-2xl border p-4 ${card}`}>
+                <label className="block text-xs font-medium">
+                  Daily verse goal
+                  <span className={`mt-1 block text-[11px] font-normal ${muted}`}>Choose how many verses you want to read each day.</span>
+                  <input
+                    type="number"
+                    min={1}
+                    max={500}
+                    value={dailyGoal}
+                    aria-label="Daily verse goal"
+                    onChange={(event) => {
+                      const value = Number(event.target.value);
+                      if (Number.isInteger(value) && value >= 1 && value <= 500) {
+                        setDailyGoal(value);
+                      }
+                    }}
+                    className={`${selectClass} mt-2`}
+                  />
+                </label>
+              </section>
               <section aria-label="Saved Quran bookmarks">
                 <div className="flex items-center justify-between">
                   <h2 className="text-sm font-semibold">Bookmarks</h2>
@@ -828,7 +915,10 @@ export default function QuranPage() {
                         >
                           <button
                             type="button"
-                            onClick={() => openLocation(item)}
+                            onClick={() => {
+                              openLocation(item);
+                              setSettingsOpen(false);
+                            }}
                             className="min-h-9 min-w-0 flex-1 text-left text-xs font-medium"
                           >
                             {surah?.englishName ?? `Surah ${item.surah}`} · Verse {item.ayah}
@@ -848,8 +938,8 @@ export default function QuranPage() {
                 )}
               </section>
               <div className={`my-4 border-t ${dark ? 'border-white/[0.08]' : 'border-stone-100'}`} />
-              <section className="quran-settings" aria-labelledby="quran-settings-title">
-                <h2 id="quran-settings-title" className="text-sm font-semibold">
+              <section className="quran-settings" aria-labelledby="quran-preferences-title">
+                <h2 id="quran-preferences-title" className="text-sm font-semibold">
                   Reading preferences
                 </h2>
                 <p className={`mt-1 text-xs ${muted}`}>
@@ -930,6 +1020,18 @@ export default function QuranPage() {
                     </span>
                   </label>
 
+                  <label className={`flex min-h-11 items-center justify-between gap-3 border-t pt-3 text-sm ${
+                    dark ? 'border-white/[0.08]' : 'border-stone-100'
+                  }`}>
+                    Repeat current verse
+                    <input
+                      type="checkbox"
+                      checked={settings.repeatVerse}
+                      onChange={(event) => updateSetting('repeatVerse', event.target.checked)}
+                      className="h-4 w-4 accent-amber-600"
+                    />
+                  </label>
+
                   <label className="block text-xs font-medium">
                     Arabic text size
                     <span className={`mt-1 flex items-center gap-3 text-xs ${muted}`}>
@@ -987,7 +1089,9 @@ export default function QuranPage() {
                   AlQuran Cloud
                 </a>.
               </p>
-            </aside>
+              </aside>
+              </div>
+            )}
           </div>
         </div>
         {activeAudio && visibleChapter && activeAyah !== null && (
@@ -1013,6 +1117,16 @@ export default function QuranPage() {
               </span>
             </div>
             <div className="quran-player-controls">
+              <button
+                type="button"
+                className={settings.repeatVerse ? 'is-active' : undefined}
+                aria-label={settings.repeatVerse ? 'Turn off verse repeat' : 'Repeat current verse'}
+                aria-pressed={settings.repeatVerse}
+                title={settings.repeatVerse ? 'Repeat verse on' : 'Repeat verse off'}
+                onClick={() => updateSetting('repeatVerse', !settings.repeatVerse)}
+              >
+                ↻
+              </button>
               <button
                 type="button"
                 className="quran-player-skip"
@@ -1048,6 +1162,18 @@ export default function QuranPage() {
                 ↷
               </button>
             </div>
+            <label className="quran-player-speed">
+              <span>Speed</span>
+              <select
+                aria-label="Playback speed"
+                value={settings.playbackRate}
+                onChange={(event) => updateSetting('playbackRate', Number(event.target.value))}
+              >
+                {PLAYBACK_RATES.map((rate) => (
+                  <option key={rate} value={rate}>{rate}×</option>
+                ))}
+              </select>
+            </label>
             <div className="quran-player-progress">
               <span>{formatTime(playbackTime)}</span>
               <input
