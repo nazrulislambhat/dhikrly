@@ -584,18 +584,18 @@ export default function QuranPage() {
   const muted = dark ? 'text-stone-400' : 'text-stone-500';
   const selectClass = `min-h-11 w-full rounded-xl border px-3 text-sm outline-none focus:border-amber-400 ${
     dark
-      ? 'border-white/10 bg-[#13253a] text-stone-100'
+      ? 'border-white/10 bg-[#14211e] text-stone-100'
       : 'border-stone-200 bg-white text-stone-800'
   }`;
 
   return (
-    <div className={dark ? 'min-h-screen bg-[#0c1a2e] text-stone-200' : 'min-h-screen bg-stone-50 text-stone-800'}>
+    <div className={`quran-page ${dark ? 'min-h-screen bg-[#0d1715] text-stone-200' : 'min-h-screen bg-stone-50 text-stone-800'}`}>
       <AppShell
         active="quran"
         dark={dark}
         onToggleDark={() => setDark((value) => !value)}
       >
-        <div className="mx-auto w-full max-w-5xl px-4 py-4 pb-12 sm:px-6 sm:py-7 lg:px-10">
+        <div className="mx-auto w-full max-w-6xl px-4 py-4 pb-12 sm:px-6 sm:py-7 lg:px-10">
           <header className="mb-5 flex items-center justify-between gap-3">
             <div className="min-w-0">
               <p className={`text-[10px] font-semibold uppercase tracking-[0.16em] ${dark ? 'text-amber-300/70' : 'text-amber-700/70'}`}>
@@ -859,7 +859,7 @@ export default function QuranPage() {
                 className={`max-h-[90dvh] w-full overflow-y-auto rounded-t-3xl border p-5 shadow-2xl lg:h-full lg:max-h-none lg:w-[27rem] lg:rounded-none lg:rounded-l-3xl ${card}`}
               >
               <div className={`sticky top-0 z-10 -mx-5 -mt-5 mb-5 flex items-center justify-between border-b px-5 py-4 ${
-                dark ? 'border-white/10 bg-[#0c1a2e]' : 'border-stone-200 bg-[var(--app-surface)]'
+                dark ? 'border-white/10 bg-[#0d1715]' : 'border-stone-200 bg-[var(--app-surface)]'
               }`}>
                 <div>
                   <h2 id="quran-settings-title" className="text-base font-semibold">Reader settings</h2>
