@@ -57,18 +57,29 @@ function removeQueued(userId: string, item: QueueItem) {
 }
 
 async function pushLog(userId: string, log: DayLog): Promise<boolean> {
+  const key = `${userId}:${log.date}`;
+  const previousWrite = logWrites.get(key) ?? Promise.resolve(true);
+  const write = previousWrite.catch(() => false).then(async () => {
+    try {
+      const { error } = await supabase
+        .from('salah_progress')
+        .upsert(
+          { user_id: userId, date: log.date, log, updated_at: new Date().toISOString() },
+          { onConflict: 'user_id,date' },
+        );
+      if (error) console.error('Could not sync ṣalāh log:', error.message);
+      return !error;
+    } catch (error) {
+      console.error('Could not sync ṣalāh log:', error);
+      return false;
+    }
+  });
+  logWrites.set(key, write);
+
   try {
-    const { error } = await supabase
-      .from('salah_progress')
-      .upsert(
-        { user_id: userId, date: log.date, log, updated_at: new Date().toISOString() },
-        { onConflict: 'user_id,date' },
-      );
-    if (error) console.error('Could not sync ṣalāh log:', error.message);
-    return !error;
-  } catch (error) {
-    console.error('Could not sync ṣalāh log:', error);
-    return false;
+    return await write;
+  } finally {
+    if (logWrites.get(key) === write) logWrites.delete(key);
   }
 }
 
@@ -91,10 +102,13 @@ function prayerCount(log: DayLog) {
   return Object.values(log.prayers).filter(Boolean).length;
 }
 
+const logWrites = new Map<string, Promise<boolean>>();
+
 interface UseSalahSyncOptions {
   user: User | null;
   today: string;
   log: DayLog;
+  localRevision: { current: number };
   onPullComplete: (logs: DayLog[]) => void;
   onRemoteLogUpdate: (log: DayLog) => void;
 }
@@ -103,6 +117,7 @@ export function useSalahSync({
   user,
   today,
   log,
+  localRevision,
   onPullComplete,
   onRemoteLogUpdate,
 }: UseSalahSyncOptions) {
@@ -174,6 +189,7 @@ export function useSalahSync({
 
     let cancelled = false;
     let retryTimer: ReturnType<typeof setTimeout> | undefined;
+    const startingRevision = localRevision.current;
     setReadyUserId(null);
     const initialize = async () => {
       setStatus('syncing');
@@ -191,7 +207,10 @@ export function useSalahSync({
         for (const remoteLog of remoteLogs) {
           const localLog = localLogs[remoteLog.date];
           const resolved =
-            remoteLog.date === today && localLog && prayerCount(localLog) > prayerCount(remoteLog)
+            remoteLog.date === today &&
+            localLog &&
+            (localRevision.current !== startingRevision ||
+              prayerCount(localLog) > prayerCount(remoteLog))
               ? localLog
               : remoteLog;
           resolvedByDate[remoteLog.date] = resolved;
@@ -205,8 +224,16 @@ export function useSalahSync({
           }
         }
 
+        const latestLocal = latestLog.current;
+        const resolvedToday =
+          localRevision.current !== startingRevision
+            ? latestLocal
+            : resolvedByDate[today] ?? localLogs[today] ?? log;
+        if (localRevision.current !== startingRevision) {
+          resolvedByDate[today] = resolvedToday;
+          saveDayLog(resolvedToday);
+        }
         const resolvedLogs = Object.values(resolvedByDate);
-        const resolvedToday = resolvedByDate[today] ?? localLogs[today] ?? log;
         const todaySnapshot = JSON.stringify(resolvedToday);
         const remoteToday = remoteByDate.get(today);
         lastPushed.current = remoteToday ? JSON.stringify(remoteToday) : JSON.stringify(emptyDay(today));
@@ -252,7 +279,11 @@ export function useSalahSync({
     if (!user || readyUserId !== user.id) return;
 
     const poll = async () => {
-      if (pendingLocal.current !== lastPushed.current) return;
+      if (
+        pendingLocal.current !== lastPushed.current ||
+        JSON.stringify(latestLog.current) !== lastPushed.current
+      ) return;
+      const pollRevision = localRevision.current;
       const { data, error } = await supabase
         .from('salah_progress')
         .select('log')
@@ -265,6 +296,10 @@ export function useSalahSync({
         return;
       }
       if (!data) {
+        settleStatus(user.id);
+        return;
+      }
+      if (localRevision.current !== pollRevision) {
         settleStatus(user.id);
         return;
       }

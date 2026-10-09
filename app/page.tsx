@@ -83,9 +83,16 @@ export default function DuasTracker() {
   );
 
   /* ── Core hooks ── */
-  const { checked, setChecked, toggle, reset, done, pct, today } = useChecked(
-    allDuas.length,
-  );
+  const {
+    checked,
+    setChecked,
+    toggle,
+    reset,
+    done,
+    pct,
+    today,
+    localRevision,
+  } = useChecked(allDuas.length);
   const streak = useStreak(done, allDuas.length);
   const { toast, showToast } = useToast();
 
@@ -122,6 +129,7 @@ export default function DuasTracker() {
     user,
     today,
     checked,
+    localRevision,
     customDuas,
     streak,
     onPullComplete: handlePullComplete,
