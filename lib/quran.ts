@@ -39,12 +39,31 @@ export interface QuranSettings {
   arabicFontSize: number;
   showTranslation: boolean;
   autoPlayNext: boolean;
+  playbackMode: 'verse' | 'surah';
   surah: number;
+}
+
+export interface QuranLocation {
+  surah: number;
+  ayah: number;
+}
+
+export interface QuranBookmark extends QuranLocation {
+  createdAt: string;
+}
+
+export interface QuranReadingProgress {
+  lastRead: QuranLocation | null;
+  dailyVerses: Record<string, string[]>;
 }
 
 export const QURAN_SETTINGS_KEY = 'quran_settings_v1';
 export const QURAN_CACHE_KEY = 'quran_chapter_cache_v1';
 export const QURAN_BOOKMARK_KEY = 'quran_bookmark_v1';
+export const QURAN_BOOKMARKS_KEY = 'quran_bookmarks_v1';
+export const QURAN_PROGRESS_KEY = 'quran_reading_progress_v1';
+export const QURAN_DAILY_GOAL_KEY = 'quran_daily_goal_v1';
+export const DEFAULT_QURAN_DAILY_GOAL = 10;
 
 export const DEFAULT_QURAN_SETTINGS: QuranSettings = {
   language: 'en',
@@ -53,6 +72,7 @@ export const DEFAULT_QURAN_SETTINGS: QuranSettings = {
   arabicFontSize: 32,
   showTranslation: true,
   autoPlayNext: false,
+  playbackMode: 'verse',
   surah: 1,
 };
 
@@ -98,4 +118,3 @@ export const DEFAULT_RECITERS: QuranEdition[] = [
     format: 'audio',
   },
 ];
-

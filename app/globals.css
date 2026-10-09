@@ -13,21 +13,6 @@
     --app-ink: #272b2a;
   }
 
-  .quran-settings > summary::-webkit-details-marker {
-    display: none;
-  }
-
-  .quran-settings > summary::after {
-    float: right;
-    color: var(--app-accent);
-    content: '⌄';
-    font-size: 1.1rem;
-  }
-
-  .quran-settings[open] > summary::after {
-    content: '⌃';
-  }
-
   .quran-ayah-text {
     scroll-margin-top: 1.5rem;
     overflow-wrap: anywhere;
