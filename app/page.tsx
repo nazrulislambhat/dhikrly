@@ -279,12 +279,12 @@ export default function DuasTracker() {
         />
       )}
 
-      <div className="dashboard-page mx-auto w-full max-w-6xl px-4 py-5 pb-10 sm:px-6 sm:py-8 lg:px-10">
+      <div className="mx-auto w-full max-w-[82rem] px-4 py-5 pb-10 sm:px-6 sm:py-8 lg:px-10">
         {/* ── Header ── */}
-        <header className="dashboard-header mb-8">
+        <header className="mb-8 grid gap-3 min-[900px]:grid-cols-[minmax(0,1fr)_auto] min-[900px]:items-center">
           {/* Top bar: Hijri date left, auth right */}
-          <div className="mb-4 flex items-center justify-between">
-            <div className="dashboard-date">
+          <div className="mb-4 flex items-center justify-between min-[900px]:col-[2] min-[900px]:row-[1] min-[900px]:mb-0">
+            <div className="text-xs font-semibold text-[var(--app-muted)]">
               {getHijriDate()}
             </div>
 
@@ -305,10 +305,10 @@ export default function DuasTracker() {
             ) : (
               <button
                 onClick={() => setActiveModal('auth')}
-                className={`dashboard-login rounded-full border px-3.5 py-1.5 text-[11px] font-semibold transition-all hover:scale-105 active:scale-95 ${
+                className={`rounded-full border px-3.5 py-1.5 text-[11px] font-semibold transition-all hover:scale-105 active:scale-95 ${
                   dark
-                    ? 'border-amber-400/30 text-amber-400/70 hover:border-amber-400/50 hover:text-amber-400'
-                    : 'border-amber-500/40 text-amber-600 hover:border-amber-500 hover:text-amber-700'
+                    ? 'border-emerald-400/30 text-emerald-200/80 hover:border-emerald-400/50 hover:text-emerald-200'
+                    : 'border-emerald-600/30 text-emerald-800 hover:border-emerald-600 hover:text-emerald-900'
                 }`}
               >
                 ↑ Sync / Login
@@ -317,7 +317,7 @@ export default function DuasTracker() {
           </div>
 
           {/* Title block */}
-          <div className="dashboard-greeting text-left">
+          <div className="text-left min-[900px]:col-[1] min-[900px]:row-[1]">
             <h1
               className={`font-sans text-[clamp(26px,4vw,36px)] font-bold tracking-tight ${dark ? 'text-stone-100' : 'text-stone-900'}`}
             >
@@ -370,11 +370,15 @@ export default function DuasTracker() {
           </div>
         </header>
 
-        <div className="dashboard-overview">
-        <TiltCard className="dashboard-hero-tilt">
-        <section className={`dashboard-hero ${dark ? 'is-dark' : ''}`} aria-label="Daily remembrance">
+        <div className="mb-4 grid gap-4 min-[900px]:grid-cols-[minmax(0,1.65fr)_minmax(14rem,0.8fr)] min-[900px]:items-stretch">
+        <TiltCard className="h-full min-w-0">
+        <section className={`relative flex min-h-48 items-center justify-between gap-4 overflow-hidden rounded-[1.35rem] border p-5 text-white shadow-xl sm:p-8 ${
+          dark
+            ? 'border-emerald-400/20 bg-[radial-gradient(circle_at_88%_15%,rgb(66_201_158/18%),transparent_40%),linear-gradient(120deg,#123a30,#145741_76%,#176d51)]'
+            : 'border-emerald-900 bg-[radial-gradient(circle_at_88%_15%,rgb(125_236_193/25%),transparent_40%),linear-gradient(120deg,#075d46,#0d936b_75%,#18b783)]'
+        }`} aria-label="Daily remembrance">
           <div className="relative z-10 max-w-lg">
-            <p className="dashboard-eyebrow">
+            <p className="text-[10px] font-extrabold tracking-[0.15em] text-emerald-50/75">
               TODAY&apos;S PRACTICE
             </p>
             <h2 className="mt-2 font-sans text-2xl font-bold sm:text-3xl">
@@ -385,61 +389,63 @@ export default function DuasTracker() {
             </p>
           </div>
           <div
-            className="dashboard-progress-ring"
+            className="relative z-10 grid h-[5.6rem] w-[5.6rem] shrink-0 place-items-center sm:h-[6.25rem] sm:w-[6.25rem]"
             role="img"
             aria-label={`${pct}% complete`}
           >
-            <svg viewBox="0 0 100 100" aria-hidden="true">
-              <circle cx="50" cy="50" r="43" />
+            <svg className="absolute inset-0 -rotate-90" viewBox="0 0 100 100" aria-hidden="true">
+              <circle className="fill-none stroke-white/20 stroke-[7px]" cx="50" cy="50" r="43" />
               <circle
-                className="dashboard-progress-value"
+                className="fill-none stroke-white stroke-[7px] [stroke-linecap:round]"
                 cx="50"
                 cy="50"
                 r="43"
                 style={{ strokeDasharray: `${pct * 2.7} 270` }}
               />
             </svg>
-            <span><strong>{pct}%</strong><small>complete</small></span>
+            <span className="grid justify-items-center"><strong className="text-base leading-tight">{pct}%</strong><small className="text-[9px] text-white/70">complete</small></span>
           </div>
         </section>
         </TiltCard>
 
-        <section className="dashboard-shortcuts" aria-label="Quick links">
+        <section className="grid grid-cols-3 gap-2.5 min-[900px]:grid-cols-1" aria-label="Quick links">
           {[
             { href: '/salah', icon: '◷', title: 'Prayer', note: 'Times' },
             { href: '/quran', icon: '۞', title: 'Qur’an', note: 'Read & listen' },
             { href: '#daily-adhkar', icon: '✳', title: 'Adhkār', note: 'Daily duas' },
           ].map((item) => (
-            <TiltCard key={item.href} className="dashboard-shortcut-tilt" intensity={7}>
+            <TiltCard key={item.href} className="h-full min-w-0" intensity={7}>
               <Link
                 href={item.href}
-                className={`dashboard-shortcut ${dark ? 'is-dark' : ''}`}
+                className={`grid h-full min-w-0 grid-cols-1 content-start items-center rounded-2xl border border-[var(--app-line)] bg-[var(--app-surface)] p-3 no-underline transition hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-lg min-[900px]:grid-cols-[2.5rem_minmax(0,1fr)] min-[900px]:gap-x-3 min-[900px]:px-4 ${
+                  dark ? 'bg-[#14211e]' : ''
+                }`}
               >
-                <span className="dashboard-shortcut-icon" aria-hidden="true">
+                <span className="grid h-8 w-8 place-items-center rounded-xl bg-emerald-100 text-base text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-200 min-[900px]:row-span-2" aria-hidden="true">
                   {item.icon}
                 </span>
-                <span className="dashboard-shortcut-title">{item.title}</span>
-                <span className="dashboard-shortcut-note">{item.note}</span>
+                <span className="mt-2 overflow-hidden text-ellipsis whitespace-nowrap text-xs font-bold text-[var(--app-ink)] min-[900px]:mt-0">{item.title}</span>
+                <span className="mt-0.5 text-[10px] text-[var(--app-muted)] min-[900px]:text-[11px]">{item.note}</span>
               </Link>
             </TiltCard>
           ))}
         </section>
         </div>
 
-        <div className="dashboard-content-grid">
+        <div className="grid gap-5 min-[1100px]:grid-cols-[minmax(0,1fr)_19rem] min-[1100px]:items-start">
           <section
-            className="dashboard-practice"
+            className="min-w-0"
             id="daily-adhkar"
             aria-label="Daily remembrances"
           >
-            <div className="dashboard-section-heading">
+            <div className="mb-4 flex items-end justify-between gap-3">
               <div>
-                <p className="dashboard-section-eyebrow">YOUR COLLECTION</p>
-                <h2>Daily remembrances</h2>
+                <p className="text-[10px] font-extrabold tracking-[0.14em] text-[var(--app-muted)]">YOUR COLLECTION</p>
+                <h2 className="mt-1 text-xl font-bold tracking-tight sm:text-2xl">Daily remembrances</h2>
               </div>
-              <span>{done} of {total} complete</span>
+              <span className="shrink-0 pb-1 text-xs font-semibold text-[var(--app-muted)]">{done} of {total} complete</span>
             </div>
-            <div className="dashboard-controls">
+            <div className="mb-4 flex flex-wrap gap-2">
               <input
                 type="text"
                 placeholder="Search remembrances"
@@ -468,16 +474,16 @@ export default function DuasTracker() {
               </button>
               <button
                 onClick={() => setActiveModal('addDua')}
-                className="dashboard-add-button"
+                className="min-h-10 rounded-xl border border-[var(--app-line)] bg-[var(--app-surface)] px-3 text-xs font-bold text-emerald-800 transition hover:border-emerald-300 hover:bg-emerald-50 dark:bg-[#14211e] dark:text-emerald-200"
               >
                 + Add Du&apos;ā
               </button>
-              <button onClick={handleReset} className="dashboard-reset-button">
+              <button onClick={handleReset} className="min-h-10 rounded-xl border border-[var(--app-line)] bg-[var(--app-surface)] px-3 text-xs font-bold text-red-700 transition hover:border-red-300 hover:bg-red-50 dark:bg-[#14211e] dark:text-red-300">
                 ↺ Reset
               </button>
             </div>
 
-            <div className="dashboard-category-tabs">
+            <div className="mb-4 flex gap-2 overflow-x-auto px-0.5 py-1 scrollbar-none">
               {CATS.map(({ key, label }: CatEntry) => {
                 const active = filter === key;
                 const count = catCount(key);
@@ -487,18 +493,22 @@ export default function DuasTracker() {
                     key={key}
                     onClick={() => setFilter(key)}
                     aria-pressed={active}
-                    className={`dashboard-category-tab ${active ? 'is-active' : ''}`}
+                    className={`inline-flex min-h-9 shrink-0 items-center gap-2 rounded-xl border border-[var(--app-line)] px-3 text-xs font-semibold ${
+                      active
+                        ? 'border-emerald-700 bg-emerald-800 text-white dark:border-emerald-500 dark:bg-emerald-500 dark:text-emerald-950'
+                        : 'bg-[var(--app-surface)] text-[var(--app-muted)] dark:bg-[#14211e]'
+                    }`}
                   >
                     {label}
-                    <span>{catDone(key)}/{count}</span>
+                    <span className="text-[10px] tabular-nums opacity-70">{catDone(key)}/{count}</span>
                   </button>
                 );
               })}
             </div>
 
-            <div className="dashboard-dua-list">
+            <div className="grid gap-3 min-[1100px]:grid-cols-2">
               {filtered.length === 0 && (
-                <p className="dashboard-empty-state">
+                <p className="col-span-full rounded-2xl border border-dashed border-[var(--app-line)] px-4 py-12 text-center text-sm text-[var(--app-muted)]">
                   No remembrances match your search.
                 </p>
               )}
@@ -516,8 +526,8 @@ export default function DuasTracker() {
             </div>
           </section>
 
-          <aside className="dashboard-insights" aria-label="Your progress">
-            <div className="dashboard-stat-grid">
+          <aside className="grid min-w-0 content-start gap-3 min-[1100px]:sticky min-[1100px]:top-5" aria-label="Your progress">
+            <div className="grid grid-cols-2 gap-3">
               <StatCard label="Total" value={total} accent="gold" dark={dark} />
               <StatCard label="Done" value={done} accent="green" dark={dark} />
               <StatCard
@@ -534,32 +544,32 @@ export default function DuasTracker() {
               />
             </div>
 
-            <section className="dashboard-progress-card">
-              <div className="dashboard-card-heading">
+            <section className="grid gap-3 rounded-2xl border border-[var(--app-line)] bg-[var(--app-surface)] p-4 dark:bg-[#14211e]">
+              <div className="flex items-center justify-between text-sm font-bold">
                 <h2>Today&apos;s progress</h2>
-                <span>{pct}%</span>
+                <span className="text-emerald-800 dark:text-emerald-200">{pct}%</span>
               </div>
               <ProgressBar pct={pct} dark={dark} />
-              <p>{done} of {total} remembrances finished</p>
+              <p className="text-[11px] text-[var(--app-muted)]">{done} of {total} remembrances finished</p>
             </section>
 
-            <div className="dashboard-history-card">
+            <div className="overflow-hidden rounded-2xl border border-[var(--app-line)] bg-[var(--app-surface)] p-1 dark:bg-[#14211e]">
               <WeeklyHistory dark={dark} total={total} streakBest={streak.best} />
             </div>
 
-            <div className="dashboard-heatmap">
+            <div className="overflow-hidden rounded-2xl border border-[var(--app-line)] bg-[var(--app-surface)] dark:bg-[#14211e]">
               <button
                 onClick={() => setShowHeatmap((v) => !v)}
                 aria-expanded={showHeatmap}
-                className="dashboard-heatmap-toggle"
+                className="flex min-h-12 w-full items-center justify-between px-4 text-xs font-bold"
               >
                 <span>{showHeatmap ? 'Hide activity map' : 'View activity map'}</span>
-                <span aria-hidden="true">{showHeatmap ? '−' : '+'}</span>
+                <span className="text-lg text-emerald-800 dark:text-emerald-200" aria-hidden="true">{showHeatmap ? '−' : '+'}</span>
               </button>
               {showHeatmap && <StreakHeatmap dark={dark} total={total} />}
             </div>
 
-            <div className="dashboard-tasbih">
+            <div>
               <TasbihCounter />
             </div>
           </aside>
