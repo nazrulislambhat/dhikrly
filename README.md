@@ -46,9 +46,9 @@ Daily Adhkār, Du'ā & Ṣalāh tracker. Offline-first PWA with cross-device syn
 
 |              |                                 |
 | ------------ | ------------------------------- |
-| Framework    | Next.js 14 (App Router)         |
+| Framework    | Next.js 16 (App Router)         |
 | Language     | TypeScript                      |
-| Styling      | Tailwind CSS v3                 |
+| Styling      | Tailwind CSS v4                 |
 | Prayer Times | adhan.js                        |
 | Charts       | Recharts                        |
 | Auth & Sync  | Supabase                        |
@@ -134,6 +134,10 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 1. Run `supabase-schema.sql` in Supabase SQL Editor
 2. Enable Email + Google providers in Authentication → Providers
 3. Add your domain to Authentication → URL Configuration
+
+The Vercel Cron sends scheduled push reminders every minute. Configure
+`CRON_SECRET`, the Supabase service-role key, and the VAPID keys in the Vercel
+project environment. The deployment plan must support minutely cron schedules.
 
 ---
 

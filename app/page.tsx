@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import {
   useState,
   useEffect,
@@ -309,14 +310,14 @@ export default function DuasTracker() {
           </div>
 
           {/* Title block */}
-          <div className="text-center">
+          <div className="text-left">
             <h1
-              className={`font-serif text-[clamp(22px,4vw,32px)] font-normal tracking-wide ${dark ? 'text-amber-400' : 'text-amber-700'}`}
+              className={`font-serif text-[clamp(26px,4vw,36px)] font-semibold tracking-tight ${dark ? 'text-amber-400' : 'text-stone-900'}`}
             >
-              Daily Adhkār &amp; Du&apos;ā
+              Make space for remembrance
             </h1>
             <p
-              className={`mt-1 font-arabic text-xl ${dark ? 'text-amber-400/45' : 'text-amber-600/50'}`}
+              className={`mt-1 font-arabic text-xl ${dark ? 'text-amber-400/70' : 'text-amber-700'}`}
               dir="rtl"
               lang="ar"
               translate="no"
@@ -324,14 +325,14 @@ export default function DuasTracker() {
               أَذْكَار يَوْمِيَّة
             </p>
             <p
-              className={`mt-2 text-[11px] ${dark ? 'text-stone-500' : 'text-stone-400'}`}
+              className={`mt-2 text-sm ${dark ? 'text-stone-400' : 'text-stone-500'}`}
             >
-              {getGregorianDate()}
+              {getGregorianDate()} <span className="mx-1.5 text-amber-500">·</span> {getHijriDate()}
             </p>
           </div>
 
           {/* Action buttons */}
-          <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+          <div className="mt-5 grid max-w-sm grid-cols-2 gap-2">
             {[
               {
                 label: soundEnabled ? '🔊 Sound' : '🔇 Muted',
@@ -346,7 +347,7 @@ export default function DuasTracker() {
               <button
                 key={label}
                 onClick={onClick}
-                className={`rounded-full border px-4 py-1.5 text-[11px] uppercase tracking-widest transition-all hover:scale-105 active:scale-95 ${
+                className={`w-full whitespace-nowrap rounded-full border px-3 py-2 text-[10px] font-medium uppercase tracking-wider transition-all hover:scale-[1.02] active:scale-95 ${
                   active === true
                     ? dark
                       ? 'border-amber-400/30 text-amber-400/80'
@@ -362,8 +363,61 @@ export default function DuasTracker() {
           </div>
         </header>
 
+        <section
+          className={`relative mb-5 overflow-hidden rounded-2xl border p-5 sm:p-7 ${
+            dark
+              ? 'border-amber-300/15 bg-gradient-to-br from-[#3b2b19] via-[#30261b] to-[#1c2024]'
+              : 'border-amber-200/80 bg-gradient-to-br from-[#ffe4ad] via-[#ffd17a] to-[#ffbd4d]'
+          }`}
+          aria-label="Daily remembrance"
+        >
+          <div className="relative z-10 max-w-lg">
+            <p className={`text-xs font-semibold uppercase tracking-[0.16em] ${dark ? 'text-amber-300/75' : 'text-amber-900/70'}`}>
+              Your daily practice
+            </p>
+            <h2 className={`mt-2 font-serif text-2xl font-semibold sm:text-3xl ${dark ? 'text-stone-50' : 'text-stone-900'}`}>
+              Small moments, lasting peace.
+            </h2>
+            <p className={`mt-2 text-sm ${dark ? 'text-stone-300' : 'text-amber-950/75'}`}>
+              {done} of {total} remembrances completed today. Continue at your own pace.
+            </p>
+          </div>
+          <span
+            className={`pointer-events-none absolute -right-5 top-7 font-arabic text-[8rem] leading-none opacity-[0.035] sm:right-6 sm:top-1 sm:text-[12rem] ${dark ? 'text-amber-300' : 'text-amber-950'}`}
+            dir="rtl"
+            lang="ar"
+            aria-hidden="true"
+          >
+            ذِكْر
+          </span>
+        </section>
+
+        <section className="mb-6 grid grid-cols-3 gap-2.5 sm:gap-3" aria-label="Quick links">
+          {[
+            { href: '/salah', icon: '◷', title: 'Prayer', note: 'Times' },
+            { href: '/quran', icon: '۞', title: 'Qur’an', note: 'Read & listen' },
+            { href: '#daily-adhkar', icon: '✳', title: 'Adhkār', note: 'Daily duas' },
+          ].map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`rounded-2xl border p-3.5 transition-transform hover:-translate-y-0.5 sm:p-4 ${
+                dark
+                  ? 'border-white/10 bg-white/[0.04] hover:bg-white/[0.07]'
+                  : 'border-amber-900/10 bg-[var(--app-surface)] shadow-sm hover:border-amber-300'
+              }`}
+            >
+              <span className={`grid h-9 w-9 place-items-center rounded-xl text-lg ${dark ? 'bg-amber-300/10 text-amber-300' : 'bg-amber-100 text-amber-800'}`} aria-hidden="true">
+                {item.icon}
+              </span>
+              <span className={`mt-3 block text-xs font-semibold sm:text-sm ${dark ? 'text-stone-100' : 'text-stone-900'}`}>{item.title}</span>
+              <span className={`mt-0.5 block text-[10px] sm:text-xs ${dark ? 'text-stone-400' : 'text-stone-500'}`}>{item.note}</span>
+            </Link>
+          ))}
+        </section>
+
         {/* ── Stats ── */}
-        <div className="mb-4 grid grid-cols-4 gap-2">
+        <div className="mb-4 grid grid-cols-2 gap-2.5 sm:grid-cols-4">
           <StatCard label="Total" value={total} accent="gold" dark={dark} />
           <StatCard label="Done" value={done} accent="green" dark={dark} />
           <StatCard
@@ -501,7 +555,7 @@ export default function DuasTracker() {
         </div>
 
         {/* ── Dua cards ── */}
-        <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+        <div id="daily-adhkar" className="grid scroll-mt-5 grid-cols-1 gap-3 lg:grid-cols-2">
           {filtered.length === 0 && (
             <p
               className={`py-12 text-center text-sm ${dark ? 'text-stone-600' : 'text-stone-400'}`}
