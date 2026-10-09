@@ -37,9 +37,9 @@
 
 @layer base {
   :root {
-    --app-accent: #18b783;
-    --app-secondary: #087657;
-    --app-bg: #f5f8f7;
+    --app-accent: #16805a;
+    --app-secondary: #287750;
+    --app-bg: #f7f9f7;
     --app-surface: #ffffff;
     --app-ink: #14221e;
   }
@@ -98,8 +98,8 @@ html:not(.dark) {
 
 /* App-wide layout and component refresh */
 :root {
-  --app-line: #e2ebe7;
-  --app-muted: #71827c;
+  --app-line: #e7ece8;
+  --app-muted: #7c8982;
 }
 
 html.dark {
@@ -108,7 +108,7 @@ html.dark {
 }
 
 body {
-  background-image: radial-gradient(ellipse at 82% 0%, rgb(24 183 131 / 5%), transparent 32rem);
+  background-image: radial-gradient(ellipse at 82% 0%, rgb(22 128 90 / 4%), transparent 34rem);
 }
 
 @keyframes mushaf-page-turn-next {

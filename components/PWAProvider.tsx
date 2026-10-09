@@ -3,6 +3,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { Smartphone } from 'lucide-react';
 import { useServiceWorker } from '@/hooks/useServiceWorker';
 
 interface BeforeInstallPromptEvent extends Event {
@@ -64,10 +65,10 @@ export default function PWAProvider({
       <div className="flex items-start gap-3">
         <div
           className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-xl ${
-            dark ? 'bg-amber-400/15' : 'bg-amber-50'
+            dark ? 'bg-emerald-400/15 text-emerald-200' : 'bg-emerald-50 text-emerald-800'
           }`}
         >
-          🌙
+          <Smartphone className="h-5 w-5" aria-hidden="true" />
         </div>
         <div className="min-w-0 flex-1">
           <p
@@ -111,8 +112,8 @@ export default function PWAProvider({
           onClick={handleInstall}
           className={`flex-1 rounded-xl py-2 text-[12px] font-medium transition-all active:scale-95 ${
             dark
-              ? 'bg-amber-400/20 text-amber-300 hover:bg-amber-400/30'
-              : 'bg-green-500 text-white hover:bg-amber-600'
+              ? 'bg-emerald-400/20 text-emerald-200 hover:bg-emerald-400/30'
+              : 'bg-emerald-800 text-white hover:bg-emerald-900'
           }`}
         >
           Install
