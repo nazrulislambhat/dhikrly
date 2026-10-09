@@ -4,6 +4,11 @@ import { useEffect, useRef, useCallback, useState } from 'react';
 import type { User } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 import { getAllLogs, saveDayLog, emptyDay } from '@/lib/salahStorage';
+import {
+  clearLocalEdit,
+  getLocalEditTime,
+  shouldPreserveLocalEdit,
+} from '@/lib/localEdits';
 import type { DayLog } from '@/types/salah';
 import type { SyncStatus } from '@/hooks/useSync';
 
@@ -162,6 +167,12 @@ export function useSalahSync({
           ) {
             lastPushed.current = pendingLocal.current;
           }
+          if (
+            item.date === today &&
+            JSON.stringify(item.log) === JSON.stringify(latestLog.current)
+          ) {
+            clearLocalEdit('salah', today);
+          }
         } else {
           failed = true;
         }
@@ -206,13 +217,29 @@ export function useSalahSync({
 
         for (const remoteLog of remoteLogs) {
           const localLog = localLogs[remoteLog.date];
+          const localEditTime = getLocalEditTime('salah', remoteLog.date);
+          const preservePendingEdit =
+            localLog &&
+            shouldPreserveLocalEdit(
+              localEditTime !== null,
+              localLog,
+              remoteLog,
+            );
           const resolved =
             remoteLog.date === today &&
             localLog &&
-            (localRevision.current !== startingRevision ||
+            (preservePendingEdit ||
+              localRevision.current !== startingRevision ||
               prayerCount(localLog) > prayerCount(remoteLog))
               ? localLog
               : remoteLog;
+          if (
+            remoteLog.date === today &&
+            localEditTime !== null &&
+            !preservePendingEdit
+          ) {
+            clearLocalEdit('salah', today, localEditTime);
+          }
           resolvedByDate[remoteLog.date] = resolved;
           saveDayLog(resolved);
         }
@@ -235,6 +262,7 @@ export function useSalahSync({
         }
         const resolvedLogs = Object.values(resolvedByDate);
         const todaySnapshot = JSON.stringify(resolvedToday);
+        const todayEditTime = getLocalEditTime('salah', today);
         const remoteToday = remoteByDate.get(today);
         lastPushed.current = remoteToday ? JSON.stringify(remoteToday) : JSON.stringify(emptyDay(today));
         pendingLocal.current = todaySnapshot;
@@ -252,6 +280,12 @@ export function useSalahSync({
               });
             } else if (resolvedLog.date === today) {
               lastPushed.current = todaySnapshot;
+              if (
+                todayEditTime !== null &&
+                JSON.stringify(latestLog.current) === todaySnapshot
+              ) {
+                clearLocalEdit('salah', today, todayEditTime);
+              }
             }
           }
         }
@@ -330,6 +364,7 @@ export function useSalahSync({
   useEffect(() => {
     if (!user || readyUserId !== user.id) return;
     const snapshot = JSON.stringify(log);
+    const localEditTime = getLocalEditTime('salah', today);
     pendingLocal.current = snapshot;
 
     if (!navigator.onLine) {
@@ -345,6 +380,12 @@ export function useSalahSync({
       if (await pushLog(user.id, log)) {
         lastPushed.current = snapshot;
         removeQueued(user.id, item);
+        if (
+          localEditTime !== null &&
+          snapshot === JSON.stringify(latestLog.current)
+        ) {
+          clearLocalEdit('salah', today, localEditTime);
+        }
         settleStatus(user.id);
       } else {
         enqueue(user.id, item);

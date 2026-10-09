@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { load, save, pruneOldEntries, STORAGE_KEY } from '@/lib/storage';
 import { getTodayKey } from '@/lib/dates';
 import { playCheck, playUncheck, playComplete } from '@/lib/sounds';
+import { markLocalEdit } from '@/lib/localEdits';
 
 export function useChecked(totalDuas: number) {
   const today = getTodayKey();
@@ -23,6 +24,7 @@ export function useChecked(totalDuas: number) {
   const toggle = useCallback(
     (id: string, soundEnabled = true) => {
       localRevision.current += 1;
+      markLocalEdit('adhkar', today);
       setChecked((prev) => {
         const wasChecked = !!prev[id];
         const next = { ...prev, [id]: !wasChecked };
@@ -42,13 +44,14 @@ export function useChecked(totalDuas: number) {
         return next;
       });
     },
-    [totalDuas]
+    [today, totalDuas]
   );
 
   const reset = useCallback(() => {
     localRevision.current += 1;
+    markLocalEdit('adhkar', today);
     setChecked({});
-  }, []);
+  }, [today]);
 
   /** Mark all duas as complete for a specific day (missed-day recovery). */
   const markDayComplete = useCallback(
