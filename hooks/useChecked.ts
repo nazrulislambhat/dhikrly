@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { load, save, pruneOldEntries, STORAGE_KEY } from '@/lib/storage';
 import { getTodayKey } from '@/lib/dates';
 import { playCheck, playUncheck, playComplete } from '@/lib/sounds';
 
 export function useChecked(totalDuas: number) {
   const today = getTodayKey();
+  const localRevision = useRef(0);
 
   const [checked, setChecked] = useState<Record<string, boolean>>(() => {
     const all = load<Record<string, Record<string, boolean>>>(STORAGE_KEY, {});
@@ -21,6 +22,7 @@ export function useChecked(totalDuas: number) {
 
   const toggle = useCallback(
     (id: string, soundEnabled = true) => {
+      localRevision.current += 1;
       setChecked((prev) => {
         const wasChecked = !!prev[id];
         const next = { ...prev, [id]: !wasChecked };
@@ -32,7 +34,8 @@ export function useChecked(totalDuas: number) {
             // slight delay so the check animation renders first
             setTimeout(playComplete, 80);
           } else {
-            wasChecked ? playUncheck() : playCheck();
+            if (wasChecked) playUncheck();
+            else playCheck();
           }
         }
 
@@ -43,6 +46,7 @@ export function useChecked(totalDuas: number) {
   );
 
   const reset = useCallback(() => {
+    localRevision.current += 1;
     setChecked({});
   }, []);
 
@@ -63,5 +67,15 @@ export function useChecked(totalDuas: number) {
   const done = Object.values(checked).filter(Boolean).length;
   const pct = totalDuas > 0 ? Math.round((done / totalDuas) * 100) : 0;
 
-  return { checked, setChecked, toggle, reset, markDayComplete, done, pct, today };
+  return {
+    checked,
+    setChecked,
+    toggle,
+    reset,
+    markDayComplete,
+    done,
+    pct,
+    today,
+    localRevision,
+  };
 }
