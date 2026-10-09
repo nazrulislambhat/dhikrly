@@ -27,12 +27,12 @@ export default function AppShell({
   const muted = dark ? 'text-stone-400' : 'text-stone-500';
   const surface = dark
     ? 'border-white/[0.08] bg-[#101f32]'
-    : 'border-stone-200/80 bg-white/90';
+    : 'border-amber-900/10 bg-[var(--app-surface)]/95';
 
   useEffect(() => {
     document
       .querySelector('meta[name="theme-color"]')
-      ?.setAttribute('content', dark ? '#0b1724' : '#f6f5f1');
+      ?.setAttribute('content', dark ? '#0b1724' : '#fffaf2');
   }, [dark]);
 
   return (
