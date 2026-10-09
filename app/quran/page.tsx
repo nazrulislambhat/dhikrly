@@ -82,6 +82,9 @@ export default function QuranPage() {
   const [activeAudio, setActiveAudio] = useState('');
   const [activeAyah, setActiveAyah] = useState<number | null>(null);
   const [shouldPlay, setShouldPlay] = useState(false);
+  const [playbackTime, setPlaybackTime] = useState(0);
+  const [playbackDuration, setPlaybackDuration] = useState(0);
+  const [activeWordIndex, setActiveWordIndex] = useState<number | null>(null);
   const [audioError, setAudioError] = useState('');
   const [jumpToAyah, setJumpToAyah] = useState<number | null>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -293,6 +296,12 @@ export default function QuranPage() {
   }, [activeAudio, shouldPlay]);
 
   useEffect(() => {
+    setPlaybackTime(0);
+    setPlaybackDuration(0);
+    setActiveWordIndex(null);
+  }, [activeAudio]);
+
+  useEffect(() => {
     if (jumpToAyah === null || !visibleChapter) return;
     document
       .getElementById(`quran-ayah-${jumpToAyah}`)
@@ -312,6 +321,13 @@ export default function QuranPage() {
     [languages],
   );
 
+  const stopPlayback = () => {
+    audioRef.current?.pause();
+    setActiveAudio('');
+    setActiveAyah(null);
+    setShouldPlay(false);
+  };
+
   const playVerse = useCallback((verse: QuranVerse) => {
     if (!verse.audio) {
       setAudioError('Audio is not available for this verse.');
@@ -328,6 +344,41 @@ export default function QuranPage() {
     setShouldPlay(true);
   }, [activeAyah, shouldPlay]);
 
+  const updatePlaybackPosition = useCallback(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    setPlaybackTime(audio.currentTime);
+    if (Number.isFinite(audio.duration)) setPlaybackDuration(audio.duration);
+
+    const verse = visibleChapter?.verses.find((item) => item.number === activeAyah);
+    if (!verse || !Number.isFinite(audio.duration) || audio.duration <= 0) return;
+    const words = verse.arabic.trim().split(/\s+/);
+    const weights = words.map((word) =>
+      Math.max(1, Array.from(word.replace(/[\u064B-\u065F\u0670\u06D6-\u06ED]/gu, '')).length),
+    );
+    const totalWeight = weights.reduce((total, weight) => total + weight, 0);
+    const elapsedWeight = (audio.currentTime / audio.duration) * totalWeight;
+    let accumulated = 0;
+    const wordIndex = weights.findIndex((weight) => {
+      accumulated += weight;
+      return elapsedWeight < accumulated;
+    });
+    setActiveWordIndex(wordIndex < 0 ? words.length - 1 : wordIndex);
+  }, [activeAyah, visibleChapter]);
+
+  const seekPlayback = (time: number) => {
+    if (!audioRef.current || !Number.isFinite(time)) return;
+    audioRef.current.currentTime = time;
+    updatePlaybackPosition();
+  };
+
+  const playAdjacentVerse = (direction: -1 | 1) => {
+    const verses = visibleChapter?.verses ?? [];
+    const currentIndex = verses.findIndex((verse) => verse.number === activeAyah);
+    const nextVerse = verses[currentIndex + direction];
+    if (nextVerse) playVerse(nextVerse);
+  };
+
   const handleAudioEnded = useCallback(() => {
     const verses = visibleChapter?.verses ?? [];
     const index = verses.findIndex((verse) => verse.number === activeAyah);
@@ -336,9 +387,16 @@ export default function QuranPage() {
       playVerse(nextVerse);
     } else {
       setShouldPlay(false);
-      setActiveAyah(null);
+      updatePlaybackPosition();
     }
-  }, [activeAyah, playVerse, settings.autoPlayNext, visibleChapter]);
+  }, [activeAyah, playVerse, settings.autoPlayNext, updatePlaybackPosition, visibleChapter]);
+
+  const formatTime = (time: number) => {
+    if (!Number.isFinite(time) || time < 0) return '0:00';
+    const minutes = Math.floor(time / 60);
+    const seconds = Math.floor(time % 60).toString().padStart(2, '0');
+    return `${minutes}:${seconds}`;
+  };
 
   const saveBookmark = (ayah: number) => {
     if (bookmark?.surah === settings.surah && bookmark.ayah === ayah) {
@@ -354,9 +412,7 @@ export default function QuranPage() {
   const moveSurah = (direction: -1 | 1) => {
     const next = Math.min(114, Math.max(1, settings.surah + direction));
     updateSetting('surah', next);
-    setActiveAudio('');
-    setActiveAyah(null);
-    setShouldPlay(false);
+    stopPlayback();
   };
 
   const card = dark
@@ -419,9 +475,7 @@ export default function QuranPage() {
                   value={settings.surah}
                   onChange={(event) => {
                     updateSetting('surah', Number(event.target.value));
-                    setActiveAudio('');
-                    setActiveAyah(null);
-                    setShouldPlay(false);
+                    stopPlayback();
                   }}
                   disabled={catalogLoading || surahs.length === 0}
                 >
@@ -462,29 +516,6 @@ export default function QuranPage() {
                   <p className={`mt-1 text-sm ${muted}`}>
                     {visibleChapter.surah.englishName} · {visibleChapter.surah.englishNameTranslation}
                   </p>
-                  {activeAudio && (
-                    <div className={`mt-4 rounded-xl border p-3 text-left ${card}`}>
-                      <p className={`mb-2 text-xs ${muted}`}>
-                        {activeAyah
-                          ? `Reciting verse ${activeAyah} · ${reciters.find((item) => item.identifier === settings.reciter)?.englishName ?? 'Selected reciter'}`
-                          : 'Quran recitation'}
-                      </p>
-                      <audio
-                        ref={audioRef}
-                        controls
-                        preload="none"
-                        src={activeAudio}
-                        className="w-full"
-                        onEnded={handleAudioEnded}
-                        onPause={() => setShouldPlay(false)}
-                        onPlay={() => setShouldPlay(true)}
-                        onError={() => setAudioError('This recitation could not be loaded. Try another reciter or check your connection.')}
-                      >
-                        Your browser does not support audio playback.
-                      </audio>
-                      {audioError && <p role="alert" className="mt-2 text-xs text-red-500">{audioError}</p>}
-                    </div>
-                  )}
                 </div>
               )}
 
@@ -505,11 +536,20 @@ export default function QuranPage() {
                     const isBookmarked =
                       bookmark?.surah === settings.surah && bookmark.ayah === verse.number;
                     const isPlaying = activeAyah === verse.number && shouldPlay;
+                    const isActiveAyah = activeAyah === verse.number && Boolean(activeAudio);
+                    const arabicWords = verse.arabic.trim().split(/\s+/);
                     return (
                       <article
                         id={`quran-ayah-${verse.number}`}
                         key={verse.number}
-                        className={`rounded-2xl border p-4 transition-colors sm:p-6 ${card}`}
+                        aria-current={isActiveAyah ? 'true' : undefined}
+                        className={`rounded-2xl border p-4 transition-colors sm:p-6 ${
+                          isActiveAyah
+                            ? dark
+                              ? 'border-amber-300/40 bg-amber-300/[0.07]'
+                              : 'border-amber-500/40 bg-amber-50'
+                            : card
+                        }`}
                       >
                         <div className="mb-4 flex items-center justify-between gap-3">
                           <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-full text-xs font-semibold ${
@@ -556,7 +596,20 @@ export default function QuranPage() {
                           lang="ar"
                           style={{ fontSize: `${settings.arabicFontSize}px` }}
                         >
-                          {verse.arabic}{' '}
+                          {arabicWords.map((word, index) => (
+                            <span
+                              key={`${verse.number}-${index}`}
+                              className={
+                                isActiveAyah && activeWordIndex === index && shouldPlay
+                                  ? dark
+                                    ? 'rounded bg-amber-300/25 text-amber-100'
+                                    : 'rounded bg-amber-200 text-amber-950'
+                                  : undefined
+                              }
+                            >
+                              {word}{index < arabicWords.length - 1 ? ' ' : ''}
+                            </span>
+                          ))}{' '}
                           <span className={`font-ui text-sm ${
                             dark ? 'text-amber-200' : 'text-amber-800'
                           }`}>
@@ -591,7 +644,10 @@ export default function QuranPage() {
                     <select
                       className={`${selectClass} mt-1.5`}
                       value={settings.language}
-                      onChange={(event) => updateSetting('language', event.target.value)}
+                      onChange={(event) => {
+                        updateSetting('language', event.target.value);
+                        stopPlayback();
+                      }}
                       disabled={catalogLoading || languageOptions.length === 0}
                     >
                       {languageOptions.map((language) => (
@@ -605,7 +661,10 @@ export default function QuranPage() {
                     <select
                       className={`${selectClass} mt-1.5`}
                       value={settings.translation}
-                      onChange={(event) => updateSetting('translation', event.target.value)}
+                      onChange={(event) => {
+                        updateSetting('translation', event.target.value);
+                        stopPlayback();
+                      }}
                       disabled={translationsLanguage !== settings.language || translations.length === 0}
                     >
                       {translations.map((edition) => (
@@ -623,9 +682,7 @@ export default function QuranPage() {
                       value={settings.reciter}
                       onChange={(event) => {
                         updateSetting('reciter', event.target.value);
-                        setActiveAudio('');
-                        setActiveAyah(null);
-                        setShouldPlay(false);
+                        stopPlayback();
                       }}
                     >
                       {reciters.map((edition) => (
@@ -696,6 +753,81 @@ export default function QuranPage() {
             </aside>
           </div>
         </div>
+        {activeAudio && visibleChapter && activeAyah !== null && (
+          <section
+            className={`quran-player ${dark ? 'quran-player-dark' : ''}`}
+            aria-label="Quran audio player"
+          >
+            <audio
+              ref={audioRef}
+              preload="metadata"
+              src={activeAudio}
+              onEnded={handleAudioEnded}
+              onTimeUpdate={updatePlaybackPosition}
+              onLoadedMetadata={updatePlaybackPosition}
+              onDurationChange={updatePlaybackPosition}
+              onPlay={() => setShouldPlay(true)}
+              onError={() => setAudioError('This recitation could not be loaded. Try another reciter or check your connection.')}
+            />
+            <div className="quran-player-info">
+              <span className="quran-player-surah">{visibleChapter.surah.englishName}</span>
+              <span className="quran-player-meta">
+                Verse {activeAyah} · {reciters.find((item) => item.identifier === settings.reciter)?.englishName ?? 'Selected reciter'}
+              </span>
+            </div>
+            <div className="quran-player-controls">
+              <button
+                type="button"
+                className="quran-player-skip"
+                aria-label="Previous verse"
+                onClick={() => playAdjacentVerse(-1)}
+                disabled={activeAyah <= 1}
+              >
+                ↶
+              </button>
+              <button
+                type="button"
+                className="quran-player-play"
+                aria-label={shouldPlay ? 'Pause recitation' : 'Play recitation'}
+                onClick={() => {
+                  if (shouldPlay) {
+                    audioRef.current?.pause();
+                    setShouldPlay(false);
+                  } else {
+                    setAudioError('');
+                    setShouldPlay(true);
+                  }
+                }}
+              >
+                {shouldPlay ? 'Ⅱ' : '▶'}
+              </button>
+              <button
+                type="button"
+                className="quran-player-skip"
+                aria-label="Next verse"
+                onClick={() => playAdjacentVerse(1)}
+                disabled={activeAyah >= visibleChapter.verses.length}
+              >
+                ↷
+              </button>
+            </div>
+            <div className="quran-player-progress">
+              <span>{formatTime(playbackTime)}</span>
+              <input
+                type="range"
+                min={0}
+                max={playbackDuration || 0}
+                step={0.1}
+                value={Math.min(playbackTime, playbackDuration || 0)}
+                aria-label="Seek recitation"
+                disabled={!playbackDuration}
+                onChange={(event) => seekPlayback(Number(event.target.value))}
+              />
+              <span>{formatTime(playbackDuration)}</span>
+            </div>
+            {audioError && <p role="alert" className="quran-player-error">{audioError}</p>}
+          </section>
+        )}
       </AppShell>
     </div>
   );
