@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import LegalLayout from '../../components/LegalLayout';
-import '../legal.css';
 import Link from 'next/link';
 export const metadata: Metadata = {
   title: 'Contact — Dhikrly',
@@ -14,7 +13,7 @@ export default function ContactPage() {
       subtitle="We'd love to hear from you — feedback, bugs, duas suggestions"
       lastUpdated="March 2025"
     >
-      <div className="highlight-box">
+      <div className="mb-6 rounded-xl border border-amber-700/15 bg-amber-100 px-5 py-4 text-amber-800 [&_p]:mb-0 [&_p]:text-[13px] [&_p]:text-amber-800">
         <p>
           Dhikrly is an independent project built with care for the Muslim
           community. All feedback, suggestions, and bug reports are welcome and
