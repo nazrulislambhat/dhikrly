@@ -1,6 +1,13 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import {
+  ChartColumnIncreasing,
+  Check,
+  Clock3,
+  LocateFixed,
+  MapPinned,
+} from 'lucide-react';
 import { getHijriDate, getTodayKey } from '@/lib/dates';
 import { getSalahSettings, saveSalahSettings } from '@/lib/salahStorage';
 import { getCurrentAndNextPrayer } from '@/lib/prayerTimes';
@@ -28,14 +35,14 @@ import type {
   SalahLocation,
   DayLog,
 } from '@/types/salah';
-import { PRAYERS } from '@/types/salah';
+import { PRAYERS, PRAYER_LABELS } from '@/types/salah';
 import AppShell from '@/components/AppShell';
 
 type Tab = 'today' | 'insights' | 'masjid';
 
 export default function SalahPage() {
   const [dark, setDark] = useState(
-    () => load<{ dark: boolean }>(SETTINGS_KEY, { dark: true }).dark,
+    () => load<{ dark: boolean }>(SETTINGS_KEY, { dark: false }).dark,
   );
   const [settings, setSettings] = useState(() => getSalahSettings());
   const [activeTab, setActiveTab] = useState<Tab>('today');
@@ -115,8 +122,8 @@ export default function SalahPage() {
     ? 'bg-white/[0.04] border-white/[0.07]'
     : 'bg-white border-stone-200 shadow-sm';
   const tabActive = dark
-    ? 'bg-amber-400/15 text-amber-300'
-    : 'bg-amber-50 text-amber-700';
+    ? 'bg-emerald-400/15 text-emerald-200'
+    : 'bg-white text-emerald-800 shadow-sm';
   const tabInactive = dark
     ? 'text-stone-500 hover:text-stone-300'
     : 'text-stone-400 hover:text-stone-600';
@@ -163,18 +170,19 @@ export default function SalahPage() {
           <div className="flex items-start justify-between">
             <div>
               <p
-                className={`text-[10px] uppercase tracking-[0.18em] ${dark ? 'text-amber-400/60' : 'text-amber-600/70'}`}
+                className={`text-[10px] font-semibold uppercase tracking-[0.18em] ${dark ? 'text-emerald-300/70' : 'text-emerald-800/75'}`}
               >
                 {getHijriDate()}
               </p>
               <h1
-                className={`mt-0.5 font-serif text-[clamp(20px,4vw,28px)] font-normal tracking-wide ${dark ? 'text-amber-400' : 'text-amber-700'}`}
+                className={`mt-0.5 font-serif text-[clamp(24px,4vw,32px)] font-semibold tracking-tight ${dark ? 'text-stone-100' : 'text-stone-900'}`}
               >
                 Daily Ṣalāh
               </h1>
               <p
-                className={`mt-0.5 text-[11px] ${dark ? 'text-stone-500' : 'text-stone-400'}`}
+                className={`mt-1 inline-flex items-center gap-1.5 text-xs ${dark ? 'text-stone-400' : 'text-stone-500'}`}
               >
+                <MapPinned className="h-3.5 w-3.5 text-emerald-700" aria-hidden="true" />
                 {settings.location.city}, {settings.location.country}
               </p>
             </div>
@@ -207,6 +215,8 @@ export default function SalahPage() {
                 </button>
               )}
               <button
+                aria-label="Change prayer location"
+                title="Change location"
                 onClick={() => {
                   const updated = { ...settings, location: null };
                   setSettings(updated);
@@ -218,7 +228,7 @@ export default function SalahPage() {
                     : 'border-stone-200 text-stone-400 hover:text-stone-600'
                 }`}
               >
-                📍
+                <LocateFixed className="h-4 w-4" aria-hidden="true" />
               </button>
             </div>
           </div>
@@ -229,19 +239,19 @@ export default function SalahPage() {
               className={`relative mt-5 flex min-h-36 items-center justify-between overflow-hidden rounded-2xl border px-5 py-5 sm:px-7 ${
                 dark
                   ? 'border-emerald-300/20 bg-gradient-to-br from-[#123a30] via-[#142b25] to-[#101c19]'
-                  : 'border-emerald-600/30 bg-gradient-to-br from-[#0b7658] via-[#0d936b] to-[#18b783] text-white'
+                  : 'border-emerald-800/10 bg-gradient-to-br from-[#e5f5e9] via-[#d6edda] to-[#c2e7d2] text-emerald-950 shadow-sm'
               }`}
             >
               <div className="relative z-10">
                 <p
-                  className={`text-[10px] font-semibold uppercase tracking-[0.16em] ${dark ? 'text-amber-200/70' : 'text-amber-950/65'}`}
+                  className={`text-[10px] font-semibold uppercase tracking-[0.16em] ${dark ? 'text-emerald-200/70' : 'text-emerald-900/65'}`}
                 >
                   {current
                     ? `Current · ${current.charAt(0).toUpperCase() + current.slice(1)}`
                     : 'Before Fajr'}
                 </p>
                 <p
-                  className={`mt-1 font-serif text-2xl font-semibold ${dark ? 'text-stone-50' : 'text-stone-900'}`}
+                  className={`mt-1 font-serif text-2xl font-semibold ${dark ? 'text-stone-50' : 'text-emerald-950'}`}
                 >
                   {next.charAt(0).toUpperCase() + next.slice(1)} is next
                 </p>
@@ -255,20 +265,23 @@ export default function SalahPage() {
               </div>
               <div className="relative z-10 text-right">
                 <p
-                  className={`text-3xl font-semibold tabular-nums tracking-tight sm:text-4xl ${dark ? 'text-amber-200' : 'text-stone-900'}`}
+                  className={`text-3xl font-semibold tabular-nums tracking-tight sm:text-4xl ${dark ? 'text-emerald-200' : 'text-emerald-900'}`}
                 >
                   {minutesUntilNext < 60
                     ? `${minutesUntilNext}m`
                     : `${Math.floor(minutesUntilNext / 60)}h ${minutesUntilNext % 60}m`}
                 </p>
                 <p
-                  className={`mt-1 text-xs ${dark ? 'text-stone-300' : 'text-amber-950/65'}`}
+                  className={`mt-1 text-xs ${dark ? 'text-stone-300' : 'text-emerald-900/70'}`}
                 >
                   until prayer
                 </p>
               </div>
-              <span className={`pointer-events-none absolute -right-2 -bottom-7 font-arabic text-[8rem] leading-none opacity-[0.12] ${dark ? 'text-amber-200' : 'text-amber-950'}`} lang="ar" dir="rtl" aria-hidden="true">
-                صَلَاة
+              <span className={`pointer-events-none absolute -bottom-6 right-4 opacity-[0.12] ${dark ? 'text-emerald-100' : 'text-emerald-900'}`} aria-hidden="true">
+                <svg viewBox="0 0 180 150" className="h-36 w-44 sm:h-44 sm:w-52" fill="none">
+                  <path d="M30 132V73h120v59M24 132h132M41 72c0-22 18-40 49-40s49 18 49 40M90 32V15m-5 4h10M35 73V41l8-13 8 13v32m86 0V41l8-13 8 13v32M80 132V98a10 10 0 0 1 20 0v34" stroke="currentColor" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M68 73c0-12 10-22 22-22s22 10 22 22" stroke="currentColor" strokeWidth="4" />
+                </svg>
               </span>
             </div>
           )}
@@ -309,43 +322,93 @@ export default function SalahPage() {
 
         {/* ── Tab strip ── */}
         <div
-          className={`mb-5 flex rounded-xl border p-1 ${dark ? 'border-white/[0.07] bg-white/[0.03]' : 'border-stone-200 bg-stone-50'}`}
+          className={`mb-5 flex rounded-2xl border p-1.5 ${dark ? 'border-white/[0.07] bg-white/[0.03]' : 'border-[var(--app-line)] bg-stone-100/70'}`}
         >
           {(['today', 'insights', 'masjid'] as Tab[]).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`flex-1 rounded-lg py-2 text-[11px] font-medium uppercase tracking-wide transition-all ${
+              className={`flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl py-2 text-xs font-semibold transition-all ${
                 activeTab === tab ? tabActive : tabInactive
               }`}
             >
-              {tab === 'today'
-                ? '🕐 Today'
-                : tab === 'insights'
-                  ? '📊 Insights'
-                  : '🕌 Masjids'}
+              {tab === 'today' ? (
+                <><Clock3 className="h-4 w-4" aria-hidden="true" /> Today</>
+              ) : tab === 'insights' ? (
+                <><ChartColumnIncreasing className="h-4 w-4" aria-hidden="true" /> Insights</>
+              ) : (
+                <><MapPinned className="h-4 w-4" aria-hidden="true" /> Masjids</>
+              )}
             </button>
           ))}
         </div>
 
         {/* ── Today tab ── */}
         {activeTab === 'today' && (
-          <div className="space-y-3">
-            {/* Prayer cards */}
-            {PRAYERS.map((prayer) => (
-              <PrayerCard
-                key={prayer}
-                prayer={prayer}
-                status={log.prayers[prayer]}
-                time={prayerTimeMap[prayer]}
-                timezone={settings.location!.timezone}
-                isCurrent={current === prayer}
-                isNext={next === prayer && current !== prayer}
-                dark={dark}
-                onStatusChange={(s: PrayerStatus) => updatePrayer(prayer, s)}
-              />
-            ))}
+          <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1.25fr)_minmax(17rem,0.75fr)]">
+            <section className="space-y-3" aria-label="Prayer times and log">
+              {PRAYERS.map((prayer) => (
+                <PrayerCard
+                  key={prayer}
+                  prayer={prayer}
+                  status={log.prayers[prayer]}
+                  time={prayerTimeMap[prayer]}
+                  timezone={settings.location!.timezone}
+                  isCurrent={current === prayer}
+                  isNext={next === prayer && current !== prayer}
+                  dark={dark}
+                  onStatusChange={(s: PrayerStatus) => updatePrayer(prayer, s)}
+                />
+              ))}
+            </section>
 
+            <aside className="space-y-3">
+              <section className={`rounded-2xl border p-5 ${cardBase}`} aria-label="Daily prayer tracker">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <h2 className="text-sm font-bold">Prayer tracker</h2>
+                    <p className={`mt-1 text-xs ${dark ? 'text-stone-400' : 'text-stone-500'}`}>
+                      Your day, one prayer at a time
+                    </p>
+                  </div>
+                  <span className="grid h-10 w-10 place-items-center rounded-xl bg-emerald-50 text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-200">
+                    <Clock3 className="h-5 w-5" aria-hidden="true" />
+                  </span>
+                </div>
+                <div className="mt-5 flex items-center justify-between gap-1">
+                  {PRAYERS.map((prayer) => {
+                    const completed = ['prayed', 'jamah', 'delayed'].includes(log.prayers[prayer] ?? '');
+                    const shortName = PRAYER_LABELS[prayer].en.slice(0, 3);
+                    return (
+                      <div key={prayer} className="grid justify-items-center gap-2">
+                        <span className={`grid h-9 w-9 place-items-center rounded-full border ${
+                          completed
+                            ? 'border-emerald-700 bg-emerald-700 text-white dark:border-emerald-300 dark:bg-emerald-300 dark:text-emerald-950'
+                            : `border-[var(--app-line)] ${dark ? 'bg-white/[0.03] text-stone-500' : 'bg-white text-stone-400'}`
+                        }`}>
+                          {completed ? <Check className="h-4 w-4" aria-label="Completed" /> : <span className="text-xs">{shortName}</span>}
+                        </span>
+                        <span className={`text-[10px] ${dark ? 'text-stone-400' : 'text-stone-500'}`}>{shortName}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+                <div className="mt-5 h-2 overflow-hidden rounded-full bg-emerald-900/10 dark:bg-white/10">
+                  <div className="h-full rounded-full bg-emerald-700 transition-[width] dark:bg-emerald-300" style={{ width: `${fardPct}%` }} />
+                </div>
+                <p className={`mt-2 text-xs ${dark ? 'text-stone-400' : 'text-stone-500'}`}>
+                  <strong className={dark ? 'text-emerald-200' : 'text-emerald-900'}>{fardDone} of 5</strong> prayers logged · {fardPct}%
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('insights')}
+                  className="mt-4 inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-xl bg-emerald-50 text-xs font-semibold text-emerald-900 transition hover:bg-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-200 dark:hover:bg-emerald-500/20"
+                >
+                  <ChartColumnIncreasing className="h-4 w-4" aria-hidden="true" />
+                  View prayer insights
+                </button>
+              </section>
+              <div className="space-y-3">
             {/* Sunnah */}
             {settings.trackSunnah && (
               <SunnahPanel
@@ -427,6 +490,8 @@ export default function SalahPage() {
                 ))}
               </div>
             </div>
+          </div>
+          </aside>
           </div>
         )}
 

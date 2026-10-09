@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { ArrowRight, Landmark, LocateFixed, Search } from 'lucide-react';
 import type { SalahLocation } from '@/types/salah';
 
 interface LocationSetupProps {
@@ -71,7 +72,7 @@ export default function LocationSetup({ dark, onLocation }: LocationSetupProps) 
           setLoading(false);
         }
       },
-      (err) => {
+      () => {
         setLoading(false);
         setError('Location denied. Please select a city below.');
       },
@@ -79,16 +80,18 @@ export default function LocationSetup({ dark, onLocation }: LocationSetupProps) 
     );
   };
 
-  const panel = dark ? 'bg-[#0c1a2e]' : 'bg-stone-50';
-  const card  = dark ? 'bg-white/[0.04] border-white/[0.08]' : 'bg-white border-stone-200 shadow-sm';
+  const panel = dark ? 'bg-[#0d1715]' : 'bg-[var(--app-bg)]';
+  const card  = dark ? 'bg-white/[0.04] border-white/[0.08]' : 'bg-white border-[var(--app-line)] shadow-sm';
   const text  = dark ? 'text-stone-200' : 'text-stone-800';
-  const muted = dark ? 'text-stone-500' : 'text-stone-400';
-  const inp   = dark ? 'bg-white/5 border-white/10 text-stone-200 placeholder-stone-600' : 'bg-white border-stone-200 text-stone-700 placeholder-stone-400';
+  const muted = dark ? 'text-stone-400' : 'text-stone-500';
+  const inp   = dark ? 'bg-white/5 border-white/10 text-stone-200 placeholder-stone-600' : 'bg-white border-[var(--app-line)] text-stone-700 placeholder-stone-400';
 
   return (
     <div className={`flex min-h-screen flex-col items-center justify-start px-4 py-12 ${panel}`}>
-      <div className="mb-2 text-4xl">🕌</div>
-      <h1 className={`font-serif text-2xl font-semibold ${dark ? 'text-amber-400' : 'text-amber-700'}`}>
+      <span className={`mb-4 grid h-14 w-14 place-items-center rounded-2xl ${dark ? 'bg-emerald-400/10 text-emerald-200' : 'bg-emerald-50 text-emerald-800'}`}>
+        <Landmark className="h-7 w-7" aria-hidden="true" />
+      </span>
+      <h1 className={`font-serif text-2xl font-semibold ${dark ? 'text-stone-100' : 'text-stone-900'}`}>
         Set Your Location
       </h1>
       <p className={`mt-2 mb-8 text-center text-sm ${muted}`}>
@@ -101,13 +104,13 @@ export default function LocationSetup({ dark, onLocation }: LocationSetupProps) 
         disabled={loading}
         className={`mb-6 flex w-full max-w-sm items-center justify-center gap-3 rounded-2xl border py-3.5 text-sm font-medium transition-all active:scale-[0.98] disabled:opacity-60 ${
           dark
-            ? 'border-amber-400/30 bg-amber-400/10 text-amber-300 hover:bg-amber-400/20'
-            : 'border-amber-400/50 bg-amber-50 text-amber-700 hover:bg-amber-100'
+            ? 'border-emerald-400/30 bg-emerald-400/10 text-emerald-200 hover:bg-emerald-400/20'
+            : 'border-emerald-300 bg-emerald-50 text-emerald-900 hover:bg-emerald-100'
         }`}
       >
         {loading
           ? <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-          : '📍'}
+          : <LocateFixed className="h-4 w-4" aria-hidden="true" />}
         {loading ? 'Detecting location…' : 'Use my current location'}
       </button>
 
@@ -116,13 +119,17 @@ export default function LocationSetup({ dark, onLocation }: LocationSetupProps) 
       )}
 
       {/* Search */}
+      <label className="relative mb-3 w-full max-w-sm">
+      <Search className={`pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 ${muted}`} aria-hidden="true" />
       <input
         type="text"
         placeholder="Search city…"
+        aria-label="Search cities"
         value={search}
         onChange={e => setSearch(e.target.value)}
-        className={`mb-3 w-full max-w-sm rounded-xl border px-4 py-2.5 text-sm outline-none ${inp}`}
+        className={`min-h-11 w-full rounded-xl border pl-10 pr-4 text-sm outline-none ${inp}`}
       />
+      </label>
 
       {/* City list */}
       <div className="w-full max-w-sm space-y-2">
@@ -130,13 +137,13 @@ export default function LocationSetup({ dark, onLocation }: LocationSetupProps) 
           <button
             key={`${city.city}-${city.country}`}
             onClick={() => onLocation(city)}
-            className={`flex w-full items-center justify-between rounded-xl border px-4 py-3 text-left transition-all active:scale-[0.98] ${card} hover:border-amber-400/40`}
+            className={`flex w-full items-center justify-between rounded-xl border px-4 py-3 text-left transition-all active:scale-[0.98] ${card} hover:border-emerald-400`}
           >
             <div>
               <p className={`text-[13px] font-medium ${text}`}>{city.city}</p>
               <p className={`text-[11px] ${muted}`}>{city.country}</p>
             </div>
-            <span className={`text-[11px] ${muted}`}>→</span>
+            <ArrowRight className={`h-4 w-4 ${muted}`} aria-hidden="true" />
           </button>
         ))}
       </div>
