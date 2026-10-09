@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import LegalLayout from '../../components/LegalLayout';
-import '../legal.css';
 export const metadata: Metadata = {
   title: 'Terms & Conditions — Dhikrly',
   description:
@@ -14,7 +13,7 @@ export default function TermsPage() {
       subtitle="Please read these terms carefully before using Dhikrly"
       lastUpdated="March 2025"
     >
-      <div className="highlight-box">
+      <div className="mb-6 rounded-xl border border-amber-700/15 bg-amber-100 px-5 py-4 text-amber-800 [&_p]:mb-0 [&_p]:text-[13px] [&_p]:text-amber-800">
         <p>
           <strong>Summary:</strong> Dhikrly is a free tool to help you track
           your daily adhkār. Use it respectfully. We provide it as-is and are

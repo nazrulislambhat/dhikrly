@@ -26,6 +26,7 @@ interface ChapterCache {
   surah: QuranSurah;
   translation: string;
   reciter: string;
+  arabicScript?: 'indopak';
   verses: QuranVerse[];
 }
 
@@ -165,7 +166,8 @@ export default function QuranPage() {
   const visibleChapter =
     chapter?.surah.number === settings.surah &&
     chapter.translation === settings.translation &&
-    chapter.reciter === settings.reciter
+    chapter.reciter === settings.reciter &&
+    chapter.arabicScript === 'indopak'
       ? chapter
       : null;
   const playbackVerses = useMemo(() => {
@@ -337,6 +339,7 @@ export default function QuranPage() {
           surah: activeSurah,
           translation: settings.translation,
           reciter: settings.reciter,
+          arabicScript: 'indopak' as const,
           verses,
         };
         setChapter(loadedChapter);
@@ -349,7 +352,8 @@ export default function QuranPage() {
         if (
           cached?.surah.number === settings.surah &&
           cached.translation === settings.translation &&
-          cached.reciter === settings.reciter
+          cached.reciter === settings.reciter &&
+          cached.arabicScript === 'indopak'
         ) {
           setChapter(cached);
           setChapterError('Could not connect. Showing the saved copy of this surah.');
@@ -695,6 +699,21 @@ export default function QuranPage() {
     setActiveWordIndex(wordIndex < 0 ? words.length - 1 : wordIndex);
   }, [activeAyah, activeSurah, playbackVerses]);
 
+  useEffect(() => {
+    if (!shouldPlay) return;
+    let frame = 0;
+    let lastUpdate = 0;
+    const update = (timestamp: number) => {
+      if (timestamp - lastUpdate >= 80) {
+        updatePlaybackPosition();
+        lastUpdate = timestamp;
+      }
+      frame = requestAnimationFrame(update);
+    };
+    frame = requestAnimationFrame(update);
+    return () => cancelAnimationFrame(frame);
+  }, [shouldPlay, updatePlaybackPosition]);
+
   const seekPlayback = (time: number) => {
     if (!audioRef.current || !Number.isFinite(time)) return;
     audioRef.current.currentTime = time;
@@ -826,7 +845,7 @@ export default function QuranPage() {
   }`;
 
   return (
-    <div className={`quran-page ${dark ? 'min-h-screen bg-[#0d1715] text-stone-200' : 'min-h-screen bg-stone-50 text-stone-800'}`}>
+    <div className={`min-h-screen ${dark ? 'bg-[#0d1715] text-stone-200' : 'bg-stone-50 text-stone-800'}`}>
       <AppShell
         active="quran"
         dark={dark}
@@ -838,7 +857,7 @@ export default function QuranPage() {
               <p className={`text-[10px] font-semibold uppercase tracking-[0.16em] ${dark ? 'text-amber-300/70' : 'text-amber-700/70'}`}>
                 The Noble Qur’an
               </p>
-              <h1 className={`mt-0.5 truncate font-serif text-2xl font-semibold sm:text-3xl ${dark ? 'text-amber-300' : 'text-amber-800'}`}>
+              <h1 className={`mt-0.5 truncate font-ui text-2xl font-bold tracking-[-0.045em] sm:text-3xl ${dark ? 'text-amber-300' : 'text-amber-800'}`}>
                 {currentSurah?.englishName ?? 'Read & listen'}
               </h1>
               <p className={`mt-0.5 text-xs ${muted}`}>
@@ -902,8 +921,8 @@ export default function QuranPage() {
             </div>
           )}
 
-          <div className="quran-layout">
-            <section className="quran-reader min-w-0" aria-label="Quran reader">
+          <div className="min-w-0">
+            <section className="min-w-0" aria-label="Quran reader">
               <div className={`mb-4 grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-2 rounded-2xl border p-3 ${card}`}>
                 <label className="sr-only" htmlFor="surah-select">Choose a surah</label>
                 <select
@@ -917,7 +936,7 @@ export default function QuranPage() {
                   disabled={catalogLoading || surahs.length === 0}
                 >
                   {surahs.map((surah) => (
-                    <option key={surah.number} value={surah.number}>
+                    <option className="bg-white text-stone-900 dark:bg-[#14211e] dark:text-stone-100" key={surah.number} value={surah.number}>
                       {surah.number}. {surah.englishName} · {surah.name}
                     </option>
                   ))}
@@ -942,11 +961,15 @@ export default function QuranPage() {
                 </button>
               </div>
 
-              <div className={`quran-view-toggle ${card}`} role="group" aria-label="Quran reading view">
+              <div className={`mb-3 grid grid-cols-2 gap-1 rounded-xl border p-1 ${card}`} role="group" aria-label="Quran reading view">
                 <button
                   type="button"
                   aria-pressed={settings.viewMode === 'reader'}
-                  className={settings.viewMode === 'reader' ? 'is-active' : ''}
+                  className={`min-h-10 rounded-lg text-xs font-bold transition ${
+                    settings.viewMode === 'reader'
+                      ? 'bg-[var(--app-surface)] text-emerald-800 shadow-sm dark:text-emerald-200'
+                      : 'text-stone-500'
+                  }`}
                   onClick={() => selectViewMode('reader')}
                 >
                   Verse reader
@@ -954,31 +977,37 @@ export default function QuranPage() {
                 <button
                   type="button"
                   aria-pressed={settings.viewMode === 'mushaf'}
-                  className={settings.viewMode === 'mushaf' ? 'is-active' : ''}
+                  className={`min-h-10 rounded-lg text-xs font-bold transition ${
+                    settings.viewMode === 'mushaf'
+                      ? 'bg-[var(--app-surface)] text-emerald-800 shadow-sm dark:text-emerald-200'
+                      : 'text-stone-500'
+                  }`}
                   onClick={() => selectViewMode('mushaf')}
                 >
                   Mushaf pages
                 </button>
               </div>
               {settings.viewMode === 'mushaf' && (
-                <p className={`mushaf-view-note ${muted}`}>
+                <p className={`-mt-1 mb-3 text-center text-[11px] ${muted}`}>
                   Indo-Pak Arabic with compact translation
                 </p>
               )}
 
               {settings.viewMode === 'mushaf' && (
-                <div className={`mushaf-navigation ${card}`} aria-label="Mushaf page navigation">
+                <div className={`mb-4 flex items-center justify-between gap-3 rounded-2xl border p-3 ${card}`} aria-label="Mushaf page navigation">
                   <button
                     type="button"
                     aria-label="Previous Mushaf page"
+                    className="grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-[var(--app-line)] bg-[var(--app-surface)] text-2xl text-emerald-800 transition hover:-translate-y-0.5 hover:border-emerald-500 disabled:cursor-not-allowed disabled:opacity-40 dark:text-emerald-200"
                     onClick={() => turnMushafPage(-1)}
                     disabled={mushafPageNumber <= 1 || mushafPageLoading}
                   >
                     ‹
                   </button>
                   <label>
-                    <span>PAGE</span>
+                    <span className="text-[9px] font-extrabold tracking-widest">PAGE</span>
                     <input
+                      className="w-12 border-0 border-b border-[var(--app-line)] bg-transparent text-center text-base font-bold text-[var(--app-ink)]"
                       type="number"
                       min={1}
                       max={604}
@@ -993,11 +1022,12 @@ export default function QuranPage() {
                         }
                       }}
                     />
-                    <small>of 604</small>
+                    <small className="text-[11px]">of 604</small>
                   </label>
                   <button
                     type="button"
                     aria-label="Next Mushaf page"
+                    className="grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-[var(--app-line)] bg-[var(--app-surface)] text-2xl text-emerald-800 transition hover:-translate-y-0.5 hover:border-emerald-500 disabled:cursor-not-allowed disabled:opacity-40 dark:text-emerald-200"
                     onClick={() => turnMushafPage(1)}
                     disabled={mushafPageNumber >= 604 || mushafPageLoading}
                   >
@@ -1043,14 +1073,14 @@ export default function QuranPage() {
               )}
 
               {settings.viewMode === 'mushaf' && (
-                <section className="mushaf-stage" aria-label={`Mushaf page ${mushafPageNumber}`}>
+                <section className="relative min-w-0 p-1 [perspective:1400px]" aria-label={`Mushaf page ${mushafPageNumber}`}>
                   {mushafPageLoading && (
-                    <p className={`mushaf-loading ${muted}`} role="status">
+                    <p className={`px-2 py-6 text-center text-xs ${muted}`} role="status">
                       Opening page {mushafPageNumber}…
                     </p>
                   )}
                   {mushafPageError && (
-                    <p className="mushaf-error" role="alert">{mushafPageError}</p>
+                    <p className="px-2 py-6 text-center text-xs text-red-600" role="alert">{mushafPageError}</p>
                   )}
                   {!mushafPageLoading &&
                     !mushafPageError &&
@@ -1059,16 +1089,24 @@ export default function QuranPage() {
                     mushafPage.reciter === settings.reciter && (
                       <article
                         key={mushafPage.page}
-                        className={`mushaf-sheet turn-${pageFlipDirection} ${dark ? 'is-dark' : ''}`}
+                        className={`relative mx-auto min-h-[min(72vh,54rem)] w-[min(100%,42rem)] overflow-hidden rounded-lg border px-5 pb-12 pt-6 [transform-origin:left_center] sm:px-8 sm:pt-8 ${
+                          dark
+                            ? 'border-[#496657] bg-[#16231e] text-[#e5f3e8] shadow-[0_20px_50px_rgb(0_0_0/25%),inset_0_0_0_0.35rem_#16231e,inset_0_0_0_0.43rem_#476b57,inset_0_0_0_0.52rem_#293f33]'
+                            : 'border-[#b5c8b4] bg-[#fffdf7] text-[#152b21] shadow-[0_20px_50px_rgb(20_48_39/12%),inset_0_0_0_0.35rem_#fffdf4,inset_0_0_0_0.43rem_#98b58e,inset_0_0_0_0.52rem_#e5ebd5]'
+                        } ${
+                          pageFlipDirection === 'next'
+                            ? 'animate-[mushaf-page-turn-next_420ms_cubic-bezier(0.2,0.75,0.2,1)_both]'
+                            : 'animate-[mushaf-page-turn-previous_420ms_cubic-bezier(0.2,0.75,0.2,1)_both]'
+                        }`}
                         aria-label={`Mushaf page ${mushafPage.page}`}
                       >
-                        <div className="mushaf-page-ornament" aria-hidden="true">
-                          <span>۞</span>
-                          <span>الْقُرْآنُ الْكَرِيمُ</span>
-                          <span>۞</span>
+                        <div className="mb-5 mt-1 flex min-h-11 items-center justify-center gap-3 border border-[#1c6747]/50 bg-[linear-gradient(90deg,#174c37,#277b53_18%,#dce7ce_18%,#dce7ce_82%,#277b53_82%,#174c37)] font-arabic text-lg font-bold text-[#16442f] outline outline-1 outline-[#1c6747]/20 [outline-offset:3px]" aria-hidden="true">
+                          <span className="text-base text-[#e9d79a]">۞</span>
+                          <span className="px-1">الْقُرْآنُ الْكَرِيمُ</span>
+                          <span className="text-base text-[#e9d79a]">۞</span>
                         </div>
                         <div
-                          className="mushaf-page-text"
+                          className="px-2 py-1 font-arabic leading-[2.45] text-justify [text-align-last:center] [text-justify:inter-word]"
                           dir="rtl"
                           lang="ar"
                           style={{ fontSize: `${settings.arabicFontSize}px` }}
@@ -1086,21 +1124,25 @@ export default function QuranPage() {
                               verse.surahArabicName ??
                               '';
                             return (
-                              <span key={`${surahNumber}:${verse.number}`} className="mushaf-verse-group">
+                              <span key={`${surahNumber}:${verse.number}`} className="contents">
                                 {startsSurah && (
-                                  <span className="mushaf-surah-heading">
-                                    <span aria-hidden="true">۞</span>
+                                  <span className={`my-4 flex items-center justify-center gap-3 rounded-full border py-2 text-[1.05em] font-bold leading-loose ${
+                                    dark
+                                      ? 'border-[#79c59b]/25 bg-[#79c59b]/[0.08] text-[#a9d9b4]'
+                                      : 'border-[#1c6747]/[0.28] bg-[#277b53]/[0.09] text-[#216844]'
+                                  }`}>
+                                    <span className="text-[0.8em] text-[#9a8044]" aria-hidden="true">۞</span>
                                     <span>{surahName}</span>
-                                    <span aria-hidden="true">۞</span>
+                                    <span className="text-[0.8em] text-[#9a8044]" aria-hidden="true">۞</span>
                                   </span>
                                 )}
                                 {showBismillah && (
-                                  <span className="mushaf-bismillah" lang="ar">
+                                  <span className="my-1 block text-center text-[0.82em]" lang="ar">
                                     بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحِيْمِ
                                   </span>
                                 )}
                                 <span
-                                  className="mushaf-verse"
+                                  className="scroll-my-[40vh]"
                                   data-ayah-key={`${surahNumber}:${verse.number}`}
                                   data-ayah={verse.number}
                                   data-surah={surahNumber}
@@ -1111,20 +1153,24 @@ export default function QuranPage() {
                                       key={`${surahNumber}:${verse.number}:${wordIndex}`}
                                       data-word-index={wordIndex}
                                       data-word-key={`${surahNumber}:${verse.number}:${wordIndex}`}
-                                      className={
+                                      className={`rounded transition-colors duration-100 ${
                                         isActiveAyah &&
                                         activeWordIndex === wordIndex &&
-                                        shouldPlay
-                                          ? 'mushaf-word is-speaking'
-                                          : 'mushaf-word'
-                                      }
+                                        activeAudio
+                                          ? dark
+                                            ? 'bg-[#9ed7a6] text-[#10271b]'
+                                            : 'bg-[#f4d978] text-[#352a10] shadow-[0_0_0_0.1rem_rgb(244_217_120/30%)]'
+                                          : ''
+                                      }`}
                                     >
                                       {word}{' '}
                                     </span>
                                   ))}
                                   <button
                                     type="button"
-                                    className={`mushaf-ayah-marker ${isActiveAyah ? 'is-active' : ''}`}
+                                    className={`mx-1 rounded-full text-[0.48em] align-[0.2em] text-[#937a42] hover:bg-emerald-500/15 hover:text-emerald-800 ${
+                                      isActiveAyah ? 'bg-emerald-500/15 text-emerald-800' : ''
+                                    }`}
                                     aria-label={`Play ${verse.surahName ?? 'surah'} verse ${verse.number}`}
                                     onClick={() => playVerse(verse, false)}
                                   >
@@ -1133,7 +1179,11 @@ export default function QuranPage() {
                                 </span>{' '}
                                 {settings.showTranslation && (
                                   <span
-                                    className="mushaf-translation"
+                                    className={`mb-2 block border-b pb-1 text-left text-[9px] leading-[1.45] ${
+                                      dark
+                                        ? 'border-[#79c59b]/[0.12] text-[#a2b7aa]'
+                                        : 'border-[#1c6747]/[0.12] text-stone-500'
+                                    }`}
                                     dir="ltr"
                                     lang={settings.language}
                                   >
@@ -1144,7 +1194,9 @@ export default function QuranPage() {
                             );
                           })}
                         </div>
-                        <footer className="mushaf-page-footer">
+                        <footer className={`absolute inset-x-5 bottom-3 flex items-center justify-between border-t pt-1 text-[10px] ${
+                          dark ? 'border-[#79c59b]/[0.17] text-[#a2b7aa]' : 'border-[#1c6747]/[0.17] text-stone-500'
+                        }`}>
                           <span>{mushafPage.verses[0]?.surahName ?? 'Al-Qur’an'}</span>
                           <span>{mushafPage.page}</span>
                         </footer>
@@ -1222,7 +1274,7 @@ export default function QuranPage() {
                         </div>
 
                         <p
-                          className="quran-ayah-text font-arabic text-right leading-[2.15]"
+                          className="scroll-mt-6 [overflow-wrap:anywhere] font-arabic text-right leading-[2.15]"
                           dir="rtl"
                           lang="ar"
                           style={{ fontSize: `${settings.arabicFontSize}px` }}
@@ -1232,7 +1284,7 @@ export default function QuranPage() {
                               key={`${verse.number}-${index}`}
                               data-word-key={`${settings.surah}:${verse.number}:${index}`}
                               className={
-                                isActiveAyah && activeWordIndex === index && shouldPlay
+                                isActiveAyah && activeWordIndex === index && activeAudio
                                   ? dark
                                     ? 'rounded bg-amber-300/25 text-amber-100'
                                     : 'rounded bg-amber-200 text-amber-950'
@@ -1274,7 +1326,11 @@ export default function QuranPage() {
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="quran-settings-title"
-                className={`max-h-[90dvh] w-full overflow-y-auto rounded-t-3xl border p-5 shadow-2xl lg:h-full lg:max-h-none lg:w-[27rem] lg:rounded-none lg:rounded-l-3xl ${card}`}
+                className={`max-h-[90dvh] w-full overflow-y-auto rounded-t-3xl border p-5 shadow-2xl lg:h-full lg:max-h-none lg:w-[27rem] lg:rounded-none lg:rounded-l-3xl ${
+                  dark
+                    ? 'border-white/10 bg-[#14211e] text-stone-100'
+                    : 'border-stone-200 bg-white text-stone-800'
+                }`}
               >
               <div className={`sticky top-0 z-10 -mx-5 -mt-5 mb-5 flex items-center justify-between border-b px-5 py-4 ${
                 dark ? 'border-white/10 bg-[#0d1715]' : 'border-stone-200 bg-[var(--app-surface)]'
@@ -1376,7 +1432,7 @@ export default function QuranPage() {
                       disabled={catalogLoading || languageOptions.length === 0}
                     >
                       {languageOptions.map((language) => (
-                        <option key={language} value={language}>{languageName(language)}</option>
+                        <option className="bg-white text-stone-900 dark:bg-[#14211e] dark:text-stone-100" key={language} value={language}>{languageName(language)}</option>
                       ))}
                     </select>
                   </label>
@@ -1393,7 +1449,7 @@ export default function QuranPage() {
                       disabled={translationsLanguage !== settings.language || translations.length === 0}
                     >
                       {translations.map((edition) => (
-                        <option key={edition.identifier} value={edition.identifier}>
+                        <option className="bg-white text-stone-900 dark:bg-[#14211e] dark:text-stone-100" key={edition.identifier} value={edition.identifier}>
                           {labelForEdition(edition)}
                         </option>
                       ))}
@@ -1411,7 +1467,7 @@ export default function QuranPage() {
                       }}
                     >
                       {reciters.map((edition) => (
-                        <option key={edition.identifier} value={edition.identifier}>
+                        <option className="bg-white text-stone-900 dark:bg-[#14211e] dark:text-stone-100" key={edition.identifier} value={edition.identifier}>
                           {labelForEdition(edition)}
                         </option>
                       ))}
@@ -1430,8 +1486,8 @@ export default function QuranPage() {
                         )
                       }
                     >
-                      <option value="verse">Single verse</option>
-                      <option value="surah">Continuous full surah</option>
+                      <option className="bg-white text-stone-900 dark:bg-[#14211e] dark:text-stone-100" value="verse">Single verse</option>
+                      <option className="bg-white text-stone-900 dark:bg-[#14211e] dark:text-stone-100" value="surah">Continuous full surah</option>
                     </select>
                     <span className={`mt-1 block text-[11px] font-normal ${muted}`}>
                       Continuous mode plays from the selected verse through the end of the surah.
@@ -1513,11 +1569,15 @@ export default function QuranPage() {
           </div>
         </div>
         {activeAudio && activeAyah !== null && (
+          <>
           <section
-            className={`quran-player ${dark ? 'quran-player-dark' : ''}`}
+            className={`fixed inset-x-3 bottom-[calc(5.2rem+env(safe-area-inset-bottom))] z-[50] grid grid-cols-2 items-center gap-x-3 gap-y-1 rounded-2xl border border-[var(--app-line)] bg-[color-mix(in_srgb,var(--app-surface)_78%,transparent)] p-3 shadow-[0_14px_40px_rgb(17_43_34/16%)] backdrop-blur-xl lg:bottom-5 lg:left-1/2 lg:right-auto lg:w-[min(calc(100vw-4rem),58rem)] lg:-translate-x-1/2 lg:grid-cols-[minmax(0,1fr)_auto_auto_minmax(12rem,0.9fr)] lg:gap-4 ${
+              dark ? 'text-stone-100' : 'text-stone-800'
+            }`}
             aria-label="Quran audio player"
           >
             <audio
+              className="hidden"
               ref={audioRef}
               preload="metadata"
               src={activeAudio}
@@ -1528,18 +1588,22 @@ export default function QuranPage() {
               onPlay={() => setShouldPlay(true)}
               onError={() => setAudioError('This recitation could not be loaded. Try another reciter or check your connection.')}
             />
-            <div className="quran-player-info">
-              <span className="quran-player-surah">
+            <div className="col-span-2 grid min-w-0 gap-0.5 lg:col-span-1">
+              <span className="overflow-hidden text-ellipsis whitespace-nowrap text-sm font-semibold">
                 {surahs.find((item) => item.number === activeSurah)?.englishName ?? 'The Noble Qur’an'}
               </span>
-              <span className="quran-player-meta">
+              <span className="overflow-hidden text-ellipsis whitespace-nowrap text-[11px] text-stone-500 dark:text-stone-400">
                 Verse {activeAyah} · {reciters.find((item) => item.identifier === settings.reciter)?.englishName ?? 'Selected reciter'}
               </span>
             </div>
-            <div className="quran-player-controls">
+            <div className="col-span-2 flex items-center justify-between gap-1 lg:col-span-1 lg:justify-start">
               <button
                 type="button"
-                className={settings.repeatVerse ? 'is-active' : undefined}
+                className={`grid h-9 w-9 place-items-center rounded-full text-base ${
+                  settings.repeatVerse
+                    ? 'bg-emerald-500/15 text-emerald-800 dark:text-emerald-200'
+                    : 'text-current'
+                }`}
                 aria-label={settings.repeatVerse ? 'Turn off verse repeat' : 'Repeat current verse'}
                 aria-pressed={settings.repeatVerse}
                 title={settings.repeatVerse ? 'Repeat verse on' : 'Repeat verse off'}
@@ -1549,7 +1613,7 @@ export default function QuranPage() {
               </button>
               <button
                 type="button"
-                className="quran-player-skip"
+                className="grid h-9 w-9 place-items-center rounded-full disabled:cursor-not-allowed disabled:opacity-35"
                 aria-label="Previous verse"
                 onClick={() => playAdjacentVerse(-1)}
                 disabled={playbackVerseIndex <= 0}
@@ -1558,7 +1622,7 @@ export default function QuranPage() {
               </button>
               <button
                 type="button"
-                className="quran-player-play"
+                className="grid h-10 w-10 place-items-center rounded-full bg-emerald-800 text-sm text-white dark:bg-emerald-400 dark:text-emerald-950"
                 aria-label={shouldPlay ? 'Pause recitation' : 'Play recitation'}
                 onClick={() => {
                   if (shouldPlay) {
@@ -1574,7 +1638,7 @@ export default function QuranPage() {
               </button>
               <button
                 type="button"
-                className="quran-player-skip"
+                className="grid h-9 w-9 place-items-center rounded-full disabled:cursor-not-allowed disabled:opacity-35"
                 aria-label="Next verse"
                 onClick={() => playAdjacentVerse(1)}
                 disabled={playbackVerseIndex < 0 || playbackVerseIndex >= playbackVerses.length - 1}
@@ -1582,21 +1646,23 @@ export default function QuranPage() {
                 ↷
               </button>
             </div>
-            <label className="quran-player-speed">
+            <label className="col-span-2 flex items-center justify-self-end gap-2 whitespace-nowrap text-[11px] text-stone-500 dark:text-stone-400 lg:col-span-1 lg:justify-self-start">
               <span>Speed</span>
               <select
+                className="min-h-8 rounded-lg border border-[var(--app-line)] bg-[var(--app-surface)] px-2 text-xs text-[var(--app-ink)]"
                 aria-label="Playback speed"
                 value={settings.playbackRate}
                 onChange={(event) => updateSetting('playbackRate', Number(event.target.value))}
               >
                 {PLAYBACK_RATES.map((rate) => (
-                  <option key={rate} value={rate}>{rate}×</option>
+                  <option className="bg-white text-stone-900 dark:bg-[#14211e] dark:text-stone-100" key={rate} value={rate}>{rate}×</option>
                 ))}
               </select>
             </label>
-            <div className="quran-player-progress">
+            <div className="col-span-2 grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 text-[10px] tabular-nums text-stone-500 dark:text-stone-400 lg:col-span-1">
               <span>{formatTime(playbackTime)}</span>
               <input
+                className="w-full cursor-pointer accent-emerald-700 disabled:cursor-wait"
                 type="range"
                 min={0}
                 max={playbackDuration || 0}
@@ -1608,8 +1674,10 @@ export default function QuranPage() {
               />
               <span>{formatTime(playbackDuration)}</span>
             </div>
-            {audioError && <p role="alert" className="quran-player-error">{audioError}</p>}
+            {audioError && <p role="alert" className="col-span-2 m-0 text-xs text-red-600">{audioError}</p>}
           </section>
+          <div aria-hidden="true" className="h-40 lg:h-24" />
+          </>
         )}
       </AppShell>
     </div>

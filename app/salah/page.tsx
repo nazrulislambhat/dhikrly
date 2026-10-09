@@ -150,7 +150,7 @@ export default function SalahPage() {
   const fardPct = Math.round((fardDone / 5) * 100);
 
   return (
-    <div className={`salah-page ${bg}`}>
+    <div className={bg}>
       {/* Auth modal */}
       {showAuthModal && (
         <AuthModal dark={dark} onClose={() => setShowAuthModal(false)} />
