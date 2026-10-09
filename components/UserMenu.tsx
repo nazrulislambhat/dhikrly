@@ -2,19 +2,20 @@
 
 import { useState, useRef, useEffect } from 'react';
 import type { User } from '@supabase/supabase-js';
+import type { SyncStatus } from '@/hooks/useSync';
 
 interface UserMenuProps {
   user: User;
   dark: boolean;
   onSignOut: () => void;
-  isSynced: boolean;
+  syncStatus: SyncStatus;
 }
 
 export default function UserMenu({
   user,
   dark,
   onSignOut,
-  isSynced,
+  syncStatus,
 }: UserMenuProps) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -33,6 +34,23 @@ export default function UserMenu({
   const initials = user.email ? user.email.slice(0, 2).toUpperCase() : '??';
 
   const avatarUrl = user.user_metadata?.avatar_url as string | undefined;
+  const isSynced = syncStatus === 'synced';
+  const syncLabel =
+    syncStatus === 'synced'
+      ? 'Synced'
+      : syncStatus === 'syncing'
+        ? 'Syncing…'
+        : syncStatus === 'offline'
+          ? 'Offline'
+          : 'Sync failed';
+  const syncColor =
+    syncStatus === 'synced'
+      ? 'bg-emerald-500'
+      : syncStatus === 'error'
+        ? 'bg-red-500'
+        : syncStatus === 'offline'
+          ? 'bg-stone-400'
+          : 'bg-amber-400 animate-pulse';
 
   const panel = dark
     ? 'bg-[#111f33] border-white/10 shadow-2xl'
@@ -78,7 +96,7 @@ export default function UserMenu({
           <span
             className={`absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full border ${
               dark ? 'border-[#111f33]' : 'border-white'
-            } ${isSynced ? 'bg-emerald-500' : 'bg-amber-400 animate-pulse'}`}
+            } ${syncColor}`}
           />
         </div>
 
@@ -88,7 +106,7 @@ export default function UserMenu({
             dark ? 'text-stone-400' : 'text-stone-500'
           }`}
         >
-          {isSynced ? 'Synced' : 'Syncing…'}
+          {syncLabel}
         </span>
 
         {/* Chevron */}
@@ -142,14 +160,18 @@ export default function UserMenu({
                 ? dark
                   ? 'bg-emerald-500/10'
                   : 'bg-emerald-50'
-                : dark
-                  ? 'bg-amber-400/10'
-                  : 'bg-amber-50'
+                : syncStatus === 'error'
+                  ? dark
+                    ? 'bg-red-500/10'
+                    : 'bg-red-50'
+                  : dark
+                    ? 'bg-amber-400/10'
+                    : 'bg-amber-50'
             }`}
           >
             <span
               className={`h-1.5 w-1.5 rounded-full ${
-                isSynced ? 'bg-emerald-500' : 'bg-amber-400 animate-pulse'
+                syncColor
               }`}
             />
             <span
@@ -158,12 +180,22 @@ export default function UserMenu({
                   ? dark
                     ? 'text-emerald-400'
                     : 'text-emerald-700'
-                  : dark
-                    ? 'text-amber-400'
-                    : 'text-amber-700'
+                  : syncStatus === 'error'
+                    ? dark
+                      ? 'text-red-400'
+                      : 'text-red-700'
+                    : dark
+                      ? 'text-amber-400'
+                      : 'text-amber-700'
               }`}
             >
-              {isSynced ? 'All changes synced' : 'Syncing changes…'}
+              {syncStatus === 'synced'
+                ? 'All changes synced'
+                : syncStatus === 'syncing'
+                  ? 'Syncing changes…'
+                  : syncStatus === 'offline'
+                    ? 'Waiting for connection'
+                    : 'Sync failed; retrying'}
             </span>
           </div>
 

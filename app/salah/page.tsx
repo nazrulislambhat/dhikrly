@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { getHijriDate, getTodayKey } from '@/lib/dates';
 import { getSalahSettings, saveSalahSettings } from '@/lib/salahStorage';
 import { getCurrentAndNextPrayer } from '@/lib/prayerTimes';
-import { load, SETTINGS_KEY } from '@/lib/storage';
+import { load, save, SETTINGS_KEY } from '@/lib/storage';
 
 import { usePrayerTimes } from '@/hooks/usePrayerTimes';
 import { useSalahLog } from '@/hooks/useSalahLog';
@@ -29,6 +29,7 @@ import type {
   DayLog,
 } from '@/types/salah';
 import { PRAYERS } from '@/types/salah';
+import AppShell from '@/components/AppShell';
 
 type Tab = 'today' | 'insights' | 'masjid';
 
@@ -40,7 +41,6 @@ export default function SalahPage() {
   const [activeTab, setActiveTab] = useState<Tab>('today');
   const [showHeatmap, setShowHeatmap] = useState(false);
   const [now, setNow] = useState(new Date());
-  const [isSynced, setIsSynced] = useState(true);
   const [showAuthModal, setShowAuthModal] = useState(false);
 
   const today = getTodayKey();
@@ -64,7 +64,6 @@ export default function SalahPage() {
     (logs: DayLog[]) => {
       const todayLog = logs.find((l) => l.date === today);
       if (todayLog) setLog(todayLog);
-      setIsSynced(true);
     },
     [today, setLog],
   );
@@ -76,22 +75,13 @@ export default function SalahPage() {
     [setLog],
   );
 
-  useSalahSync({
+  const { status: syncStatus } = useSalahSync({
     user,
     today,
     log,
     onPullComplete: handlePullComplete,
     onRemoteLogUpdate: handleRemoteLogUpdate,
   });
-
-  // Mark unsynced briefly on log change
-  useEffect(() => {
-    if (!user) return;
-    setIsSynced(false);
-    const t = setTimeout(() => setIsSynced(true), 2500);
-    return () => clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [log]);
 
   // Tick every minute for live next-prayer countdown
   useEffect(() => {
@@ -102,6 +92,8 @@ export default function SalahPage() {
   // Sync dark mode from main app settings
   useEffect(() => {
     document.documentElement.classList.toggle('dark', dark);
+    const currentSettings = load<{ dark: boolean; sound?: boolean }>(SETTINGS_KEY, { dark, sound: true });
+    save(SETTINGS_KEY, { ...currentSettings, dark });
   }, [dark]);
 
   const handleLocation = (loc: SalahLocation) => {
@@ -111,7 +103,7 @@ export default function SalahPage() {
   };
 
   const { current, next, minutesUntilNext } = times
-    ? getCurrentAndNextPrayer(times)
+    ? getCurrentAndNextPrayer(times, now)
     : { current: null, next: 'fajr', minutesUntilNext: 0 };
 
   const bg = dark
@@ -129,7 +121,13 @@ export default function SalahPage() {
 
   // Show location setup if no location
   if (!settings.location) {
-    return <LocationSetup dark={dark} onLocation={handleLocation} />;
+    return (
+      <div className={dark ? 'min-h-screen bg-[#0c1a2e] text-stone-200' : 'min-h-screen bg-stone-50 text-stone-800'}>
+        <AppShell active="salah" dark={dark} onToggleDark={() => setDark((value) => !value)}>
+          <LocationSetup dark={dark} onLocation={handleLocation} />
+        </AppShell>
+      </div>
+    );
   }
 
   const prayerTimeMap: Record<PrayerName, Date | null> = {
@@ -156,7 +154,8 @@ export default function SalahPage() {
         <AuthModal dark={dark} onClose={() => setShowAuthModal(false)} />
       )}
 
-      <div className="mx-auto max-w-2xl px-4 pt-6 pb-28">
+      <AppShell active="salah" dark={dark} onToggleDark={() => setDark((value) => !value)}>
+      <div className="mx-auto w-full max-w-5xl px-4 pt-5 pb-10 sm:px-6 sm:pt-8 lg:px-10">
         {/* ── Header ── */}
         <header className="mb-6">
           <div className="flex items-start justify-between">
@@ -188,7 +187,7 @@ export default function SalahPage() {
                 <UserMenu
                   user={user}
                   dark={dark}
-                  isSynced={isSynced}
+                  syncStatus={syncStatus}
                   onSignOut={async () => {
                     await signOut();
                   }}
@@ -451,11 +450,12 @@ export default function SalahPage() {
             className={`text-[10px] uppercase tracking-widest ${dark ? 'text-stone-700' : 'text-stone-400'}`}
           >
             {user
-              ? `Synced · ${user.email}`
+              ? `${syncStatus === 'synced' ? 'All changes synced' : syncStatus === 'syncing' ? 'Syncing changes…' : syncStatus === 'offline' ? 'Waiting for connection' : 'Sync failed; retrying'} · ${user.email}`
               : 'Progress saved locally · Sign in to sync'}
           </p>
         </footer>
       </div>
+      </AppShell>
     </div>
   );
 }

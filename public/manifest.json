@@ -1,12 +1,11 @@
 {
-  "name": "Daily Adhkār & Du'ā",
-  "short_name": "Adhkār",
-  "description": "Track your daily Islamic remembrances and supplications with streaks, reminders, and progress reports.",
+  "name": "Dhikrly — Qur’an, Adhkār & Ṣalāh",
+  "short_name": "Dhikrly",
+  "description": "Read and listen to the Quran, track daily remembrances and supplications, and keep a record of your prayers.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0c1a2e",
-  "theme_color": "#0c1a2e",
-  "orientation": "portrait-primary",
+  "background_color": "#f6f5f1",
+  "theme_color": "#f6f5f1",
   "lang": "en",
   "categories": ["lifestyle", "productivity"],
   "icons": [
@@ -37,6 +36,13 @@
       "short_name": "Evening",
       "description": "Open evening session",
       "url": "/?session=evening",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Read Quran",
+      "short_name": "Quran",
+      "description": "Open the Quran reader",
+      "url": "/quran",
       "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
     }
   ]
