@@ -5,20 +5,22 @@ import AppShell from '@/components/AppShell';
 import { load, save, SETTINGS_KEY } from '@/lib/storage';
 import {
   DEFAULT_QURAN_SETTINGS,
+  DEFAULT_QURAN_DAILY_GOAL,
   DEFAULT_RECITERS,
   QURAN_BOOKMARK_KEY,
+  QURAN_BOOKMARKS_KEY,
   QURAN_CACHE_KEY,
+  QURAN_DAILY_GOAL_KEY,
+  QURAN_PROGRESS_KEY,
   QURAN_SETTINGS_KEY,
+  type QuranBookmark,
   type QuranEdition,
+  type QuranLocation,
+  type QuranReadingProgress,
   type QuranSettings,
   type QuranSurah,
   type QuranVerse,
 } from '@/lib/quran';
-
-interface QuranBookmark {
-  surah: number;
-  ayah: number;
-}
 
 interface ChapterCache {
   surah: QuranSurah;
@@ -57,13 +59,21 @@ function labelForEdition(edition: QuranEdition) {
   return edition.englishName || edition.name || edition.identifier;
 }
 
+function localDateKey(date = new Date()) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 export default function QuranPage() {
   const [dark, setDark] = useState(
     () => load<{ dark: boolean }>(SETTINGS_KEY, { dark: false }).dark,
   );
-  const [settings, setSettings] = useState<QuranSettings>(() =>
-    load<QuranSettings>(QURAN_SETTINGS_KEY, DEFAULT_QURAN_SETTINGS),
-  );
+  const [settings, setSettings] = useState<QuranSettings>(() => ({
+    ...DEFAULT_QURAN_SETTINGS,
+    ...load<Partial<QuranSettings>>(QURAN_SETTINGS_KEY, {}),
+  }));
   const [surahs, setSurahs] = useState<QuranSurah[]>([]);
   const [languages, setLanguages] = useState<string[]>([]);
   const [translations, setTranslations] = useState<QuranEdition[]>([]);
@@ -76,19 +86,33 @@ export default function QuranPage() {
   );
   const [chapterLoading, setChapterLoading] = useState(false);
   const [chapterError, setChapterError] = useState('');
-  const [bookmark, setBookmark] = useState<QuranBookmark | null>(() =>
-    load<QuranBookmark | null>(QURAN_BOOKMARK_KEY, null),
+  const [bookmarks, setBookmarks] = useState<QuranBookmark[]>(() => {
+    const savedBookmarks = load<QuranBookmark[]>(QURAN_BOOKMARKS_KEY, []);
+    if (savedBookmarks.length > 0) return savedBookmarks;
+    const legacyBookmark = load<QuranBookmark | null>(QURAN_BOOKMARK_KEY, null);
+    return legacyBookmark
+      ? [{ ...legacyBookmark, createdAt: new Date().toISOString() }]
+      : [];
+  });
+  const [progress, setProgress] = useState<QuranReadingProgress>(() =>
+    load<QuranReadingProgress>(QURAN_PROGRESS_KEY, { lastRead: null, dailyVerses: {} }),
+  );
+  const [dailyGoal, setDailyGoal] = useState(() =>
+    Math.min(
+      500,
+      Math.max(1, load<number>(QURAN_DAILY_GOAL_KEY, DEFAULT_QURAN_DAILY_GOAL)),
+    ),
   );
   const [activeAudio, setActiveAudio] = useState('');
   const [activeAyah, setActiveAyah] = useState<number | null>(null);
+  const [continuousSurah, setContinuousSurah] = useState(false);
   const [shouldPlay, setShouldPlay] = useState(false);
   const [playbackTime, setPlaybackTime] = useState(0);
   const [playbackDuration, setPlaybackDuration] = useState(0);
   const [activeWordIndex, setActiveWordIndex] = useState<number | null>(null);
   const [audioError, setAudioError] = useState('');
-  const [jumpToAyah, setJumpToAyah] = useState<number | null>(null);
+  const [jumpToAyah, setJumpToAyah] = useState<QuranLocation | null>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
-  const settingsRef = useRef<HTMLDetailsElement>(null);
 
   const visibleChapter =
     chapter?.surah.number === settings.surah &&
@@ -107,18 +131,21 @@ export default function QuranPage() {
   }, [dark]);
 
   useEffect(() => {
-    const desktop = window.matchMedia('(min-width: 1024px)');
-    const syncSettingsVisibility = () => {
-      if (settingsRef.current) settingsRef.current.open = desktop.matches;
-    };
-    syncSettingsVisibility();
-    desktop.addEventListener('change', syncSettingsVisibility);
-    return () => desktop.removeEventListener('change', syncSettingsVisibility);
-  }, []);
-
-  useEffect(() => {
     save(QURAN_SETTINGS_KEY, settings);
   }, [settings]);
+
+  useEffect(() => {
+    save(QURAN_BOOKMARKS_KEY, bookmarks);
+    save(QURAN_BOOKMARK_KEY, null);
+  }, [bookmarks]);
+
+  useEffect(() => {
+    save(QURAN_PROGRESS_KEY, progress);
+  }, [progress]);
+
+  useEffect(() => {
+    save(QURAN_DAILY_GOAL_KEY, dailyGoal);
+  }, [dailyGoal]);
 
   useEffect(() => {
     let cancelled = false;
@@ -296,18 +323,82 @@ export default function QuranPage() {
   }, [activeAudio, shouldPlay]);
 
   useEffect(() => {
+    if (!shouldPlay || activeAyah === null) return;
+    const frame = requestAnimationFrame(() => {
+      document
+        .getElementById(`quran-ayah-${activeAyah}`)
+        ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [activeAyah, shouldPlay, settings.surah]);
+
+  useEffect(() => {
     setPlaybackTime(0);
     setPlaybackDuration(0);
     setActiveWordIndex(null);
   }, [activeAudio]);
 
   useEffect(() => {
-    if (jumpToAyah === null || !visibleChapter) return;
+    if (
+      jumpToAyah === null ||
+      !visibleChapter ||
+      visibleChapter.surah.number !== jumpToAyah.surah
+    ) {
+      return;
+    }
     document
-      .getElementById(`quran-ayah-${jumpToAyah}`)
+      .getElementById(`quran-ayah-${jumpToAyah.ayah}`)
       ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     setJumpToAyah(null);
   }, [jumpToAyah, visibleChapter]);
+
+  const recordRead = useCallback((location: QuranLocation) => {
+    setProgress((current) => {
+      const date = localDateKey();
+      const verseKey = `${location.surah}:${location.ayah}`;
+      const todaysVerses = current.dailyVerses[date] ?? [];
+      const lastRead = current.lastRead;
+      if (
+        lastRead?.surah === location.surah &&
+        lastRead.ayah === location.ayah &&
+        todaysVerses.includes(verseKey)
+      ) {
+        return current;
+      }
+
+      const dailyVerses = { ...current.dailyVerses };
+      dailyVerses[date] = todaysVerses.includes(verseKey)
+        ? todaysVerses
+        : [...todaysVerses, verseKey];
+      const retainedDates = Object.keys(dailyVerses).sort().slice(-30);
+      return {
+        lastRead: location,
+        dailyVerses: Object.fromEntries(
+          retainedDates.map((key) => [key, dailyVerses[key]]),
+        ),
+      };
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!visibleChapter || chapterLoading) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const current = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+        const ayah = Number(current?.target.getAttribute('data-ayah'));
+        if (current && Number.isInteger(ayah)) {
+          recordRead({ surah: visibleChapter.surah.number, ayah });
+        }
+      },
+      { rootMargin: '-20% 0px -55% 0px', threshold: [0, 0.25, 0.5] },
+    );
+    document.querySelectorAll<HTMLElement>('[data-ayah]').forEach((element) => {
+      observer.observe(element);
+    });
+    return () => observer.disconnect();
+  }, [chapterLoading, recordRead, visibleChapter]);
 
   const updateSetting = useCallback(
     <K extends keyof QuranSettings>(key: K, value: QuranSettings[K]) => {
@@ -326,9 +417,10 @@ export default function QuranPage() {
     setActiveAudio('');
     setActiveAyah(null);
     setShouldPlay(false);
+    setContinuousSurah(false);
   };
 
-  const playVerse = useCallback((verse: QuranVerse) => {
+  const playVerse = useCallback((verse: QuranVerse, continuous = settings.playbackMode === 'surah') => {
     if (!verse.audio) {
       setAudioError('Audio is not available for this verse.');
       return;
@@ -342,7 +434,14 @@ export default function QuranPage() {
     setActiveAyah(verse.number);
     setActiveAudio(verse.audio);
     setShouldPlay(true);
-  }, [activeAyah, shouldPlay]);
+    setContinuousSurah(continuous);
+    recordRead({ surah: settings.surah, ayah: verse.number });
+  }, [activeAyah, recordRead, settings.playbackMode, settings.surah, shouldPlay]);
+
+  const playFullSurah = () => {
+    const firstVerse = visibleChapter?.verses[0];
+    if (firstVerse) playVerse(firstVerse, true);
+  };
 
   const updatePlaybackPosition = useCallback(() => {
     const audio = audioRef.current;
@@ -383,13 +482,14 @@ export default function QuranPage() {
     const verses = visibleChapter?.verses ?? [];
     const index = verses.findIndex((verse) => verse.number === activeAyah);
     const nextVerse = verses[index + 1];
-    if (settings.autoPlayNext && nextVerse) {
-      playVerse(nextVerse);
+    if ((continuousSurah || settings.autoPlayNext) && nextVerse) {
+      playVerse(nextVerse, continuousSurah);
     } else {
       setShouldPlay(false);
+      setContinuousSurah(false);
       updatePlaybackPosition();
     }
-  }, [activeAyah, playVerse, settings.autoPlayNext, updatePlaybackPosition, visibleChapter]);
+  }, [activeAyah, continuousSurah, playVerse, settings.autoPlayNext, updatePlaybackPosition, visibleChapter]);
 
   const formatTime = (time: number) => {
     if (!Number.isFinite(time) || time < 0) return '0:00';
@@ -397,16 +497,37 @@ export default function QuranPage() {
     const seconds = Math.floor(time % 60).toString().padStart(2, '0');
     return `${minutes}:${seconds}`;
   };
+  const todayVerseCount = progress.dailyVerses[localDateKey()]?.length ?? 0;
+  const goalProgress = Math.min(100, (todayVerseCount / dailyGoal) * 100);
+  const lastReadSurah = progress.lastRead
+    ? surahs.find((surah) => surah.number === progress.lastRead?.surah)
+    : undefined;
 
-  const saveBookmark = (ayah: number) => {
-    if (bookmark?.surah === settings.surah && bookmark.ayah === ayah) {
-      setBookmark(null);
-      save(QURAN_BOOKMARK_KEY, null);
-    } else {
-      const next = { surah: settings.surah, ayah };
-      setBookmark(next);
-      save(QURAN_BOOKMARK_KEY, next);
+  const toggleBookmark = (location: QuranLocation) => {
+    setBookmarks((current) => {
+      const exists = current.some(
+        (item) => item.surah === location.surah && item.ayah === location.ayah,
+      );
+      return exists
+        ? current.filter(
+            (item) => item.surah !== location.surah || item.ayah !== location.ayah,
+          )
+        : [
+            ...current,
+            { ...location, createdAt: new Date().toISOString() },
+          ];
+    });
+  };
+
+  const saveBookmark = (ayah: number) =>
+    toggleBookmark({ surah: settings.surah, ayah });
+
+  const openLocation = (location: QuranLocation) => {
+    if (location.surah !== settings.surah) {
+      stopPlayback();
+      updateSetting('surah', location.surah);
     }
+    setJumpToAyah(location);
   };
 
   const moveSurah = (direction: -1 | 1) => {
@@ -445,19 +566,60 @@ export default function QuranPage() {
                 Explore all 114 surahs, listen to trusted reciters, and choose the translation and reading settings that work for you.
               </p>
             </div>
-            {bookmark && (
+            {progress.lastRead && (
               <button
                 type="button"
                 onClick={() => {
-                  updateSetting('surah', bookmark.surah);
-                  setJumpToAyah(bookmark.ayah);
+                  if (progress.lastRead) openLocation(progress.lastRead);
                 }}
                 className={`rounded-xl border px-4 py-2 text-sm font-medium ${card}`}
               >
-                Continue · {surahs.find((surah) => surah.number === bookmark.surah)?.englishName ?? `Surah ${bookmark.surah}`} {bookmark.ayah}
+                Continue reading · {lastReadSurah?.englishName ?? `Surah ${progress.lastRead.surah}`} {progress.lastRead.ayah}
               </button>
             )}
           </header>
+
+          <section className={`mb-5 rounded-2xl border p-4 sm:p-5 ${card}`} aria-label="Daily Quran reading goal">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-sm font-semibold">Today’s reading</h2>
+                <p className={`mt-1 text-xs ${muted}`}>
+                  {todayVerseCount} of {dailyGoal} verses read
+                  {todayVerseCount >= dailyGoal ? ' · Goal complete' : ''}
+                </p>
+              </div>
+              <label className={`flex items-center gap-2 text-xs ${muted}`}>
+                Daily goal
+                <input
+                  type="number"
+                  min={1}
+                  max={500}
+                  value={dailyGoal}
+                  aria-label="Daily verse goal"
+                  onChange={(event) => {
+                    const value = Number(event.target.value);
+                    if (Number.isInteger(value) && value >= 1 && value <= 500) {
+                      setDailyGoal(value);
+                    }
+                  }}
+                  className={`${selectClass} w-20`}
+                />
+              </label>
+            </div>
+            <div
+              className={`mt-3 h-2 overflow-hidden rounded-full ${dark ? 'bg-white/10' : 'bg-stone-100'}`}
+              role="progressbar"
+              aria-label="Daily verse goal progress"
+              aria-valuemin={0}
+              aria-valuemax={dailyGoal}
+              aria-valuenow={Math.min(todayVerseCount, dailyGoal)}
+            >
+              <div
+                className="h-full rounded-full bg-amber-500 transition-[width]"
+                style={{ width: `${goalProgress}%` }}
+              />
+            </div>
+          </section>
 
           {catalogError && (
             <div role="alert" className="mb-5 rounded-2xl border border-red-400/30 bg-red-500/10 p-4 text-sm text-red-500">
@@ -516,6 +678,17 @@ export default function QuranPage() {
                   <p className={`mt-1 text-sm ${muted}`}>
                     {visibleChapter.surah.englishName} · {visibleChapter.surah.englishNameTranslation}
                   </p>
+                  <button
+                    type="button"
+                    onClick={playFullSurah}
+                    className={`mt-4 min-h-10 rounded-full border px-4 text-xs font-semibold ${
+                      dark
+                        ? 'border-amber-300/25 bg-amber-300/10 text-amber-200'
+                        : 'border-amber-700/20 bg-amber-50 text-amber-800'
+                    }`}
+                  >
+                    {continuousSurah && shouldPlay ? 'Ⅱ Playing full surah' : '▶ Play full surah'}
+                  </button>
                 </div>
               )}
 
@@ -534,13 +707,16 @@ export default function QuranPage() {
                 <div className="space-y-3">
                   {visibleChapter.verses.map((verse) => {
                     const isBookmarked =
-                      bookmark?.surah === settings.surah && bookmark.ayah === verse.number;
+                      bookmarks.some(
+                        (item) => item.surah === settings.surah && item.ayah === verse.number,
+                      );
                     const isPlaying = activeAyah === verse.number && shouldPlay;
                     const isActiveAyah = activeAyah === verse.number && Boolean(activeAudio);
                     const arabicWords = verse.arabic.trim().split(/\s+/);
                     return (
                       <article
                         id={`quran-ayah-${verse.number}`}
+                        data-ayah={verse.number}
                         key={verse.number}
                         aria-current={isActiveAyah ? 'true' : undefined}
                         className={`rounded-2xl border p-4 transition-colors sm:p-6 ${
@@ -632,12 +808,53 @@ export default function QuranPage() {
             </section>
 
             <aside className={`quran-settings-card rounded-2xl border p-4 sm:p-5 lg:sticky lg:top-6 ${card}`}>
-              <details ref={settingsRef} className="quran-settings">
-                <summary className="cursor-pointer list-none text-sm font-semibold">
+              <section aria-label="Saved Quran bookmarks">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-sm font-semibold">Bookmarks</h2>
+                  <span className={`text-xs ${muted}`}>{bookmarks.length}</span>
+                </div>
+                {bookmarks.length === 0 ? (
+                  <p className={`mt-2 text-xs ${muted}`}>Save a verse with ☆ to find it here.</p>
+                ) : (
+                  <ul className="mt-3 max-h-48 space-y-2 overflow-y-auto">
+                    {bookmarks.map((item) => {
+                      const surah = surahs.find((entry) => entry.number === item.surah);
+                      return (
+                        <li
+                          key={`${item.surah}:${item.ayah}`}
+                          className={`flex items-center gap-2 rounded-xl border p-2 ${
+                            dark ? 'border-white/[0.08]' : 'border-stone-100'
+                          }`}
+                        >
+                          <button
+                            type="button"
+                            onClick={() => openLocation(item)}
+                            className="min-h-9 min-w-0 flex-1 text-left text-xs font-medium"
+                          >
+                            {surah?.englishName ?? `Surah ${item.surah}`} · Verse {item.ayah}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => toggleBookmark(item)}
+                            aria-label={`Remove bookmark for ${surah?.englishName ?? `Surah ${item.surah}`} verse ${item.ayah}`}
+                            className={`grid h-9 w-9 shrink-0 place-items-center rounded-lg text-base ${muted}`}
+                          >
+                            ×
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+              </section>
+              <div className={`my-4 border-t ${dark ? 'border-white/[0.08]' : 'border-stone-100'}`} />
+              <section className="quran-settings" aria-labelledby="quran-settings-title">
+                <h2 id="quran-settings-title" className="text-sm font-semibold">
                   Reading preferences
-                  <span className={`ml-2 text-xs font-normal ${muted}`}>Change reciter, translation, and display</span>
-                </summary>
-
+                </h2>
+                <p className={`mt-1 text-xs ${muted}`}>
+                  Set up your translation, recitation, and display.
+                </p>
                 <div className="mt-5 space-y-4">
                   <label className="block text-xs font-medium">
                     Translation language
@@ -694,6 +911,26 @@ export default function QuranPage() {
                   </label>
 
                   <label className="block text-xs font-medium">
+                    Recitation mode
+                    <select
+                      className={`${selectClass} mt-1.5`}
+                      value={settings.playbackMode}
+                      onChange={(event) =>
+                        updateSetting(
+                          'playbackMode',
+                          event.target.value === 'surah' ? 'surah' : 'verse',
+                        )
+                      }
+                    >
+                      <option value="verse">Single verse</option>
+                      <option value="surah">Continuous full surah</option>
+                    </select>
+                    <span className={`mt-1 block text-[11px] font-normal ${muted}`}>
+                      Continuous mode plays from the selected verse through the end of the surah.
+                    </span>
+                  </label>
+
+                  <label className="block text-xs font-medium">
                     Arabic text size
                     <span className={`mt-1 flex items-center gap-3 text-xs ${muted}`}>
                       <input
@@ -732,7 +969,7 @@ export default function QuranPage() {
                     />
                   </label>
                 </div>
-              </details>
+              </section>
               {catalogLoading && <p className={`mt-4 text-xs ${muted}`}>Loading reciters and translations…</p>}
               {!catalogError && !catalogLoading && translationsLanguage === settings.language && translations.length === 0 && (
                 <p role="status" className="mt-4 text-xs text-amber-600">No text translations were found for this language.</p>
