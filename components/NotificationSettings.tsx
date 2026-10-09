@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { load, save, NOTIFICATION_KEY } from '@/lib/storage';
 import { usePushSubscription } from '@/hooks/usePushSubscription';
 import type { NotifSettings } from '@/types';
@@ -137,17 +137,23 @@ export default function NotificationSettings({
 
     const anyEnabled = settings.morningEnabled || settings.eveningEnabled;
 
-    if (permission === 'granted' && anyEnabled) {
-      // Get user's timezone automatically
-      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      const result = await subscribe(settings, userId, timezone);
-      if (!result.ok) {
-        setStatus('error');
-        setErrorMsg(result.error ?? 'Could not register push notification');
-        return;
+    try {
+      if (permission === 'granted' && anyEnabled) {
+        // Get user's timezone automatically
+        const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        const result = await subscribe(settings, userId, timezone);
+        if (!result.ok) {
+          setStatus('error');
+          setErrorMsg(result.error ?? 'Could not register push notification');
+          return;
+        }
+      } else if (!anyEnabled && isSubscribed) {
+        await unsubscribe();
       }
-    } else if (!anyEnabled && isSubscribed) {
-      await unsubscribe();
+    } catch (error) {
+      setStatus('error');
+      setErrorMsg(error instanceof Error ? error.message : 'Could not save notification settings.');
+      return;
     }
 
     setStatus('saved');

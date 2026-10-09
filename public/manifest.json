@@ -4,8 +4,8 @@
   "description": "Read and listen to the Quran, track daily remembrances and supplications, and keep a record of your prayers.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#f6f5f1",
-  "theme_color": "#f6f5f1",
+  "background_color": "#fffaf2",
+  "theme_color": "#fffaf2",
   "lang": "en",
   "categories": ["lifestyle", "productivity"],
   "icons": [
