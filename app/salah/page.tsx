@@ -107,7 +107,7 @@ export default function SalahPage() {
     : { current: null, next: 'fajr' as const, minutesUntilNext: 0 };
 
   const bg = dark
-    ? 'min-h-screen bg-[#0c1a2e] text-stone-200'
+    ? 'min-h-screen bg-[#0d1715] text-stone-200'
     : 'min-h-screen bg-stone-50 text-stone-800';
   const cardBase = dark
     ? 'bg-white/[0.04] border-white/[0.07]'
@@ -122,7 +122,7 @@ export default function SalahPage() {
   // Show location setup if no location
   if (!settings.location) {
     return (
-      <div className={dark ? 'min-h-screen bg-[#0c1a2e] text-stone-200' : 'min-h-screen bg-stone-50 text-stone-800'}>
+      <div className={dark ? 'min-h-screen bg-[#0d1715] text-stone-200' : 'min-h-screen bg-stone-50 text-stone-800'}>
         <AppShell active="salah" dark={dark} onToggleDark={() => setDark((value) => !value)}>
           <LocationSetup dark={dark} onLocation={handleLocation} />
         </AppShell>
@@ -148,14 +148,14 @@ export default function SalahPage() {
   const fardPct = Math.round((fardDone / 5) * 100);
 
   return (
-    <div className={bg}>
+    <div className={`salah-page ${bg}`}>
       {/* Auth modal */}
       {showAuthModal && (
         <AuthModal dark={dark} onClose={() => setShowAuthModal(false)} />
       )}
 
       <AppShell active="salah" dark={dark} onToggleDark={() => setDark((value) => !value)}>
-      <div className="mx-auto w-full max-w-5xl px-4 pt-5 pb-10 sm:px-6 sm:pt-8 lg:px-10">
+      <div className="mx-auto w-full max-w-6xl px-4 pt-5 pb-10 sm:px-6 sm:pt-8 lg:px-10">
         {/* ── Header ── */}
         <header className="mb-6">
           <div className="flex items-start justify-between">
@@ -226,8 +226,8 @@ export default function SalahPage() {
             <div
               className={`relative mt-5 flex min-h-36 items-center justify-between overflow-hidden rounded-2xl border px-5 py-5 sm:px-7 ${
                 dark
-                  ? 'border-amber-300/20 bg-gradient-to-br from-[#513919] via-[#382b1a] to-[#21252a]'
-                  : 'border-amber-300 bg-gradient-to-br from-[#ffbd4d] via-[#ffb030] to-[#f4a11e]'
+                  ? 'border-emerald-300/20 bg-gradient-to-br from-[#123a30] via-[#142b25] to-[#101c19]'
+                  : 'border-emerald-600/30 bg-gradient-to-br from-[#0b7658] via-[#0d936b] to-[#18b783] text-white'
               }`}
             >
               <div className="relative z-10">

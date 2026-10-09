@@ -235,7 +235,7 @@ export default function DuasTracker() {
   });
 
   const bg = dark
-    ? 'min-h-screen bg-[#0c1a2e] text-stone-200'
+    ? 'min-h-screen bg-[#0d1715] text-stone-200'
     : 'min-h-screen bg-stone-50 text-stone-800';
 
   return (
@@ -270,14 +270,12 @@ export default function DuasTracker() {
         />
       )}
 
-      <div className="mx-auto w-full max-w-5xl px-4 py-5 pb-10 sm:px-6 sm:py-8 lg:px-10">
+      <div className="dashboard-page mx-auto w-full max-w-6xl px-4 py-5 pb-10 sm:px-6 sm:py-8 lg:px-10">
         {/* ── Header ── */}
-        <header className="mb-8">
+        <header className="dashboard-header mb-8">
           {/* Top bar: Hijri date left, auth right */}
           <div className="mb-4 flex items-center justify-between">
-            <div
-              className={`text-[11px] uppercase tracking-[0.18em] ${dark ? 'text-amber-400/60' : 'text-amber-600/70'}`}
-            >
+            <div className="dashboard-date">
               {getHijriDate()}
             </div>
 
@@ -298,7 +296,7 @@ export default function DuasTracker() {
             ) : (
               <button
                 onClick={() => setActiveModal('auth')}
-                className={`rounded-full border px-3.5 py-1.5 text-[11px] uppercase tracking-widest transition-all hover:scale-105 active:scale-95 ${
+                className={`dashboard-login rounded-full border px-3.5 py-1.5 text-[11px] font-semibold transition-all hover:scale-105 active:scale-95 ${
                   dark
                     ? 'border-amber-400/30 text-amber-400/70 hover:border-amber-400/50 hover:text-amber-400'
                     : 'border-amber-500/40 text-amber-600 hover:border-amber-500 hover:text-amber-700'
@@ -310,14 +308,14 @@ export default function DuasTracker() {
           </div>
 
           {/* Title block */}
-          <div className="text-left">
+          <div className="dashboard-greeting text-left">
             <h1
-              className={`font-serif text-[clamp(26px,4vw,36px)] font-semibold tracking-tight ${dark ? 'text-amber-400' : 'text-stone-900'}`}
+              className={`font-sans text-[clamp(26px,4vw,36px)] font-bold tracking-tight ${dark ? 'text-stone-100' : 'text-stone-900'}`}
             >
-              Make space for remembrance
+              Make room for what matters.
             </h1>
             <p
-              className={`mt-1 font-arabic text-xl ${dark ? 'text-amber-400/70' : 'text-amber-700'}`}
+              className={`mt-1 font-arabic text-xl ${dark ? 'text-amber-300/80' : 'text-amber-700'}`}
               dir="rtl"
               lang="ar"
               translate="no"
@@ -363,36 +361,39 @@ export default function DuasTracker() {
           </div>
         </header>
 
-        <section
-          className={`relative mb-5 overflow-hidden rounded-2xl border p-5 sm:p-7 ${
-            dark
-              ? 'border-amber-300/15 bg-gradient-to-br from-[#3b2b19] via-[#30261b] to-[#1c2024]'
-              : 'border-amber-200/80 bg-gradient-to-br from-[#ffe4ad] via-[#ffd17a] to-[#ffbd4d]'
-          }`}
-          aria-label="Daily remembrance"
-        >
+        <div className="dashboard-overview">
+        <section className={`dashboard-hero ${dark ? 'is-dark' : ''}`} aria-label="Daily remembrance">
           <div className="relative z-10 max-w-lg">
-            <p className={`text-xs font-semibold uppercase tracking-[0.16em] ${dark ? 'text-amber-300/75' : 'text-amber-900/70'}`}>
-              Your daily practice
+            <p className="dashboard-eyebrow">
+              TODAY&apos;S PRACTICE
             </p>
-            <h2 className={`mt-2 font-serif text-2xl font-semibold sm:text-3xl ${dark ? 'text-stone-50' : 'text-stone-900'}`}>
-              Small moments, lasting peace.
+            <h2 className="mt-2 font-sans text-2xl font-bold sm:text-3xl">
+              Small moments. Steady presence.
             </h2>
-            <p className={`mt-2 text-sm ${dark ? 'text-stone-300' : 'text-amber-950/75'}`}>
-              {done} of {total} remembrances completed today. Continue at your own pace.
+            <p className="mt-2 max-w-md text-sm leading-6 opacity-75">
+              {done} of {total} remembrances completed today. Keep going at your own pace.
             </p>
           </div>
-          <span
-            className={`pointer-events-none absolute -right-5 top-7 font-arabic text-[8rem] leading-none opacity-[0.035] sm:right-6 sm:top-1 sm:text-[12rem] ${dark ? 'text-amber-300' : 'text-amber-950'}`}
-            dir="rtl"
-            lang="ar"
-            aria-hidden="true"
+          <div
+            className="dashboard-progress-ring"
+            role="img"
+            aria-label={`${pct}% complete`}
           >
-            ذِكْر
-          </span>
+            <svg viewBox="0 0 100 100" aria-hidden="true">
+              <circle cx="50" cy="50" r="43" />
+              <circle
+                className="dashboard-progress-value"
+                cx="50"
+                cy="50"
+                r="43"
+                style={{ strokeDasharray: `${pct * 2.7} 270` }}
+              />
+            </svg>
+            <span><strong>{pct}%</strong><small>complete</small></span>
+          </div>
         </section>
 
-        <section className="mb-6 grid grid-cols-3 gap-2.5 sm:gap-3" aria-label="Quick links">
+        <section className="dashboard-shortcuts" aria-label="Quick links">
           {[
             { href: '/salah', icon: '◷', title: 'Prayer', note: 'Times' },
             { href: '/quran', icon: '۞', title: 'Qur’an', note: 'Read & listen' },
@@ -401,179 +402,155 @@ export default function DuasTracker() {
             <Link
               key={item.href}
               href={item.href}
-              className={`rounded-2xl border p-3.5 transition-transform hover:-translate-y-0.5 sm:p-4 ${
-                dark
-                  ? 'border-white/10 bg-white/[0.04] hover:bg-white/[0.07]'
-                  : 'border-amber-900/10 bg-[var(--app-surface)] shadow-sm hover:border-amber-300'
-              }`}
+              className={`dashboard-shortcut ${dark ? 'is-dark' : ''}`}
             >
-              <span className={`grid h-9 w-9 place-items-center rounded-xl text-lg ${dark ? 'bg-amber-300/10 text-amber-300' : 'bg-amber-100 text-amber-800'}`} aria-hidden="true">
+              <span className="dashboard-shortcut-icon" aria-hidden="true">
                 {item.icon}
               </span>
-              <span className={`mt-3 block text-xs font-semibold sm:text-sm ${dark ? 'text-stone-100' : 'text-stone-900'}`}>{item.title}</span>
-              <span className={`mt-0.5 block text-[10px] sm:text-xs ${dark ? 'text-stone-400' : 'text-stone-500'}`}>{item.note}</span>
+              <span className="dashboard-shortcut-title">{item.title}</span>
+              <span className="dashboard-shortcut-note">{item.note}</span>
             </Link>
           ))}
         </section>
-
-        {/* ── Stats ── */}
-        <div className="mb-4 grid grid-cols-2 gap-2.5 sm:grid-cols-4">
-          <StatCard label="Total" value={total} accent="gold" dark={dark} />
-          <StatCard label="Done" value={done} accent="green" dark={dark} />
-          <StatCard
-            label="Pending"
-            value={pending}
-            accent={pending > 0 ? 'amber' : 'green'}
-            dark={dark}
-          />
-          <StatCard
-            label="Streak"
-            value={`${streak.current}d`}
-            accent="purple"
-            dark={dark}
-          />
         </div>
 
-        {/* ── Progress bar ── */}
-        <div className="mb-1">
-          <ProgressBar pct={pct} dark={dark} />
-        </div>
-        <div
-          className={`mb-5 flex justify-between text-[10px] ${dark ? 'text-stone-600' : 'text-stone-400'}`}
-        >
-          <span>{pct}% complete</span>
-          <span>
-            {done} / {total}
-          </span>
-        </div>
-
-        {/* ── 7-day history ── */}
-        <div className="mb-3">
-          <WeeklyHistory dark={dark} total={total} streakBest={streak.best} />
-        </div>
-
-        {/* ── Heatmap toggle ── */}
-        <button
-          onClick={() => setShowHeatmap((v) => !v)}
-          className={`mb-3 w-full rounded-xl border px-4 py-2.5 text-[11px] uppercase tracking-widest transition-all ${
-            dark
-              ? 'border-white/[0.07] text-stone-600 hover:text-stone-400'
-              : 'border-black/[0.06] text-stone-400 hover:text-stone-600'
-          }`}
-        >
-          {showHeatmap ? '▲ Hide Heatmap' : '▼ Show Heatmap'}
-        </button>
-        {showHeatmap && (
-          <div className="mb-3">
-            <StreakHeatmap dark={dark} total={total} />
-          </div>
-        )}
-
-        {/* ── Tasbeeh ── */}
-        <div className='mt-2 mb-4'>
-          <TasbihCounter />
-        </div>
-        {/* ── Controls ── */}
-        <div className="mb-3 flex flex-wrap gap-2">
-          <input
-            type="text"
-            placeholder="Search…"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className={`h-8 flex-1 rounded-full border bg-transparent px-4 text-xs outline-none transition-colors focus:border-amber-400/50 ${
-              dark
-                ? 'border-white/[0.08] text-stone-200 placeholder-stone-600'
-                : 'border-black/[0.09] text-stone-700 placeholder-stone-400'
-            }`}
-          />
-          <button
-            onClick={() => setPriOnly((p) => !p)}
-            className={`h-8 rounded-full border px-3 text-[11px] transition-all ${
-              priOnly
-                ? dark
-                  ? 'border-amber-400/40 bg-amber-400/15 text-amber-300'
-                  : 'border-amber-400/50 bg-amber-50 text-amber-700'
-                : dark
-                  ? 'border-white/[0.08] text-stone-500 hover:text-stone-300'
-                  : 'border-black/[0.08] text-stone-400 hover:text-stone-600'
-            }`}
+        <div className="dashboard-content-grid">
+          <section
+            className="dashboard-practice"
+            id="daily-adhkar"
+            aria-label="Daily remembrances"
           >
-            ★ Priority
-          </button>
-          <button
-            onClick={() => setActiveModal('addDua')}
-            className={`h-8 rounded-full border px-3 text-[11px] transition-all ${
-              dark
-                ? 'border-amber-400/20 text-amber-400/70 hover:text-amber-400'
-                : 'border-amber-400/40 text-amber-600 hover:text-amber-700'
-            }`}
-          >
-            + Add Du&apos;ā
-          </button>
-          <button
-            onClick={handleReset}
-            className={`h-8 rounded-full border px-3 text-[11px] transition-all ${
-              dark
-                ? 'border-red-500/20 text-red-400/70 hover:text-red-400'
-                : 'border-red-300/40 text-red-400 hover:text-red-600'
-            }`}
-          >
-            ↺ Reset
-          </button>
-        </div>
-
-        {/* ── Category tabs ── */}
-        <div className="mb-5 flex flex-wrap gap-1.5">
-          {CATS.map(({ key, label }: CatEntry) => {
-            const active = filter === key;
-            const count = catCount(key);
-            if (count === 0 && key !== 'all') return null;
-            return (
+            <div className="dashboard-section-heading">
+              <div>
+                <p className="dashboard-section-eyebrow">YOUR COLLECTION</p>
+                <h2>Daily remembrances</h2>
+              </div>
+              <span>{done} of {total} complete</span>
+            </div>
+            <div className="dashboard-controls">
+              <input
+                type="text"
+                placeholder="Search remembrances"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className={`h-8 flex-1 rounded-full border bg-transparent px-4 text-xs outline-none transition-colors focus:border-amber-400/50 ${
+                  dark
+                    ? 'border-white/[0.08] text-stone-200 placeholder-stone-600'
+                    : 'border-black/[0.09] text-stone-700 placeholder-stone-400'
+                }`}
+              />
               <button
-                key={key}
-                onClick={() => setFilter(key)}
-                className={[
-                  'rounded-full border px-3.5 py-1 font-serif text-[11px] tracking-wide transition-all',
-                  active
+                onClick={() => setPriOnly((p) => !p)}
+                aria-pressed={priOnly}
+                className={`h-8 rounded-full border px-3 text-[11px] transition-all ${
+                  priOnly
                     ? dark
                       ? 'border-amber-400/40 bg-amber-400/15 text-amber-300'
                       : 'border-amber-400/50 bg-amber-50 text-amber-700'
                     : dark
-                      ? 'border-white/[0.07] text-stone-500 hover:text-stone-300'
-                      : 'border-black/[0.07] text-stone-400 hover:text-stone-600',
-                ].join(' ')}
+                      ? 'border-white/[0.08] text-stone-500 hover:text-stone-300'
+                      : 'border-black/[0.08] text-stone-400 hover:text-stone-600'
+                }`}
               >
-                {label}
-                <span
-                  className={`ml-1.5 text-[9px] ${active ? '' : dark ? 'text-stone-700' : 'text-stone-300'}`}
-                >
-                  {catDone(key)}/{count}
-                </span>
+                ★ Priority
               </button>
-            );
-          })}
-        </div>
+              <button
+                onClick={() => setActiveModal('addDua')}
+                className="dashboard-add-button"
+              >
+                + Add Du&apos;ā
+              </button>
+              <button onClick={handleReset} className="dashboard-reset-button">
+                ↺ Reset
+              </button>
+            </div>
 
-        {/* ── Dua cards ── */}
-        <div id="daily-adhkar" className="grid scroll-mt-5 grid-cols-1 gap-3 lg:grid-cols-2">
-          {filtered.length === 0 && (
-            <p
-              className={`py-12 text-center text-sm ${dark ? 'text-stone-600' : 'text-stone-400'}`}
-            >
-              No duas match your search.
-            </p>
-          )}
-          {filtered.map((d: Dua) => (
-            <DuaCard
-              key={d.id}
-              dua={d}
-              checked={!!checked[d.id]}
-              onToggle={toggle}
-              onDelete={d.custom ? handleDeleteDua : undefined}
-              dark={dark}
-              soundEnabled={soundEnabled}
-            />
-          ))}
+            <div className="dashboard-category-tabs">
+              {CATS.map(({ key, label }: CatEntry) => {
+                const active = filter === key;
+                const count = catCount(key);
+                if (count === 0 && key !== 'all') return null;
+                return (
+                  <button
+                    key={key}
+                    onClick={() => setFilter(key)}
+                    aria-pressed={active}
+                    className={`dashboard-category-tab ${active ? 'is-active' : ''}`}
+                  >
+                    {label}
+                    <span>{catDone(key)}/{count}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="dashboard-dua-list">
+              {filtered.length === 0 && (
+                <p className="dashboard-empty-state">
+                  No remembrances match your search.
+                </p>
+              )}
+              {filtered.map((d: Dua) => (
+                <DuaCard
+                  key={d.id}
+                  dua={d}
+                  checked={!!checked[d.id]}
+                  onToggle={toggle}
+                  onDelete={d.custom ? handleDeleteDua : undefined}
+                  dark={dark}
+                  soundEnabled={soundEnabled}
+                />
+              ))}
+            </div>
+          </section>
+
+          <aside className="dashboard-insights" aria-label="Your progress">
+            <div className="dashboard-stat-grid">
+              <StatCard label="Total" value={total} accent="gold" dark={dark} />
+              <StatCard label="Done" value={done} accent="green" dark={dark} />
+              <StatCard
+                label="Pending"
+                value={pending}
+                accent={pending > 0 ? 'amber' : 'green'}
+                dark={dark}
+              />
+              <StatCard
+                label="Streak"
+                value={`${streak.current}d`}
+                accent="purple"
+                dark={dark}
+              />
+            </div>
+
+            <section className="dashboard-progress-card">
+              <div className="dashboard-card-heading">
+                <h2>Today&apos;s progress</h2>
+                <span>{pct}%</span>
+              </div>
+              <ProgressBar pct={pct} dark={dark} />
+              <p>{done} of {total} remembrances finished</p>
+            </section>
+
+            <div className="dashboard-history-card">
+              <WeeklyHistory dark={dark} total={total} streakBest={streak.best} />
+            </div>
+
+            <div className="dashboard-heatmap">
+              <button
+                onClick={() => setShowHeatmap((v) => !v)}
+                aria-expanded={showHeatmap}
+                className="dashboard-heatmap-toggle"
+              >
+                <span>{showHeatmap ? 'Hide activity map' : 'View activity map'}</span>
+                <span aria-hidden="true">{showHeatmap ? '−' : '+'}</span>
+              </button>
+              {showHeatmap && <StreakHeatmap dark={dark} total={total} />}
+            </div>
+
+            <div className="dashboard-tasbih">
+              <TasbihCounter />
+            </div>
+          </aside>
         </div>
         {/* ── Footer ── */}
         <footer
