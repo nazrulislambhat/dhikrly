@@ -26,18 +26,18 @@ export default function AppShell({
 }: AppShellProps) {
   const muted = dark ? 'text-stone-400' : 'text-stone-500';
   const surface = dark
-    ? 'border-white/[0.08] bg-[#101f32]'
-    : 'border-amber-900/10 bg-[var(--app-surface)]/95';
+    ? 'border-white/[0.08] bg-[#14211e]'
+    : 'border-stone-200 bg-[var(--app-surface)]/95';
 
   useEffect(() => {
     document
       .querySelector('meta[name="theme-color"]')
-      ?.setAttribute('content', dark ? '#0b1724' : '#fffaf2');
+      ?.setAttribute('content', dark ? '#0d1715' : '#f5f8f7');
   }, [dark]);
 
   return (
     <div className="app-shell">
-      <aside className={`app-sidebar ${surface}`}>
+      <header className={`app-sidebar ${surface}`}>
         <Link href="/" className="app-brand" aria-label="Dhikrly home">
           <span className="app-brand-mark" aria-hidden="true">ذ</span>
           <span>
@@ -70,7 +70,7 @@ export default function AppShell({
           <span aria-hidden="true">{dark ? '☼' : '☾'}</span>
           {dark ? 'Use light appearance' : 'Use dark appearance'}
         </button>
-      </aside>
+      </header>
 
       <main className="app-shell-main">
         <div className="app-mobile-brand">
