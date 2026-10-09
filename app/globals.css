@@ -669,6 +669,334 @@ body {
   color: #a9ecd5;
 }
 
+.quran-view-toggle {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.25rem;
+  margin-bottom: 0.75rem;
+  border-radius: 0.9rem;
+  padding: 0.25rem;
+}
+
+.mushaf-view-note {
+  margin: -0.35rem 0 0.85rem;
+  font-size: 0.66rem;
+  text-align: center;
+}
+
+.quran-view-toggle button {
+  min-height: 2.6rem;
+  border: 0;
+  border-radius: 0.7rem;
+  background: transparent;
+  color: var(--app-muted);
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: color 160ms ease, background 160ms ease, transform 160ms ease;
+}
+
+.quran-view-toggle button:hover {
+  transform: translateY(-1px);
+}
+
+.quran-view-toggle button.is-active {
+  background: var(--app-surface);
+  color: var(--app-secondary);
+  box-shadow: 0 2px 8px rgb(20 48 39 / 9%);
+}
+
+.mushaf-navigation {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  border-radius: 1rem;
+  padding: 0.65rem 0.8rem;
+}
+
+.mushaf-navigation > button {
+  display: grid;
+  width: 2.75rem;
+  height: 2.75rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid var(--app-line);
+  border-radius: 0.8rem;
+  background: var(--app-surface);
+  color: var(--app-secondary);
+  font-size: 1.7rem;
+  cursor: pointer;
+  transition: transform 160ms ease, border-color 160ms ease, opacity 160ms ease;
+}
+
+.mushaf-navigation > button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  border-color: var(--app-accent);
+}
+
+.mushaf-navigation > button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.mushaf-navigation label {
+  display: flex;
+  align-items: baseline;
+  gap: 0.45rem;
+  color: var(--app-muted);
+  font-size: 0.7rem;
+}
+
+.mushaf-navigation label > span {
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+.mushaf-navigation label input {
+  width: 3.2rem;
+  border: 0;
+  border-bottom: 1px solid var(--app-line);
+  background: transparent;
+  color: var(--app-ink);
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 750;
+  text-align: center;
+}
+
+.mushaf-stage {
+  min-width: 0;
+  padding: 0.25rem;
+  perspective: 1400px;
+}
+
+.mushaf-loading,
+.mushaf-error {
+  padding: 1.5rem 0.5rem;
+  text-align: center;
+  font-size: 0.8rem;
+}
+
+.mushaf-error {
+  color: #c24747;
+}
+
+.mushaf-sheet {
+  position: relative;
+  width: min(100%, 42rem);
+  min-height: min(72vh, 54rem);
+  margin-inline: auto;
+  overflow: hidden;
+  border: 1px solid #b5c8b4;
+  border-radius: 0.55rem;
+  background: #fffdf7;
+  box-shadow:
+    0 20px 50px rgb(20 48 39 / 12%),
+    inset 0 0 0 0.35rem #fffdf4,
+    inset 0 0 0 0.43rem #98b58e,
+    inset 0 0 0 0.52rem #e5ebd5;
+  color: #152b21;
+  padding: 1.35rem 1.2rem 3rem;
+  transform-origin: left center;
+}
+
+.mushaf-sheet.is-dark {
+  border-color: #496657;
+  background: #16231e;
+  box-shadow:
+    0 20px 50px rgb(0 0 0 / 25%),
+    inset 0 0 0 0.35rem #16231e,
+    inset 0 0 0 0.43rem #476b57,
+    inset 0 0 0 0.52rem #293f33;
+  color: #e5f3e8;
+}
+
+.mushaf-sheet.turn-next {
+  animation: mushaf-page-turn-next 420ms cubic-bezier(0.2, 0.75, 0.2, 1) both;
+}
+
+.mushaf-sheet.turn-previous {
+  transform-origin: right center;
+  animation: mushaf-page-turn-previous 420ms cubic-bezier(0.2, 0.75, 0.2, 1) both;
+}
+
+.mushaf-page-ornament {
+  display: flex;
+  min-height: 2.6rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+  margin: 0.25rem 0 1.1rem;
+  border: 1px solid rgb(28 103 71 / 48%);
+  outline: 1px solid rgb(28 103 71 / 19%);
+  outline-offset: 3px;
+  background: linear-gradient(90deg, #174c37, #277b53 18%, #dce7ce 18%, #dce7ce 82%, #277b53 82%, #174c37);
+  color: #16442f;
+  font-family: var(--font-arabic);
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.mushaf-page-ornament > span:first-child,
+.mushaf-page-ornament > span:last-child {
+  color: #e9d79a;
+  font-size: 1rem;
+}
+
+.mushaf-page-ornament > span:nth-child(2) {
+  padding: 0 0.35rem;
+}
+
+.mushaf-page-text {
+  padding: 0.3rem 0.55rem;
+  color: inherit;
+  font-family: var(--font-arabic);
+  line-height: 2.45;
+  text-align: justify;
+  text-align-last: center;
+  text-justify: inter-word;
+}
+
+.mushaf-verse-group {
+  display: contents;
+}
+
+.mushaf-surah-heading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin: 1.1rem 0 0.4rem;
+  border: 1px solid rgb(28 103 71 / 28%);
+  border-radius: 999px;
+  background: rgb(39 123 83 / 9%);
+  color: #216844;
+  font-size: 1.05em;
+  font-weight: 700;
+  line-height: 2;
+}
+
+.mushaf-sheet.is-dark .mushaf-surah-heading {
+  border-color: rgb(121 197 155 / 25%);
+  background: rgb(121 197 155 / 8%);
+  color: #a9d9b4;
+}
+
+.mushaf-surah-heading > span:first-child,
+.mushaf-surah-heading > span:last-child {
+  color: #9a8044;
+  font-size: 0.8em;
+}
+
+.mushaf-bismillah {
+  display: block;
+  margin: 0.35rem 0 0.2rem;
+  font-size: 0.82em;
+  text-align: center;
+}
+
+.mushaf-verse {
+  scroll-margin-block: 40vh;
+}
+
+.mushaf-translation {
+  display: block;
+  margin: 0.1rem 0 0.5rem;
+  border-bottom: 1px solid rgb(28 103 71 / 12%);
+  padding: 0 0 0.4rem;
+  color: #657872;
+  direction: ltr;
+  font-family: var(--font-ui);
+  font-size: 0.58rem;
+  line-height: 1.45;
+  text-align: left;
+}
+
+.mushaf-sheet.is-dark .mushaf-translation {
+  border-color: rgb(121 197 155 / 12%);
+  color: #a2b7aa;
+}
+
+.mushaf-word {
+  border-radius: 0.25rem;
+  transition: color 120ms ease, background-color 120ms ease;
+}
+
+.mushaf-word.is-speaking {
+  background: #f4d978;
+  box-shadow: 0 0 0 0.1rem rgb(244 217 120 / 30%);
+  color: #352a10;
+}
+
+.mushaf-sheet.is-dark .mushaf-word.is-speaking {
+  background: #9ed7a6;
+  color: #10271b;
+}
+
+.mushaf-ayah-marker {
+  display: inline;
+  margin-inline: 0.14rem;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: #937a42;
+  font-family: var(--font-ui);
+  font-size: 0.48em;
+  vertical-align: 0.2em;
+  cursor: pointer;
+}
+
+.mushaf-ayah-marker:hover,
+.mushaf-ayah-marker.is-active {
+  background: rgb(24 183 131 / 15%);
+  color: var(--app-secondary);
+}
+
+.mushaf-page-footer {
+  position: absolute;
+  right: 1.2rem;
+  bottom: 0.75rem;
+  left: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid rgb(28 103 71 / 17%);
+  padding-top: 0.35rem;
+  color: #657872;
+  font-size: 0.65rem;
+}
+
+.mushaf-sheet.is-dark .mushaf-page-footer {
+  border-color: rgb(121 197 155 / 17%);
+  color: #a2b7aa;
+}
+
+@keyframes mushaf-page-turn-next {
+  from {
+    opacity: 0.55;
+    transform: rotateY(-16deg) translateX(1.2rem);
+  }
+  to {
+    opacity: 1;
+    transform: rotateY(0) translateX(0);
+  }
+}
+
+@keyframes mushaf-page-turn-previous {
+  from {
+    opacity: 0.55;
+    transform: rotateY(16deg) translateX(-1.2rem);
+  }
+  to {
+    opacity: 1;
+    transform: rotateY(0) translateX(0);
+  }
+}
+
 .dashboard-page {
   max-width: 82rem;
 }
