@@ -1,4 +1,9 @@
-import type { PrayerTimesResult, CalcMethod, SalahLocation } from '@/types/salah';
+import type {
+  PrayerName,
+  PrayerTimesResult,
+  CalcMethod,
+  SalahLocation,
+} from '@/types/salah';
 import type * as AdhanType from 'adhan';
 
 /* Dynamically import adhan to avoid SSR issues */
@@ -70,12 +75,12 @@ export function getCurrentAndNextPrayer(
   times: PrayerTimesResult,
   now = new Date(),
 ): {
-  current: string | null;
-  next: string;
+  current: PrayerName | null;
+  next: PrayerName;
   nextTime: Date;
   minutesUntilNext: number;
 } {
-  const order = [
+  const order: { name: PrayerName; time: Date }[] = [
     { name: 'fajr',    time: times.fajr    },
     { name: 'dhuhr',   time: times.dhuhr   },
     { name: 'asr',     time: times.asr     },
@@ -83,8 +88,8 @@ export function getCurrentAndNextPrayer(
     { name: 'isha',    time: times.isha    },
   ];
 
-  let current: string | null = null;
-  let next = 'fajr';
+  let current: PrayerName | null = null;
+  let next: PrayerName = 'fajr';
   let nextTime = times.fajr;
 
   for (let i = 0; i < order.length; i++) {

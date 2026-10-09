@@ -104,7 +104,7 @@ export default function SalahPage() {
 
   const { current, next, minutesUntilNext } = times
     ? getCurrentAndNextPrayer(times, now)
-    : { current: null, next: 'fajr', minutesUntilNext: 0 };
+    : { current: null, next: 'fajr' as const, minutesUntilNext: 0 };
 
   const bg = dark
     ? 'min-h-screen bg-[#0c1a2e] text-stone-200'
@@ -224,40 +224,50 @@ export default function SalahPage() {
           {/* Next prayer banner */}
           {times && (
             <div
-              className={`mt-4 flex items-center justify-between rounded-2xl border px-4 py-3 ${
+              className={`relative mt-5 flex min-h-36 items-center justify-between overflow-hidden rounded-2xl border px-5 py-5 sm:px-7 ${
                 dark
-                  ? 'bg-amber-400/[0.07] border-amber-400/25'
-                  : 'bg-amber-50/80 border-amber-200/60'
+                  ? 'border-amber-300/20 bg-gradient-to-br from-[#513919] via-[#382b1a] to-[#21252a]'
+                  : 'border-amber-300 bg-gradient-to-br from-[#ffbd4d] via-[#ffb030] to-[#f4a11e]'
               }`}
             >
-              <div>
+              <div className="relative z-10">
                 <p
-                  className={`text-[10px] uppercase tracking-widest ${dark ? 'text-amber-400/60' : 'text-amber-600/60'}`}
+                  className={`text-[10px] font-semibold uppercase tracking-[0.16em] ${dark ? 'text-amber-200/70' : 'text-amber-950/65'}`}
                 >
                   {current
                     ? `Current · ${current.charAt(0).toUpperCase() + current.slice(1)}`
                     : 'Before Fajr'}
                 </p>
                 <p
-                  className={`font-serif text-lg font-semibold ${dark ? 'text-amber-300' : 'text-amber-700'}`}
+                  className={`mt-1 font-serif text-2xl font-semibold ${dark ? 'text-stone-50' : 'text-stone-900'}`}
                 >
-                  Next: {next.charAt(0).toUpperCase() + next.slice(1)}
+                  {next.charAt(0).toUpperCase() + next.slice(1)} is next
+                </p>
+                <p className={`mt-1 text-sm ${dark ? 'text-stone-300' : 'text-amber-950/75'}`}>
+                  {times[next].toLocaleTimeString('en', {
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    timeZone: settings.location!.timezone,
+                  })}
                 </p>
               </div>
-              <div className="text-right">
+              <div className="relative z-10 text-right">
                 <p
-                  className={`text-2xl font-light tabular-nums ${dark ? 'text-amber-400' : 'text-amber-600'}`}
+                  className={`text-3xl font-semibold tabular-nums tracking-tight sm:text-4xl ${dark ? 'text-amber-200' : 'text-stone-900'}`}
                 >
                   {minutesUntilNext < 60
                     ? `${minutesUntilNext}m`
                     : `${Math.floor(minutesUntilNext / 60)}h ${minutesUntilNext % 60}m`}
                 </p>
                 <p
-                  className={`text-[10px] ${dark ? 'text-stone-500' : 'text-stone-400'}`}
+                  className={`mt-1 text-xs ${dark ? 'text-stone-300' : 'text-amber-950/65'}`}
                 >
-                  remaining
+                  until prayer
                 </p>
               </div>
+              <span className={`pointer-events-none absolute -right-2 -bottom-7 font-arabic text-[8rem] leading-none opacity-[0.12] ${dark ? 'text-amber-200' : 'text-amber-950'}`} lang="ar" dir="rtl" aria-hidden="true">
+                صَلَاة
+              </span>
             </div>
           )}
 
