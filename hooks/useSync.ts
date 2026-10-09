@@ -4,6 +4,11 @@ import { useEffect, useRef, useCallback, useState } from 'react';
 import type { User } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 import { load, save, STORAGE_KEY, CUSTOM_DUAS_KEY, STREAK_KEY } from '@/lib/storage';
+import {
+  clearLocalEdit,
+  getLocalEditTime,
+  shouldPreserveLocalEdit,
+} from '@/lib/localEdits';
 import type { Dua, Streak } from '@/types';
 
 const QUEUE_KEY = 'adhkar_sync_queue_v2';
@@ -252,6 +257,13 @@ export function useSync({
           ) {
             lastPushedChecked.current = pendingChecked.current;
           }
+          if (
+            succeeded &&
+            item.date === today &&
+            JSON.stringify(item.payload) === JSON.stringify(latestChecked.current)
+          ) {
+            clearLocalEdit('adhkar', today);
+          }
         } else if (item.type === 'custom_duas') {
           succeeded = await pushCustomDuas(userId, item.payload as Dua[]);
         } else if (item.type === 'streak') {
@@ -300,9 +312,17 @@ export function useSync({
         Object.entries(remote.checkedByDate).forEach(([date, remoteChecked]) => {
           if (date === today) {
             const localToday = localAll[today] ?? {};
-            const localDone = Object.values(localToday).filter(Boolean).length;
-            const remoteDone = Object.values(remoteChecked).filter(Boolean).length;
-            if (remoteDone > localDone) mergedByDate[date] = remoteChecked;
+            const remoteToday = remote.checkedByDate[today] ?? {};
+            const localEditTime = getLocalEditTime('adhkar', today);
+            if (shouldPreserveLocalEdit(localEditTime !== null, localToday, remoteToday)) {
+              mergedByDate[date] = localToday;
+            } else if (localEditTime !== null) {
+              clearLocalEdit('adhkar', today, localEditTime);
+            } else {
+              const localDone = Object.values(localToday).filter(Boolean).length;
+              const remoteDone = Object.values(remoteChecked).filter(Boolean).length;
+              if (remoteDone > localDone) mergedByDate[date] = remoteChecked;
+            }
           } else {
             mergedByDate[date] = remoteChecked;
           }
@@ -314,6 +334,7 @@ export function useSync({
 
         const resolvedToday = mergedByDate[today] ?? {};
         const resolvedTodayString = JSON.stringify(resolvedToday);
+        const resolvedEditTime = getLocalEditTime('adhkar', today);
         lastPushedChecked.current = JSON.stringify(remote.checkedByDate[today] ?? {});
         pendingChecked.current = resolvedTodayString;
 
@@ -350,6 +371,9 @@ export function useSync({
         if (JSON.stringify(resolvedToday) !== JSON.stringify(remoteToday)) {
           if (await pushProgress(user.id, today, resolvedToday)) {
             lastPushedChecked.current = resolvedTodayString;
+            if (resolvedEditTime !== null) {
+              clearLocalEdit('adhkar', today, resolvedEditTime);
+            }
           } else {
             enqueue(user.id, {
               type: 'progress',
@@ -464,6 +488,7 @@ export function useSync({
   useEffect(() => {
     if (!user || readyUserId !== user.id) return;
     const snapshot = JSON.stringify(checked);
+    const localEditTime = getLocalEditTime('adhkar', today);
     pendingChecked.current = snapshot;
 
     if (!navigator.onLine) {
@@ -490,6 +515,12 @@ export function useSync({
       if (succeeded) {
         lastPushedChecked.current = snapshot;
         removeQueued(user.id, item);
+        if (
+          localEditTime !== null &&
+          snapshot === JSON.stringify(latestChecked.current)
+        ) {
+          clearLocalEdit('adhkar', today, localEditTime);
+        }
         settleStatus(user.id);
       } else {
         enqueue(user.id, item);
