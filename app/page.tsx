@@ -550,7 +550,7 @@ export default function DuasTracker() {
               About
             </a>
             <a
-              href="/privacy"
+              href="/privacy-policy"
               className={`transition-colors ${dark ? 'hover:text-stone-500' : 'hover:text-stone-600'}`}
             >
               Privacy
