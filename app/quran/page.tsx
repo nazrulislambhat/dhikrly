@@ -1,6 +1,19 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  BookOpenText,
+  Bookmark,
+  ChevronLeft,
+  ChevronRight,
+  Headphones,
+  Pause,
+  Play,
+  Repeat2,
+  Settings2,
+  SkipBack,
+  SkipForward,
+} from 'lucide-react';
 import AppShell from '@/components/AppShell';
 import { load, save, SETTINGS_KEY } from '@/lib/storage';
 import {
@@ -838,7 +851,7 @@ export default function QuranPage() {
     ? 'border-white/[0.08] bg-white/[0.04]'
     : 'border-stone-200 bg-white shadow-sm';
   const muted = dark ? 'text-stone-400' : 'text-stone-500';
-  const selectClass = `min-h-11 w-full rounded-xl border px-3 text-sm outline-none focus:border-amber-400 ${
+  const selectClass = `min-h-11 w-full rounded-xl border px-3 text-sm outline-none focus:border-emerald-500 ${
     dark
       ? 'border-white/10 bg-[#14211e] text-stone-100'
       : 'border-stone-200 bg-white text-stone-800'
@@ -854,10 +867,10 @@ export default function QuranPage() {
         <div className="mx-auto w-full max-w-6xl px-4 py-4 pb-12 sm:px-6 sm:py-7 lg:px-10">
           <header className="mb-5 flex items-center justify-between gap-3">
             <div className="min-w-0">
-              <p className={`text-[10px] font-semibold uppercase tracking-[0.16em] ${dark ? 'text-amber-300/70' : 'text-amber-700/70'}`}>
+              <p className={`text-[10px] font-semibold uppercase tracking-[0.16em] ${dark ? 'text-emerald-300/70' : 'text-emerald-800/75'}`}>
                 The Noble Qur’an
               </p>
-              <h1 className={`mt-0.5 truncate font-ui text-2xl font-bold tracking-[-0.045em] sm:text-3xl ${dark ? 'text-amber-300' : 'text-amber-800'}`}>
+              <h1 className={`mt-0.5 truncate font-ui text-2xl font-bold tracking-[-0.045em] sm:text-3xl ${dark ? 'text-stone-900 dark:text-stone-100' : 'text-stone-900'}`}>
                 {currentSurah?.englishName ?? 'Read & listen'}
               </h1>
               <p className={`mt-0.5 text-xs ${muted}`}>
@@ -886,7 +899,7 @@ export default function QuranPage() {
                 title="Quran settings"
                 className={`grid h-11 w-11 place-items-center rounded-xl border text-lg ${card}`}
               >
-                ⚙
+                <Settings2 className="h-5 w-5" aria-hidden="true" />
               </button>
             </div>
           </header>
@@ -909,7 +922,7 @@ export default function QuranPage() {
               aria-valuenow={Math.min(todayVerseCount, dailyGoal)}
             >
               <div
-                className="h-full rounded-full bg-amber-500 transition-[width]"
+                className="h-full rounded-full bg-emerald-700 transition-[width] dark:bg-emerald-300"
                 style={{ width: `${goalProgress}%` }}
               />
             </div>
@@ -948,7 +961,7 @@ export default function QuranPage() {
                   onClick={() => moveSurah(-1)}
                   disabled={settings.surah <= 1}
                 >
-                  ←
+                  <ChevronLeft className="mx-auto h-5 w-5" aria-hidden="true" />
                 </button>
                 <button
                   type="button"
@@ -957,7 +970,7 @@ export default function QuranPage() {
                   onClick={() => moveSurah(1)}
                   disabled={settings.surah >= 114}
                 >
-                  →
+                  <ChevronRight className="mx-auto h-5 w-5" aria-hidden="true" />
                 </button>
               </div>
 
@@ -972,7 +985,7 @@ export default function QuranPage() {
                   }`}
                   onClick={() => selectViewMode('reader')}
                 >
-                  Verse reader
+                  <span className="inline-flex items-center justify-center gap-2"><BookOpenText className="h-4 w-4" aria-hidden="true" /> Verse reader</span>
                 </button>
                 <button
                   type="button"
@@ -984,7 +997,7 @@ export default function QuranPage() {
                   }`}
                   onClick={() => selectViewMode('mushaf')}
                 >
-                  Mushaf pages
+                  <span className="inline-flex items-center justify-center gap-2"><BookOpenText className="h-4 w-4" aria-hidden="true" /> Mushaf pages</span>
                 </button>
               </div>
               {settings.viewMode === 'mushaf' && (
@@ -1002,7 +1015,7 @@ export default function QuranPage() {
                     onClick={() => turnMushafPage(-1)}
                     disabled={mushafPageNumber <= 1 || mushafPageLoading}
                   >
-                    ‹
+                    <ChevronLeft className="h-5 w-5" aria-hidden="true" />
                   </button>
                   <label>
                     <span className="text-[9px] font-extrabold tracking-widest">PAGE</span>
@@ -1031,7 +1044,7 @@ export default function QuranPage() {
                     onClick={() => turnMushafPage(1)}
                     disabled={mushafPageNumber >= 604 || mushafPageLoading}
                   >
-                    ›
+                    <ChevronRight className="h-5 w-5" aria-hidden="true" />
                   </button>
                 </div>
               )}
@@ -1052,11 +1065,11 @@ export default function QuranPage() {
                     onClick={playFullSurah}
                     className={`mt-4 min-h-10 rounded-full border px-4 text-xs font-semibold ${
                       dark
-                        ? 'border-amber-300/25 bg-amber-300/10 text-amber-200'
-                        : 'border-amber-700/20 bg-amber-50 text-amber-800'
+                        ? 'border-emerald-300/25 bg-emerald-300/10 text-emerald-200'
+                        : 'border-emerald-700/20 bg-emerald-50 text-emerald-800'
                     }`}
                   >
-                    {continuousSurah && shouldPlay ? 'Ⅱ Playing full surah' : '▶ Play full surah'}
+                    {continuousSurah && shouldPlay ? <><Pause className="mr-1 inline h-3.5 w-3.5" aria-hidden="true" /> Playing full surah</> : <><Play className="mr-1 inline h-3.5 w-3.5" aria-hidden="true" /> Play full surah</>}
                   </button>
                 </div>
               )}
@@ -1229,14 +1242,14 @@ export default function QuranPage() {
                         className={`rounded-2xl border p-4 transition-colors sm:p-6 ${
                           isActiveAyah
                             ? dark
-                              ? 'border-amber-300/40 bg-amber-300/[0.07]'
-                              : 'border-amber-500/40 bg-amber-50'
+                              ? 'border-emerald-300/40 bg-emerald-300/[0.07]'
+                              : 'border-emerald-500/40 bg-emerald-50'
                             : card
                         }`}
                       >
                         <div className="mb-4 flex items-center justify-between gap-3">
                           <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-full text-xs font-semibold ${
-                            dark ? 'bg-amber-300/10 text-amber-200' : 'bg-amber-100 text-amber-800'
+                            dark ? 'bg-emerald-300/10 text-emerald-200' : 'bg-emerald-100 text-emerald-800'
                           }`}>
                             {verse.number}
                           </span>
@@ -1252,7 +1265,7 @@ export default function QuranPage() {
                                 }`}
                                 aria-label={`${isPlaying ? 'Pause' : 'Play'} verse ${verse.number}`}
                               >
-                                {isPlaying ? 'Ⅱ Pause' : '▶ Listen'}
+                                {isPlaying ? <><Pause className="mr-1 inline h-3.5 w-3.5" aria-hidden="true" /> Pause</> : <><Headphones className="mr-1 inline h-3.5 w-3.5" aria-hidden="true" /> Listen</>}
                               </button>
                             )}
                             <button
@@ -1262,13 +1275,13 @@ export default function QuranPage() {
                               title={isBookmarked ? 'Remove bookmark' : 'Bookmark verse'}
                               className={`grid h-10 w-10 place-items-center rounded-full border text-lg ${
                                 isBookmarked
-                                  ? 'border-amber-400/40 bg-amber-400/10 text-amber-500'
+                                  ? 'border-emerald-400/40 bg-emerald-400/10 text-emerald-700'
                                   : dark
                                     ? 'border-white/10 text-stone-400'
                                     : 'border-stone-200 text-stone-500'
                               }`}
                             >
-                              {isBookmarked ? '★' : '☆'}
+                              <Bookmark className={`h-4 w-4 ${isBookmarked ? 'fill-current' : ''}`} aria-hidden="true" />
                             </button>
                           </div>
                         </div>
@@ -1286,8 +1299,8 @@ export default function QuranPage() {
                               className={
                                 isActiveAyah && activeWordIndex === index && activeAudio
                                   ? dark
-                                    ? 'rounded bg-amber-300/25 text-amber-100'
-                                    : 'rounded bg-amber-200 text-amber-950'
+                                    ? 'rounded bg-emerald-300/25 text-emerald-100'
+                                    : 'rounded bg-emerald-200 text-emerald-950'
                                   : undefined
                               }
                             >
@@ -1295,7 +1308,7 @@ export default function QuranPage() {
                             </span>
                           ))}{' '}
                           <span className={`font-ui text-sm ${
-                            dark ? 'text-amber-200' : 'text-amber-800'
+                            dark ? 'text-emerald-200' : 'text-emerald-800'
                           }`}>
                             ۝{verse.number}
                           </span>
@@ -1375,7 +1388,7 @@ export default function QuranPage() {
                   <span className={`text-xs ${muted}`}>{bookmarks.length}</span>
                 </div>
                 {bookmarks.length === 0 ? (
-                  <p className={`mt-2 text-xs ${muted}`}>Save a verse with ☆ to find it here.</p>
+                  <p className={`mt-2 inline-flex items-center gap-1.5 text-xs ${muted}`}><Bookmark className="h-3.5 w-3.5" aria-hidden="true" /> Save a verse to find it here.</p>
                 ) : (
                   <ul className="mt-3 max-h-48 space-y-2 overflow-y-auto">
                     {bookmarks.map((item) => {
@@ -1502,7 +1515,7 @@ export default function QuranPage() {
                       type="checkbox"
                       checked={settings.repeatVerse}
                       onChange={(event) => updateSetting('repeatVerse', event.target.checked)}
-                      className="h-4 w-4 accent-amber-600"
+                      className="h-4 w-4 accent-emerald-700"
                     />
                   </label>
 
@@ -1516,7 +1529,7 @@ export default function QuranPage() {
                         step={2}
                         value={settings.arabicFontSize}
                         onChange={(event) => updateSetting('arabicFontSize', Number(event.target.value))}
-                        className="w-full accent-amber-600"
+                        className="w-full accent-emerald-700"
                       />
                       {settings.arabicFontSize}px
                     </span>
@@ -1530,7 +1543,7 @@ export default function QuranPage() {
                       type="checkbox"
                       checked={settings.showTranslation}
                       onChange={(event) => updateSetting('showTranslation', event.target.checked)}
-                      className="h-4 w-4 accent-amber-600"
+                      className="h-4 w-4 accent-emerald-700"
                     />
                   </label>
                   <label className={`flex min-h-11 items-center justify-between gap-3 border-t pt-3 text-sm ${
@@ -1541,14 +1554,14 @@ export default function QuranPage() {
                       type="checkbox"
                       checked={settings.autoPlayNext}
                       onChange={(event) => updateSetting('autoPlayNext', event.target.checked)}
-                      className="h-4 w-4 accent-amber-600"
+                      className="h-4 w-4 accent-emerald-700"
                     />
                   </label>
                 </div>
               </section>
               {catalogLoading && <p className={`mt-4 text-xs ${muted}`}>Loading reciters and translations…</p>}
               {!catalogError && !catalogLoading && translationsLanguage === settings.language && translations.length === 0 && (
-                <p role="status" className="mt-4 text-xs text-amber-600">No text translations were found for this language.</p>
+                <p role="status" className="mt-4 text-xs text-emerald-700">No text translations were found for this language.</p>
               )}
               <p className={`mt-5 border-t pt-4 text-xs leading-5 ${
                 dark ? 'border-white/[0.08] text-stone-500' : 'border-stone-100 text-stone-500'
@@ -1609,7 +1622,7 @@ export default function QuranPage() {
                 title={settings.repeatVerse ? 'Repeat verse on' : 'Repeat verse off'}
                 onClick={() => updateSetting('repeatVerse', !settings.repeatVerse)}
               >
-                ↻
+                <Repeat2 className="h-4 w-4" aria-hidden="true" />
               </button>
               <button
                 type="button"
@@ -1618,7 +1631,7 @@ export default function QuranPage() {
                 onClick={() => playAdjacentVerse(-1)}
                 disabled={playbackVerseIndex <= 0}
               >
-                ↶
+                <SkipBack className="h-4 w-4" aria-hidden="true" />
               </button>
               <button
                 type="button"
@@ -1634,7 +1647,7 @@ export default function QuranPage() {
                   }
                 }}
               >
-                {shouldPlay ? 'Ⅱ' : '▶'}
+                {shouldPlay ? <Pause className="h-4 w-4" aria-hidden="true" /> : <Play className="h-4 w-4" aria-hidden="true" />}
               </button>
               <button
                 type="button"
@@ -1643,7 +1656,7 @@ export default function QuranPage() {
                 onClick={() => playAdjacentVerse(1)}
                 disabled={playbackVerseIndex < 0 || playbackVerseIndex >= playbackVerses.length - 1}
               >
-                ↷
+                <SkipForward className="h-4 w-4" aria-hidden="true" />
               </button>
             </div>
             <label className="col-span-2 flex items-center justify-self-end gap-2 whitespace-nowrap text-[11px] text-stone-500 dark:text-stone-400 lg:col-span-1 lg:justify-self-start">

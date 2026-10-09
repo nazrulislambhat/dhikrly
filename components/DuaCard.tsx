@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { Star } from 'lucide-react';
 import type { Dua, TabLabel } from '@/types';
 import SessionPill from './SessionPill';
 
@@ -148,7 +149,7 @@ export default function DuaCard({
                     : 'text-xs text-amber-500/70'
                 }
               >
-                ★
+                <Star className="h-3 w-3 fill-current" aria-label="Priority" />
               </span>
             )}
             {dua.custom && (

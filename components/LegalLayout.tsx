@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { MoonStar } from 'lucide-react';
 
 interface LegalLayoutProps {
   title: string;
@@ -24,7 +25,7 @@ export default function LegalLayout({
             href="/"
             className="flex items-center gap-2 text-amber-700 transition-opacity hover:opacity-70"
           >
-            <span className="font-arabic text-xl">🌙</span>
+            <MoonStar className="h-5 w-5" aria-hidden="true" />
             <span className="font-serif text-[15px] font-semibold tracking-wide">
               Dhikrly
             </span>
