@@ -15,6 +15,11 @@ interface ApiErrorEnvelope {
   data?: string;
 }
 
+interface QuranComIndopakVerse {
+  verse_key: string;
+  text_indopak: string;
+}
+
 async function getUpstream<T>(path: string, revalidate: number): Promise<T> {
   const response = await fetch(`${API_BASE}${path}`, {
     next: { revalidate },
@@ -41,6 +46,24 @@ async function getUpstream<T>(path: string, revalidate: number): Promise<T> {
     );
   }
   return result.data;
+}
+
+async function getIndopakPage(page: number): Promise<QuranComIndopakVerse[]> {
+  const response = await fetch(
+    `https://api.quran.com/api/v4/quran/verses/indopak?page_number=${page}`,
+    { next: { revalidate: DAY }, signal: AbortSignal.timeout(15_000) },
+  );
+  if (!response.ok) {
+    throw new Error('Could not load Indo-Pak Quran text for this page.');
+  }
+
+  const result = (await response.json()) as {
+    verses?: QuranComIndopakVerse[];
+  };
+  if (!Array.isArray(result.verses)) {
+    throw new Error('The Indo-Pak Quran text provider returned an unreadable response.');
+  }
+  return result.verses;
 }
 
 function isEdition(value: unknown): value is QuranEdition {
@@ -116,6 +139,27 @@ export async function GET(request: Request) {
         DAY,
       );
       return NextResponse.json(data);
+    }
+
+    if (resource === 'page') {
+      const page = Number(params.get('number'));
+      const translation = params.get('translation') ?? 'en.sahih';
+      const reciter = params.get('reciter') ?? 'ar.alafasy';
+      if (!Number.isInteger(page) || page < 1 || page > 604) {
+        return NextResponse.json({ error: 'Mushaf page must be from 1 to 604.' }, { status: 400 });
+      }
+      if (!/^[a-z0-9.-]+$/i.test(translation) || !/^[a-z0-9.-]+$/i.test(reciter)) {
+        return NextResponse.json({ error: 'Invalid edition identifier.' }, { status: 400 });
+      }
+      const [editions, indopak] = await Promise.all([
+        Promise.all([
+          getUpstream<unknown>(`/page/${page}/quran-uthmani`, DAY),
+          getUpstream<unknown>(`/page/${page}/${encodeURIComponent(translation)}`, DAY),
+          getUpstream<unknown>(`/page/${page}/${encodeURIComponent(reciter)}`, DAY),
+        ]),
+        getIndopakPage(page),
+      ]);
+      return NextResponse.json({ editions, indopak });
     }
 
     return NextResponse.json({ error: 'Unknown Quran resource.' }, { status: 400 });

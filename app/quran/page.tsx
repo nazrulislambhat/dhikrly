@@ -31,7 +31,36 @@ interface ChapterCache {
 
 interface QuranEditionSurah extends QuranSurah {
   edition: QuranEdition;
-  ayahs: { number: number; numberInSurah: number; text: string; audio?: string }[];
+  ayahs: { number: number; numberInSurah: number; text: string; audio?: string; page?: number }[];
+}
+
+interface QuranEditionPage {
+  edition: QuranEdition;
+  ayahs: {
+    number: number;
+    numberInSurah: number;
+    text: string;
+    audio?: string;
+    page?: number;
+    surah: QuranSurah;
+  }[];
+}
+
+interface MushafPageCache {
+  page: number;
+  translation: string;
+  reciter: string;
+  verses: QuranVerse[];
+}
+
+interface QuranIndopakVerse {
+  verse_key: string;
+  text_indopak: string;
+}
+
+interface MushafPageResponse {
+  editions: QuranEditionPage[];
+  indopak: QuranIndopakVerse[];
 }
 
 const PLAYBACK_RATES = [0.5, 0.75, 1, 1.25, 1.5, 2] as const;
@@ -80,6 +109,7 @@ export default function QuranPage() {
       playbackRate:
         PLAYBACK_RATES.find((rate) => rate === saved.playbackRate) ??
         DEFAULT_QURAN_SETTINGS.playbackRate,
+      viewMode: saved.viewMode === 'mushaf' ? 'mushaf' : 'reader',
     };
   });
   const [surahs, setSurahs] = useState<QuranSurah[]>([]);
@@ -114,6 +144,7 @@ export default function QuranPage() {
   );
   const [activeAudio, setActiveAudio] = useState('');
   const [activeAyah, setActiveAyah] = useState<number | null>(null);
+  const [activeSurah, setActiveSurah] = useState<number | null>(null);
   const [continuousSurah, setContinuousSurah] = useState(false);
   const [shouldPlay, setShouldPlay] = useState(false);
   const [playbackTime, setPlaybackTime] = useState(0);
@@ -121,6 +152,12 @@ export default function QuranPage() {
   const [activeWordIndex, setActiveWordIndex] = useState<number | null>(null);
   const [audioError, setAudioError] = useState('');
   const [jumpToAyah, setJumpToAyah] = useState<QuranLocation | null>(null);
+  const [mushafPageNumber, setMushafPageNumber] = useState(1);
+  const [mushafPage, setMushafPage] = useState<MushafPageCache | null>(null);
+  const [mushafPageLoading, setMushafPageLoading] = useState(false);
+  const [mushafPageError, setMushafPageError] = useState('');
+  const [pageFlipDirection, setPageFlipDirection] = useState<'next' | 'previous'>('next');
+  const [pendingPagePlayback, setPendingPagePlayback] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
   const settingsButtonRef = useRef<HTMLButtonElement>(null);
   const settingsCloseButtonRef = useRef<HTMLButtonElement>(null);
@@ -131,6 +168,16 @@ export default function QuranPage() {
     chapter.reciter === settings.reciter
       ? chapter
       : null;
+  const playbackVerses = useMemo(() => {
+    if (settings.viewMode !== 'mushaf') return visibleChapter?.verses ?? [];
+    return mushafPage?.translation === settings.translation &&
+      mushafPage.reciter === settings.reciter
+      ? mushafPage.verses
+      : [];
+  }, [mushafPage, settings.reciter, settings.translation, settings.viewMode, visibleChapter]);
+  const playbackVerseIndex = playbackVerses.findIndex(
+    (verse) => verse.number === activeAyah && verse.surahNumber === activeSurah,
+  );
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', dark);
@@ -280,6 +327,11 @@ export default function QuranPage() {
           arabic: ayah.text,
           translation: translated.ayahs[index]?.text ?? '',
           audio: recitation.ayahs[index]?.audio,
+          page: ayah.page,
+          surahNumber: settings.surah,
+          surahName: activeSurah.englishName,
+          surahArabicName: activeSurah.name,
+          globalNumber: ayah.number,
         }));
         const loadedChapter = {
           surah: activeSurah,
@@ -289,6 +341,7 @@ export default function QuranPage() {
         };
         setChapter(loadedChapter);
         save(QURAN_CACHE_KEY, loadedChapter);
+        if (verses[0]?.page) setMushafPageNumber(verses[0].page);
       } catch (error) {
         if (controller.signal.aborted) return;
         console.error('Could not load the selected Quran surah:', error);
@@ -325,6 +378,79 @@ export default function QuranPage() {
   ]);
 
   useEffect(() => {
+    if (settings.viewMode !== 'mushaf' || catalogLoading) return;
+    const controller = new AbortController();
+    setMushafPageLoading(true);
+    setMushafPageError('');
+
+    async function loadMushafPage() {
+      try {
+        const pageData = await fetchQuran<MushafPageResponse>(
+          `resource=page&number=${mushafPageNumber}&translation=${encodeURIComponent(settings.translation)}&reciter=${encodeURIComponent(settings.reciter)}`,
+          controller.signal,
+        );
+        const editions = pageData.editions;
+        const arabic = editions.find((item) => item.edition.identifier === 'quran-uthmani');
+        const translated = editions.find(
+          (item) => item.edition.identifier === settings.translation,
+        );
+        const recitation = editions.find(
+          (item) => item.edition.identifier === settings.reciter,
+        );
+        if (!arabic || !translated || !recitation) {
+          throw new Error('The selected Mushaf page, translation, or recitation is unavailable.');
+        }
+        const indopakByVerse = new Map(
+          pageData.indopak.map((ayah) => [ayah.verse_key, ayah.text_indopak]),
+        );
+        const verses = arabic.ayahs.map((ayah, index) => {
+          const indopakText = indopakByVerse.get(
+            `${ayah.surah.number}:${ayah.numberInSurah}`,
+          );
+          if (!indopakText) {
+            throw new Error(
+              `Indo-Pak Arabic text is unavailable for ${ayah.surah.number}:${ayah.numberInSurah}.`,
+            );
+          }
+          return {
+            number: ayah.numberInSurah,
+            arabic: indopakText,
+            translation: translated.ayahs[index]?.text ?? '',
+            audio: recitation.ayahs[index]?.audio,
+            page: ayah.page ?? mushafPageNumber,
+            surahNumber: ayah.surah.number,
+            surahName: ayah.surah.englishName,
+            surahArabicName: ayah.surah.name,
+            globalNumber: ayah.number,
+          };
+        });
+        setMushafPage({
+          page: mushafPageNumber,
+          translation: settings.translation,
+          reciter: settings.reciter,
+          verses,
+        });
+      } catch (error) {
+        if (controller.signal.aborted) return;
+        console.error('Could not load the selected Mushaf page:', error);
+        setMushafPageError(
+          error instanceof Error ? error.message : 'Could not load this Mushaf page.',
+        );
+      } finally {
+        if (!controller.signal.aborted) setMushafPageLoading(false);
+      }
+    }
+    void loadMushafPage();
+    return () => controller.abort();
+  }, [
+    catalogLoading,
+    mushafPageNumber,
+    settings.reciter,
+    settings.translation,
+    settings.viewMode,
+  ]);
+
+  useEffect(() => {
     if (audioRef.current) audioRef.current.playbackRate = settings.playbackRate;
   }, [activeAudio, settings.playbackRate]);
 
@@ -357,12 +483,32 @@ export default function QuranPage() {
   useEffect(() => {
     if (!shouldPlay || activeAyah === null) return;
     const frame = requestAnimationFrame(() => {
-      document
-        .getElementById(`quran-ayah-${activeAyah}`)
-        ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      if (activeSurah === null) return;
+      document.querySelector<HTMLElement>(
+        `[data-ayah-key="${activeSurah}:${activeAyah}"]`,
+      )?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     });
     return () => cancelAnimationFrame(frame);
-  }, [activeAyah, shouldPlay, settings.surah]);
+  }, [activeAyah, activeSurah, mushafPage?.page, shouldPlay]);
+
+  useEffect(() => {
+    if (
+      !shouldPlay ||
+      activeAyah === null ||
+      activeSurah === null ||
+      activeWordIndex === null
+    ) {
+      return;
+    }
+    const word = document.querySelector<HTMLElement>(
+      `[data-word-key="${activeSurah}:${activeAyah}:${activeWordIndex}"]`,
+    );
+    if (!word) return;
+    const bounds = word.getBoundingClientRect();
+    if (bounds.top < 96 || bounds.bottom > window.innerHeight - 160) {
+      word.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
+    }
+  }, [activeAyah, activeSurah, activeWordIndex, shouldPlay]);
 
   useEffect(() => {
     setPlaybackTime(0);
@@ -420,8 +566,12 @@ export default function QuranPage() {
           .filter((entry) => entry.isIntersecting)
           .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
         const ayah = Number(current?.target.getAttribute('data-ayah'));
+        const surah = Number(current?.target.getAttribute('data-surah'));
         if (current && Number.isInteger(ayah)) {
-          recordRead({ surah: visibleChapter.surah.number, ayah });
+          recordRead({
+            surah: Number.isInteger(surah) ? surah : visibleChapter.surah.number,
+            ayah,
+          });
         }
       },
       { rootMargin: '-20% 0px -55% 0px', threshold: [0, 0.25, 0.5] },
@@ -430,7 +580,7 @@ export default function QuranPage() {
       observer.observe(element);
     });
     return () => observer.disconnect();
-  }, [chapterLoading, recordRead, visibleChapter]);
+  }, [chapterLoading, mushafPage?.page, recordRead, visibleChapter]);
 
   const updateSetting = useCallback(
     <K extends keyof QuranSettings>(key: K, value: QuranSettings[K]) => {
@@ -448,8 +598,10 @@ export default function QuranPage() {
     audioRef.current?.pause();
     setActiveAudio('');
     setActiveAyah(null);
+    setActiveSurah(null);
     setShouldPlay(false);
     setContinuousSurah(false);
+    setPendingPagePlayback(false);
   };
 
   const playVerse = useCallback((verse: QuranVerse, continuous = settings.playbackMode === 'surah') => {
@@ -457,18 +609,62 @@ export default function QuranPage() {
       setAudioError('Audio is not available for this verse.');
       return;
     }
-    if (activeAyah === verse.number && shouldPlay) {
+    const verseSurah = verse.surahNumber ?? settings.surah;
+    if (activeAyah === verse.number && activeSurah === verseSurah && shouldPlay) {
       audioRef.current?.pause();
       setShouldPlay(false);
       return;
     }
     setAudioError('');
     setActiveAyah(verse.number);
+    setActiveSurah(verseSurah);
     setActiveAudio(verse.audio);
     setShouldPlay(true);
     setContinuousSurah(continuous);
-    recordRead({ surah: settings.surah, ayah: verse.number });
-  }, [activeAyah, recordRead, settings.playbackMode, settings.surah, shouldPlay]);
+    recordRead({ surah: verseSurah, ayah: verse.number });
+  }, [activeAyah, activeSurah, recordRead, settings.playbackMode, settings.surah, shouldPlay]);
+
+  useEffect(() => {
+    if (settings.viewMode !== 'mushaf' || !pendingPagePlayback || mushafPageLoading) return;
+    if (mushafPageError) {
+      setPendingPagePlayback(false);
+      setShouldPlay(false);
+      setContinuousSurah(false);
+      return;
+    }
+    if (
+      !mushafPage ||
+      mushafPage.page !== mushafPageNumber ||
+      mushafPage.translation !== settings.translation ||
+      mushafPage.reciter !== settings.reciter
+    ) {
+      return;
+    }
+    const nextVerse = mushafPage.verses.find(
+      (verse) =>
+        verse.surahNumber === activeSurah &&
+        verse.number > (activeAyah ?? 0),
+    );
+    setPendingPagePlayback(false);
+    if (nextVerse) {
+      playVerse(nextVerse, true);
+    } else {
+      setShouldPlay(false);
+      setContinuousSurah(false);
+    }
+  }, [
+    activeAyah,
+    activeSurah,
+    mushafPage,
+    mushafPageError,
+    mushafPageLoading,
+    mushafPageNumber,
+    pendingPagePlayback,
+    playVerse,
+    settings.reciter,
+    settings.translation,
+    settings.viewMode,
+  ]);
 
   const playFullSurah = () => {
     const firstVerse = visibleChapter?.verses[0];
@@ -481,7 +677,9 @@ export default function QuranPage() {
     setPlaybackTime(audio.currentTime);
     if (Number.isFinite(audio.duration)) setPlaybackDuration(audio.duration);
 
-    const verse = visibleChapter?.verses.find((item) => item.number === activeAyah);
+    const verse = playbackVerses.find(
+      (item) => item.number === activeAyah && item.surahNumber === activeSurah,
+    );
     if (!verse || !Number.isFinite(audio.duration) || audio.duration <= 0) return;
     const words = verse.arabic.trim().split(/\s+/);
     const weights = words.map((word) =>
@@ -495,7 +693,7 @@ export default function QuranPage() {
       return elapsedWeight < accumulated;
     });
     setActiveWordIndex(wordIndex < 0 ? words.length - 1 : wordIndex);
-  }, [activeAyah, visibleChapter]);
+  }, [activeAyah, activeSurah, playbackVerses]);
 
   const seekPlayback = (time: number) => {
     if (!audioRef.current || !Number.isFinite(time)) return;
@@ -504,9 +702,10 @@ export default function QuranPage() {
   };
 
   const playAdjacentVerse = (direction: -1 | 1) => {
-    const verses = visibleChapter?.verses ?? [];
-    const currentIndex = verses.findIndex((verse) => verse.number === activeAyah);
-    const nextVerse = verses[currentIndex + direction];
+    const currentIndex = playbackVerses.findIndex(
+      (verse) => verse.number === activeAyah && verse.surahNumber === activeSurah,
+    );
+    const nextVerse = playbackVerses[currentIndex + direction];
     if (nextVerse) playVerse(nextVerse);
   };
 
@@ -520,17 +719,39 @@ export default function QuranPage() {
       });
       return;
     }
-    const verses = visibleChapter?.verses ?? [];
-    const index = verses.findIndex((verse) => verse.number === activeAyah);
-    const nextVerse = verses[index + 1];
+    const index = playbackVerses.findIndex(
+      (verse) => verse.number === activeAyah && verse.surahNumber === activeSurah,
+    );
+    const candidateNextVerse = playbackVerses[index + 1];
+    const nextVerse =
+      candidateNextVerse?.surahNumber === activeSurah ? candidateNextVerse : undefined;
     if ((continuousSurah || settings.autoPlayNext) && nextVerse) {
       playVerse(nextVerse, continuousSurah);
+    } else if (
+      settings.viewMode === 'mushaf' &&
+      (continuousSurah || settings.autoPlayNext) &&
+      mushafPageNumber < 604
+    ) {
+      setPendingPagePlayback(true);
+      setPageFlipDirection('next');
+      setMushafPageNumber((page) => Math.min(604, page + 1));
     } else {
       setShouldPlay(false);
       setContinuousSurah(false);
       updatePlaybackPosition();
     }
-  }, [activeAyah, continuousSurah, playVerse, settings.autoPlayNext, settings.repeatVerse, updatePlaybackPosition, visibleChapter]);
+  }, [
+    activeAyah,
+    activeSurah,
+    continuousSurah,
+    mushafPageNumber,
+    playbackVerses,
+    playVerse,
+    settings.autoPlayNext,
+    settings.repeatVerse,
+    settings.viewMode,
+    updatePlaybackPosition,
+  ]);
 
   const formatTime = (time: number) => {
     if (!Number.isFinite(time) || time < 0) return '0:00';
@@ -563,6 +784,22 @@ export default function QuranPage() {
 
   const saveBookmark = (ayah: number) =>
     toggleBookmark({ surah: settings.surah, ayah });
+
+  const turnMushafPage = (direction: -1 | 1) => {
+    const nextPage = Math.min(604, Math.max(1, mushafPageNumber + direction));
+    if (nextPage === mushafPageNumber) return;
+    setPageFlipDirection(direction > 0 ? 'next' : 'previous');
+    setPendingPagePlayback(false);
+    setMushafPageNumber(nextPage);
+  };
+
+  const selectViewMode = (viewMode: QuranSettings['viewMode']) => {
+    if (viewMode === 'mushaf' && visibleChapter?.verses[0]?.page) {
+      setMushafPageNumber(visibleChapter.verses[0].page);
+      setPageFlipDirection('next');
+    }
+    updateSetting('viewMode', viewMode);
+  };
 
   const openLocation = (location: QuranLocation) => {
     if (location.surah !== settings.surah) {
@@ -705,7 +942,71 @@ export default function QuranPage() {
                 </button>
               </div>
 
-              {visibleChapter && (
+              <div className={`quran-view-toggle ${card}`} role="group" aria-label="Quran reading view">
+                <button
+                  type="button"
+                  aria-pressed={settings.viewMode === 'reader'}
+                  className={settings.viewMode === 'reader' ? 'is-active' : ''}
+                  onClick={() => selectViewMode('reader')}
+                >
+                  Verse reader
+                </button>
+                <button
+                  type="button"
+                  aria-pressed={settings.viewMode === 'mushaf'}
+                  className={settings.viewMode === 'mushaf' ? 'is-active' : ''}
+                  onClick={() => selectViewMode('mushaf')}
+                >
+                  Mushaf pages
+                </button>
+              </div>
+              {settings.viewMode === 'mushaf' && (
+                <p className={`mushaf-view-note ${muted}`}>
+                  Indo-Pak Arabic with compact translation
+                </p>
+              )}
+
+              {settings.viewMode === 'mushaf' && (
+                <div className={`mushaf-navigation ${card}`} aria-label="Mushaf page navigation">
+                  <button
+                    type="button"
+                    aria-label="Previous Mushaf page"
+                    onClick={() => turnMushafPage(-1)}
+                    disabled={mushafPageNumber <= 1 || mushafPageLoading}
+                  >
+                    ‹
+                  </button>
+                  <label>
+                    <span>PAGE</span>
+                    <input
+                      type="number"
+                      min={1}
+                      max={604}
+                      value={mushafPageNumber}
+                      aria-label="Mushaf page number"
+                      onChange={(event) => {
+                        const nextPage = Number(event.target.value);
+                        if (Number.isInteger(nextPage) && nextPage >= 1 && nextPage <= 604) {
+                          setPageFlipDirection(nextPage > mushafPageNumber ? 'next' : 'previous');
+                          setPendingPagePlayback(false);
+                          setMushafPageNumber(nextPage);
+                        }
+                      }}
+                    />
+                    <small>of 604</small>
+                  </label>
+                  <button
+                    type="button"
+                    aria-label="Next Mushaf page"
+                    onClick={() => turnMushafPage(1)}
+                    disabled={mushafPageNumber >= 604 || mushafPageLoading}
+                  >
+                    ›
+                  </button>
+                </div>
+              )}
+
+              {visibleChapter && settings.viewMode === 'reader' && (
                 <div className={`mb-4 rounded-2xl border p-5 text-center sm:p-7 ${card}`}>
                   <p className={`text-xs uppercase tracking-[0.12em] ${muted}`}>
                     Surah {visibleChapter.surah.number} · {visibleChapter.surah.revelationType} · {visibleChapter.surah.numberOfAyahs} verses
@@ -730,18 +1031,129 @@ export default function QuranPage() {
                 </div>
               )}
 
-              {chapterLoading && (
+              {settings.viewMode === 'reader' && chapterLoading && (
                 <div className={`mb-4 rounded-2xl border p-5 text-center text-sm ${card} ${muted}`} role="status">
                   Loading this surah and its selected editions…
                 </div>
               )}
-              {chapterError && (
+              {settings.viewMode === 'reader' && chapterError && (
                 <div role="status" className={`mb-4 rounded-2xl border p-4 text-sm ${card} ${muted}`}>
                   {chapterError}
                 </div>
               )}
 
-              {visibleChapter && !chapterLoading && (
+              {settings.viewMode === 'mushaf' && (
+                <section className="mushaf-stage" aria-label={`Mushaf page ${mushafPageNumber}`}>
+                  {mushafPageLoading && (
+                    <p className={`mushaf-loading ${muted}`} role="status">
+                      Opening page {mushafPageNumber}…
+                    </p>
+                  )}
+                  {mushafPageError && (
+                    <p className="mushaf-error" role="alert">{mushafPageError}</p>
+                  )}
+                  {!mushafPageLoading &&
+                    !mushafPageError &&
+                    mushafPage?.page === mushafPageNumber &&
+                    mushafPage.translation === settings.translation &&
+                    mushafPage.reciter === settings.reciter && (
+                      <article
+                        key={mushafPage.page}
+                        className={`mushaf-sheet turn-${pageFlipDirection} ${dark ? 'is-dark' : ''}`}
+                        aria-label={`Mushaf page ${mushafPage.page}`}
+                      >
+                        <div className="mushaf-page-ornament" aria-hidden="true">
+                          <span>۞</span>
+                          <span>الْقُرْآنُ الْكَرِيمُ</span>
+                          <span>۞</span>
+                        </div>
+                        <div
+                          className="mushaf-page-text"
+                          dir="rtl"
+                          lang="ar"
+                          style={{ fontSize: `${settings.arabicFontSize}px` }}
+                        >
+                          {mushafPage.verses.map((verse) => {
+                            const surahNumber = verse.surahNumber ?? settings.surah;
+                            const isActiveAyah =
+                              activeSurah === surahNumber && activeAyah === verse.number;
+                            const arabicWords = verse.arabic.trim().split(/\s+/);
+                            const startsSurah = verse.number === 1;
+                            const showBismillah =
+                              startsSurah && surahNumber !== 1 && surahNumber !== 9;
+                            const surahName =
+                              surahs.find((item) => item.number === surahNumber)?.name ??
+                              verse.surahArabicName ??
+                              '';
+                            return (
+                              <span key={`${surahNumber}:${verse.number}`} className="mushaf-verse-group">
+                                {startsSurah && (
+                                  <span className="mushaf-surah-heading">
+                                    <span aria-hidden="true">۞</span>
+                                    <span>{surahName}</span>
+                                    <span aria-hidden="true">۞</span>
+                                  </span>
+                                )}
+                                {showBismillah && (
+                                  <span className="mushaf-bismillah" lang="ar">
+                                    بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحِيْمِ
+                                  </span>
+                                )}
+                                <span
+                                  className="mushaf-verse"
+                                  data-ayah-key={`${surahNumber}:${verse.number}`}
+                                  data-ayah={verse.number}
+                                  data-surah={surahNumber}
+                                  aria-current={isActiveAyah ? 'true' : undefined}
+                                >
+                                  {arabicWords.map((word, wordIndex) => (
+                                    <span
+                                      key={`${surahNumber}:${verse.number}:${wordIndex}`}
+                                      data-word-index={wordIndex}
+                                      data-word-key={`${surahNumber}:${verse.number}:${wordIndex}`}
+                                      className={
+                                        isActiveAyah &&
+                                        activeWordIndex === wordIndex &&
+                                        shouldPlay
+                                          ? 'mushaf-word is-speaking'
+                                          : 'mushaf-word'
+                                      }
+                                    >
+                                      {word}{' '}
+                                    </span>
+                                  ))}
+                                  <button
+                                    type="button"
+                                    className={`mushaf-ayah-marker ${isActiveAyah ? 'is-active' : ''}`}
+                                    aria-label={`Play ${verse.surahName ?? 'surah'} verse ${verse.number}`}
+                                    onClick={() => playVerse(verse, false)}
+                                  >
+                                    ۝{verse.number}
+                                  </button>
+                                </span>{' '}
+                                {settings.showTranslation && (
+                                  <span
+                                    className="mushaf-translation"
+                                    dir="ltr"
+                                    lang={settings.language}
+                                  >
+                                    {verse.translation || 'Translation unavailable.'}
+                                  </span>
+                                )}
+                              </span>
+                            );
+                          })}
+                        </div>
+                        <footer className="mushaf-page-footer">
+                          <span>{mushafPage.verses[0]?.surahName ?? 'Al-Qur’an'}</span>
+                          <span>{mushafPage.page}</span>
+                        </footer>
+                      </article>
+                    )}
+                </section>
+              )}
+
+              {visibleChapter && !chapterLoading && settings.viewMode === 'reader' && (
                 <div className="space-y-3">
                   {visibleChapter.verses.map((verse) => {
                     const isBookmarked =
@@ -749,12 +1161,17 @@ export default function QuranPage() {
                         (item) => item.surah === settings.surah && item.ayah === verse.number,
                       );
                     const isPlaying = activeAyah === verse.number && shouldPlay;
-                    const isActiveAyah = activeAyah === verse.number && Boolean(activeAudio);
+                    const isActiveAyah =
+                      activeSurah === (verse.surahNumber ?? settings.surah) &&
+                      activeAyah === verse.number &&
+                      Boolean(activeAudio);
                     const arabicWords = verse.arabic.trim().split(/\s+/);
                     return (
                       <article
                         id={`quran-ayah-${verse.number}`}
                         data-ayah={verse.number}
+                        data-surah={settings.surah}
+                        data-ayah-key={`${settings.surah}:${verse.number}`}
                         key={verse.number}
                         aria-current={isActiveAyah ? 'true' : undefined}
                         className={`rounded-2xl border p-4 transition-colors sm:p-6 ${
@@ -813,6 +1230,7 @@ export default function QuranPage() {
                           {arabicWords.map((word, index) => (
                             <span
                               key={`${verse.number}-${index}`}
+                              data-word-key={`${settings.surah}:${verse.number}:${index}`}
                               className={
                                 isActiveAyah && activeWordIndex === index && shouldPlay
                                   ? dark
@@ -1094,7 +1512,7 @@ export default function QuranPage() {
             )}
           </div>
         </div>
-        {activeAudio && visibleChapter && activeAyah !== null && (
+        {activeAudio && activeAyah !== null && (
           <section
             className={`quran-player ${dark ? 'quran-player-dark' : ''}`}
             aria-label="Quran audio player"
@@ -1111,7 +1529,9 @@ export default function QuranPage() {
               onError={() => setAudioError('This recitation could not be loaded. Try another reciter or check your connection.')}
             />
             <div className="quran-player-info">
-              <span className="quran-player-surah">{visibleChapter.surah.englishName}</span>
+              <span className="quran-player-surah">
+                {surahs.find((item) => item.number === activeSurah)?.englishName ?? 'The Noble Qur’an'}
+              </span>
               <span className="quran-player-meta">
                 Verse {activeAyah} · {reciters.find((item) => item.identifier === settings.reciter)?.englishName ?? 'Selected reciter'}
               </span>
@@ -1132,7 +1552,7 @@ export default function QuranPage() {
                 className="quran-player-skip"
                 aria-label="Previous verse"
                 onClick={() => playAdjacentVerse(-1)}
-                disabled={activeAyah <= 1}
+                disabled={playbackVerseIndex <= 0}
               >
                 ↶
               </button>
@@ -1157,7 +1577,7 @@ export default function QuranPage() {
                 className="quran-player-skip"
                 aria-label="Next verse"
                 onClick={() => playAdjacentVerse(1)}
-                disabled={activeAyah >= visibleChapter.verses.length}
+                disabled={playbackVerseIndex < 0 || playbackVerseIndex >= playbackVerses.length - 1}
               >
                 ↷
               </button>

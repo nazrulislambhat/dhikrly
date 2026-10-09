@@ -12,6 +12,8 @@ export interface QuranAyah {
   numberInSurah: number;
   text: string;
   audio?: string;
+  page?: number;
+  surah?: QuranSurah;
 }
 
 export interface QuranSurah {
@@ -30,6 +32,11 @@ export interface QuranVerse {
   arabic: string;
   translation: string;
   audio?: string;
+  page?: number;
+  surahNumber?: number;
+  surahName?: string;
+  surahArabicName?: string;
+  globalNumber?: number;
 }
 
 export interface QuranSettings {
@@ -43,6 +50,7 @@ export interface QuranSettings {
   playbackRate: number;
   repeatVerse: boolean;
   surah: number;
+  viewMode: 'reader' | 'mushaf';
 }
 
 export interface QuranLocation {
@@ -78,6 +86,7 @@ export const DEFAULT_QURAN_SETTINGS: QuranSettings = {
   playbackRate: 1,
   repeatVerse: false,
   surah: 1,
+  viewMode: 'reader',
 };
 
 export const DEFAULT_RECITERS: QuranEdition[] = [
