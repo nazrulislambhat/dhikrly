@@ -34,6 +34,7 @@ import UserMenu from '@/components/UserMenu';
 import PWAProvider from '@/components/PWAProvider';
 import UpdateBanner from '@/components/UpdateBanner';
 import TasbihCounter from '@/components/TasbihCounter';
+import TiltCard from '@/components/TiltCard';
 import { useChecked } from '@/hooks/useChecked';
 import { useStreak } from '@/hooks/useStreak';
 import { useToast } from '@/hooks/useToast';
@@ -370,6 +371,7 @@ export default function DuasTracker() {
         </header>
 
         <div className="dashboard-overview">
+        <TiltCard className="dashboard-hero-tilt">
         <section className={`dashboard-hero ${dark ? 'is-dark' : ''}`} aria-label="Daily remembrance">
           <div className="relative z-10 max-w-lg">
             <p className="dashboard-eyebrow">
@@ -400,6 +402,7 @@ export default function DuasTracker() {
             <span><strong>{pct}%</strong><small>complete</small></span>
           </div>
         </section>
+        </TiltCard>
 
         <section className="dashboard-shortcuts" aria-label="Quick links">
           {[
@@ -407,17 +410,18 @@ export default function DuasTracker() {
             { href: '/quran', icon: '۞', title: 'Qur’an', note: 'Read & listen' },
             { href: '#daily-adhkar', icon: '✳', title: 'Adhkār', note: 'Daily duas' },
           ].map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`dashboard-shortcut ${dark ? 'is-dark' : ''}`}
-            >
-              <span className="dashboard-shortcut-icon" aria-hidden="true">
-                {item.icon}
-              </span>
-              <span className="dashboard-shortcut-title">{item.title}</span>
-              <span className="dashboard-shortcut-note">{item.note}</span>
-            </Link>
+            <TiltCard key={item.href} className="dashboard-shortcut-tilt" intensity={7}>
+              <Link
+                href={item.href}
+                className={`dashboard-shortcut ${dark ? 'is-dark' : ''}`}
+              >
+                <span className="dashboard-shortcut-icon" aria-hidden="true">
+                  {item.icon}
+                </span>
+                <span className="dashboard-shortcut-title">{item.title}</span>
+                <span className="dashboard-shortcut-note">{item.note}</span>
+              </Link>
+            </TiltCard>
           ))}
         </section>
         </div>
