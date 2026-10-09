@@ -47,6 +47,7 @@ export default function SalahPage() {
   const {
     log,
     setLog,
+    localRevision,
     updatePrayer,
     toggleSunnah,
     updateTahajjud,
@@ -79,6 +80,7 @@ export default function SalahPage() {
     user,
     today,
     log,
+    localRevision,
     onPullComplete: handlePullComplete,
     onRemoteLogUpdate: handleRemoteLogUpdate,
   });
