@@ -20,6 +20,29 @@ interface QuranComIndopakVerse {
   text_indopak: string;
 }
 
+function isIndopakVerse(value: unknown): value is QuranComIndopakVerse {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'verse_key' in value &&
+    typeof value.verse_key === 'string' &&
+    'text_indopak' in value &&
+    typeof value.text_indopak === 'string'
+  );
+}
+
+interface QuranChapterEdition {
+  edition: { identifier: string };
+  ayahs: { numberInSurah: number; text: string }[];
+}
+
+function normalizeIndopakVerses(verses: QuranComIndopakVerse[]) {
+  return verses.map((verse) => ({
+    ...verse,
+    text_indopak: verse.text_indopak.replace(/[\uE000-\uF8FF]/g, ''),
+  }));
+}
+
 async function getUpstream<T>(path: string, revalidate: number): Promise<T> {
   const response = await fetch(`${API_BASE}${path}`, {
     next: { revalidate },
@@ -58,12 +81,33 @@ async function getIndopakPage(page: number): Promise<QuranComIndopakVerse[]> {
   }
 
   const result = (await response.json()) as {
-    verses?: QuranComIndopakVerse[];
+    verses?: unknown;
   };
-  if (!Array.isArray(result.verses)) {
+  if (!Array.isArray(result.verses) || !result.verses.every(isIndopakVerse)) {
     throw new Error('The Indo-Pak Quran text provider returned an unreadable response.');
   }
-  return result.verses;
+  return normalizeIndopakVerses(result.verses);
+}
+
+async function getIndopakChapter(chapter: number): Promise<QuranComIndopakVerse[]> {
+  const response = await fetch(
+    `https://api.quran.com/api/v4/quran/verses/indopak?chapter_number=${chapter}`,
+    { next: { revalidate: DAY }, signal: AbortSignal.timeout(15_000) },
+  );
+  if (!response.ok) {
+    throw new Error('Could not load Indo-Pak Quran text for this surah.');
+  }
+
+  const result = (await response.json()) as {
+    verses?: unknown;
+  };
+  if (
+    !Array.isArray(result.verses) ||
+    !result.verses.every(isIndopakVerse)
+  ) {
+    throw new Error('The Indo-Pak Quran text provider returned an unreadable response.');
+  }
+  return normalizeIndopakVerses(result.verses);
 }
 
 function isEdition(value: unknown): value is QuranEdition {
@@ -134,11 +178,35 @@ export async function GET(request: Request) {
         encodeURIComponent(translation),
         encodeURIComponent(reciter),
       ].join(',');
-      const data = await getUpstream<unknown[]>(
-        `/surah/${number}/editions/${editions}`,
-        DAY,
+      const [data, indopak] = await Promise.all([
+        getUpstream<QuranChapterEdition[]>(
+          `/surah/${number}/editions/${editions}`,
+          DAY,
+        ),
+        getIndopakChapter(number),
+      ]);
+      const arabic = data.find(
+        (edition) => edition.edition.identifier === 'quran-uthmani',
       );
-      return NextResponse.json(data);
+      if (!arabic) {
+        throw new Error('The selected Quran chapter text is unavailable.');
+      }
+      const indopakByVerse = new Map(
+        indopak.map((ayah) => [ayah.verse_key, ayah.text_indopak]),
+      );
+      const verses = arabic.ayahs.map((ayah) => {
+        const text = indopakByVerse.get(`${number}:${ayah.numberInSurah}`);
+        if (!text) {
+          throw new Error(
+            `Indo-Pak Arabic text is unavailable for ${number}:${ayah.numberInSurah}.`,
+          );
+        }
+        return { ...ayah, text };
+      });
+      const dataWithIndopak = data.map((edition) =>
+        edition === arabic ? { ...edition, ayahs: verses } : edition,
+      );
+      return NextResponse.json(dataWithIndopak);
     }
 
     if (resource === 'page') {

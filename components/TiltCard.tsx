@@ -34,7 +34,7 @@ export default function TiltCard({
 
   return (
     <div
-      className={`tilt-card ${className}`}
+      className={`transform-gpu [transform:perspective(900px)_rotateX(var(--tilt-x,0deg))_rotateY(var(--tilt-y,0deg))_translateZ(0)] [transform-style:preserve-3d] transition-[transform,filter] duration-200 will-change-transform hover:drop-shadow-[0_14px_20px_rgb(20_48_39/9%)] motion-reduce:transform-none ${className}`}
       onPointerMove={onPointerMove}
       onPointerLeave={onPointerLeave}
       style={{ '--tilt-x': '0deg', '--tilt-y': '0deg' } as TiltStyle}

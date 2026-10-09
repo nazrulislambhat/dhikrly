@@ -161,18 +161,18 @@ export default function NotificationSettings({
   }, [settings, permission, userId, subscribe, unsubscribe, isSubscribed]);
 
   /* ── Styles ── */
-  const overlay = dark ? 'bg-[#0c1a2e]/80 backdrop-blur-sm' : 'bg-stone-900/40 backdrop-blur-sm';
-  const panel   = dark ? 'bg-[#111f33] border-white/10'     : 'bg-white border-stone-200';
+  const overlay = dark ? 'bg-black/65 backdrop-blur-md' : 'bg-stone-900/45 backdrop-blur-md';
+  const panel   = dark ? 'bg-[#14211e] border-white/10 text-stone-100' : 'bg-white border-stone-200';
   const input   = dark
     ? 'bg-white/5 border-white/10 text-stone-200 focus:border-amber-400/50'
     : 'bg-stone-50 border-stone-200 text-stone-700 focus:border-amber-400';
 
   return (
     <div
-      className={`fixed inset-0 z-50 flex items-center justify-center p-4 ${overlay}`}
+      className={`fixed inset-0 z-[100] flex items-center justify-center p-4 ${overlay}`}
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div className={`w-full max-w-sm rounded-2xl border p-6 shadow-2xl ${panel}`}>
+      <div className={`max-h-[calc(100dvh-2rem)] w-full max-w-sm overflow-y-auto rounded-2xl border p-6 shadow-2xl ${panel}`}>
 
         {/* Header */}
         <div className="mb-5 flex items-center justify-between">

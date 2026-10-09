@@ -56,7 +56,7 @@ export default function LegalLayout({
 
       {/* Content */}
       <main className="mx-auto max-w-3xl px-6 py-12">
-        <div className="prose-legal">{children}</div>
+        <div className="[&_h2]:mb-3 [&_h2]:mt-10 [&_h2]:border-b [&_h2]:border-black/[0.06] [&_h2]:pb-2 [&_h2]:font-serif [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:text-amber-800 [&_h3]:mb-2 [&_h3]:mt-6 [&_h3]:font-serif [&_h3]:text-base [&_h3]:font-semibold [&_h3]:text-stone-700 [&_p]:mb-4 [&_p]:text-sm [&_p]:leading-[1.8] [&_p]:text-stone-600 [&_ul]:mb-4 [&_ul]:list-disc [&_ul]:pl-6 [&_ul_li]:mb-1 [&_ul_li]:text-sm [&_ul_li]:leading-[1.8] [&_ul_li]:text-stone-600 [&_a]:text-amber-700 [&_a]:underline [&_a]:underline-offset-2 [&_a:hover]:text-amber-800">{children}</div>
       </main>
 
       {/* Footer */}

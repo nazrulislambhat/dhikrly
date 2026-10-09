@@ -1,4 +1,3 @@
-import '../legal.css';
 import type { Metadata } from 'next';
 import LegalLayout from '../../components/LegalLayout';
 
@@ -14,7 +13,7 @@ export default function Privacy() {
       subtitle="How Dhikrly collects, uses, and protects your information"
       lastUpdated="March 2025"
     >
-      <div className="highlight-box">
+      <div className="mb-6 rounded-xl border border-amber-700/15 bg-amber-100 px-5 py-4 text-amber-800 [&_p]:mb-0 [&_p]:text-[13px] [&_p]:text-amber-800">
         <p>
           <strong>Summary:</strong> Dhikrly stores your progress locally on your
           device by default. If you create an account, your data is synced to
