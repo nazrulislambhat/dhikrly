@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useEffect } from 'react';
 
-type AppSection = 'adhkar' | 'salah' | 'quran';
+type AppSection = 'adhkar' | 'salah' | 'quran' | 'settings';
 
 interface AppShellProps {
   active: AppSection;
@@ -16,6 +16,7 @@ const navItems: { href: string; label: string; section: AppSection; icon: string
   { href: '/', label: 'Adhkār', section: 'adhkar', icon: '✳' },
   { href: '/salah', label: 'Ṣalāh', section: 'salah', icon: '◷' },
   { href: '/quran', label: 'Qur’an', section: 'quran', icon: '۞' },
+  { href: '/settings', label: 'Profile', section: 'settings', icon: '◉' },
 ];
 
 export default function AppShell({
