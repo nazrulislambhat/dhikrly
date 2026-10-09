@@ -60,23 +60,36 @@ function removeQueued(userId: string, item: QueueItem) {
   }
 }
 
+const progressWrites = new Map<string, Promise<boolean>>();
+
 async function pushProgress(
   userId: string,
   date: string,
   checked: Record<string, boolean>,
 ): Promise<boolean> {
+  const key = `${userId}:${date}`;
+  const previousWrite = progressWrites.get(key) ?? Promise.resolve(true);
+  const write = previousWrite.catch(() => false).then(async () => {
+    try {
+      const { error } = await supabase
+        .from('daily_progress')
+        .upsert(
+          { user_id: userId, date, checked, updated_at: new Date().toISOString() },
+          { onConflict: 'user_id,date' },
+        );
+      if (error) console.error('Could not sync adhkār progress:', error.message);
+      return !error;
+    } catch (error) {
+      console.error('Could not sync adhkār progress:', error);
+      return false;
+    }
+  });
+  progressWrites.set(key, write);
+
   try {
-    const { error } = await supabase
-      .from('daily_progress')
-      .upsert(
-        { user_id: userId, date, checked, updated_at: new Date().toISOString() },
-        { onConflict: 'user_id,date' },
-      );
-    if (error) console.error('Could not sync adhkār progress:', error.message);
-    return !error;
-  } catch (error) {
-    console.error('Could not sync adhkār progress:', error);
-    return false;
+    return await write;
+  } finally {
+    if (progressWrites.get(key) === write) progressWrites.delete(key);
   }
 }
 
@@ -171,6 +184,7 @@ interface UseSyncOptions {
   user: User | null;
   today: string;
   checked: Record<string, boolean>;
+  localRevision: { current: number };
   customDuas: Dua[];
   streak: Streak;
   onPullComplete: (data: {
@@ -185,6 +199,7 @@ export function useSync({
   user,
   today,
   checked,
+  localRevision,
   customDuas,
   streak,
   onPullComplete,
@@ -269,6 +284,7 @@ export function useSync({
 
     let cancelled = false;
     let retryTimer: ReturnType<typeof setTimeout> | undefined;
+    const startingRevision = localRevision.current;
     setReadyUserId(null);
     setStatus('syncing');
     const initialize = async () => {
@@ -291,6 +307,9 @@ export function useSync({
             mergedByDate[date] = remoteChecked;
           }
         });
+        if (localRevision.current !== startingRevision) {
+          mergedByDate[today] = latestChecked.current;
+        }
         save(STORAGE_KEY, mergedByDate);
 
         const resolvedToday = mergedByDate[today] ?? {};
@@ -397,7 +416,11 @@ export function useSync({
     if (!user || readyUserId !== user.id) return;
 
     const poll = async () => {
-      if (pendingChecked.current !== lastPushedChecked.current) return;
+      if (
+        pendingChecked.current !== lastPushedChecked.current ||
+        JSON.stringify(latestChecked.current) !== lastPushedChecked.current
+      ) return;
+      const pollRevision = localRevision.current;
       const { data, error } = await supabase
         .from('daily_progress')
         .select('checked')
@@ -407,6 +430,10 @@ export function useSync({
       if (error) {
         console.error('Could not check for remote adhkār updates:', error.message);
         setStatus(navigator.onLine ? 'error' : 'offline');
+        return;
+      }
+      if (localRevision.current !== pollRevision) {
+        settleStatus(user.id);
         return;
       }
       if (!data) {
