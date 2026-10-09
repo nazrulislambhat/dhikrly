@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { ArrowUpRight, BellRing, BookOpen, Clock3, Moon, UserRound } from 'lucide-react';
 import AppShell from '@/components/AppShell';
 import AuthModal from '@/components/AuthModal';
 import NotificationSettings from '@/components/NotificationSettings';
@@ -78,7 +79,7 @@ export default function SettingsPage() {
               <h1 className="mt-1 text-3xl font-extrabold tracking-tight sm:text-4xl">Profile & settings</h1>
               <p className="mt-2 text-sm text-[var(--app-muted)]">Make Dhikrly feel right for you.</p>
             </div>
-            <span className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl border border-emerald-500/20 bg-emerald-500/10 font-arabic text-3xl text-emerald-800 dark:text-emerald-200" aria-hidden="true">ذ</span>
+            <span className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl border border-emerald-500/20 bg-emerald-50 text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-200" aria-hidden="true"><UserRound className="h-6 w-6" /></span>
           </header>
 
           <section className={`${cardClass} mb-4 flex items-center gap-4 p-5`} aria-labelledby="profile-title">
@@ -110,7 +111,7 @@ export default function SettingsPage() {
           <div className="grid gap-4 min-[760px]:grid-cols-2 min-[760px]:items-stretch">
             <section className={`${cardClass} min-w-0 p-5`} aria-labelledby="personal-title">
               <div className="mb-5 flex items-center gap-3">
-                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-emerald-500/10 text-lg text-emerald-800 dark:text-emerald-200" aria-hidden="true">◎</span>
+                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-emerald-50 text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-200" aria-hidden="true"><UserRound className="h-4 w-4" /></span>
                 <div>
                   <h2 id="personal-title" className="text-sm font-bold">Personal details</h2>
                   <p className="mt-1 text-xs text-[var(--app-muted)]">How your account appears to you.</p>
@@ -159,7 +160,7 @@ export default function SettingsPage() {
 
             <section className={`${cardClass} min-w-0 p-5`} aria-labelledby="appearance-title">
               <div className="mb-5 flex items-center gap-3">
-                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-emerald-500/10 text-lg text-emerald-800 dark:text-emerald-200" aria-hidden="true">◐</span>
+                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-emerald-50 text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-200" aria-hidden="true"><Moon className="h-4 w-4" /></span>
                 <div>
                   <h2 id="appearance-title" className="text-sm font-bold">Appearance & sound</h2>
                   <p className="mt-1 text-xs text-[var(--app-muted)]">Choose how Dhikrly looks and feels.</p>
@@ -186,14 +187,14 @@ export default function SettingsPage() {
                 />
               </label>
               <div className="flex min-h-16 items-center justify-between gap-4 border-t border-[var(--app-line)] py-3">
-                <span className="grid gap-1"><strong className="text-xs font-bold">Qur’an reader</strong><small className="text-[11px] text-[var(--app-muted)]">Adjust recitation and reading preferences.</small></span>
-                <Link href="/quran" className="whitespace-nowrap text-xs font-bold text-emerald-800 dark:text-emerald-200">Open reader <span aria-hidden="true">↗</span></Link>
+                <span className="grid gap-1"><strong className="inline-flex items-center gap-2 text-xs font-bold"><BookOpen className="h-4 w-4 text-emerald-700 dark:text-emerald-200" aria-hidden="true" /> Qur’an reader</strong><small className="text-[11px] text-[var(--app-muted)]">Adjust recitation and reading preferences.</small></span>
+                <Link href="/quran" className="inline-flex items-center gap-1 whitespace-nowrap text-xs font-bold text-emerald-800 dark:text-emerald-200">Open reader <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" /></Link>
               </div>
             </section>
 
             <section className={`${cardClass} min-w-0 p-5`} aria-labelledby="reminders-title">
               <div className="mb-5 flex items-center gap-3">
-                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-emerald-500/10 text-lg text-emerald-800 dark:text-emerald-200" aria-hidden="true">◷</span>
+                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-emerald-50 text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-200" aria-hidden="true"><BellRing className="h-4 w-4" /></span>
                 <div>
                   <h2 id="reminders-title" className="text-sm font-bold">Reminders</h2>
                   <p className="mt-1 text-xs text-[var(--app-muted)]">Choose when to make space for daily adhkār.</p>
@@ -217,7 +218,7 @@ export default function SettingsPage() {
 
             <section className={`${cardClass} min-w-0 p-5`} aria-labelledby="prayer-settings-title">
               <div className="mb-5 flex items-center gap-3">
-                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-emerald-500/10 text-lg text-emerald-800 dark:text-emerald-200" aria-hidden="true">☼</span>
+                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-emerald-50 text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-200" aria-hidden="true"><Clock3 className="h-4 w-4" /></span>
                 <div>
                   <h2 id="prayer-settings-title" className="text-sm font-bold">Prayer calculations</h2>
                   <p className="mt-1 text-xs text-[var(--app-muted)]">Prayer times are calculated for your saved location.</p>
@@ -254,8 +255,8 @@ export default function SettingsPage() {
                 <option className="bg-white text-stone-900 dark:bg-[#14211e] dark:text-stone-100" value="Standard">Standard</option>
                 <option className="bg-white text-stone-900 dark:bg-[#14211e] dark:text-stone-100" value="Hanafi">Hanafi</option>
               </select>
-              <Link href="/salah" className="mt-4 inline-flex text-xs font-bold text-emerald-800 dark:text-emerald-200">
-                View prayer times <span aria-hidden="true">↗</span>
+              <Link href="/salah" className="mt-4 inline-flex items-center gap-1 text-xs font-bold text-emerald-800 dark:text-emerald-200">
+                View prayer times <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
               </Link>
             </section>
           </div>

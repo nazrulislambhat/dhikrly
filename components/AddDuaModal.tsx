@@ -2,6 +2,7 @@
 'use client';
 
 import { useState } from 'react';
+import { Star } from 'lucide-react';
 import type { Dua, Category } from '@/types';
 
 interface AddDuaModalProps {
@@ -291,7 +292,7 @@ export default function AddDuaModal({
           <span
             className={`text-[12px] ${dark ? 'text-stone-400' : 'text-stone-500'}`}
           >
-            Mark as priority (★)
+            Mark as priority <Star className="ml-1 inline h-3.5 w-3.5" aria-hidden="true" />
           </span>
         </div>
 
