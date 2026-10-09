@@ -37,7 +37,7 @@ export default function AppShell({
 
   return (
     <div className="app-shell">
-      <aside className={`app-sidebar ${surface}`}>
+      <header className={`app-sidebar ${surface}`}>
         <Link href="/" className="app-brand" aria-label="Dhikrly home">
           <span className="app-brand-mark" aria-hidden="true">ذ</span>
           <span>
@@ -70,7 +70,7 @@ export default function AppShell({
           <span aria-hidden="true">{dark ? '☼' : '☾'}</span>
           {dark ? 'Use light appearance' : 'Use dark appearance'}
         </button>
-      </aside>
+      </header>
 
       <main className="app-shell-main">
         <div className="app-mobile-brand">
