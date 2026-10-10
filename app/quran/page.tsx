@@ -1007,45 +1007,83 @@ export default function QuranPage() {
               )}
 
               {settings.viewMode === 'mushaf' && (
-                <div className={`mb-4 flex items-center justify-between gap-3 rounded-2xl border p-3 ${card}`} aria-label="Mushaf page navigation">
-                  <button
-                    type="button"
-                    aria-label="Previous Mushaf page"
-                    className="grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-[var(--app-line)] bg-[var(--app-surface)] text-2xl text-emerald-800 transition hover:-translate-y-0.5 hover:border-emerald-500 disabled:cursor-not-allowed disabled:opacity-40 dark:text-emerald-200"
-                    onClick={() => turnMushafPage(-1)}
-                    disabled={mushafPageNumber <= 1 || mushafPageLoading}
-                  >
-                    <ChevronLeft className="h-5 w-5" aria-hidden="true" />
-                  </button>
-                  <label>
-                    <span className="text-[9px] font-extrabold tracking-widest">PAGE</span>
-                    <input
-                      className="w-12 border-0 border-b border-[var(--app-line)] bg-transparent text-center text-base font-bold text-[var(--app-ink)]"
-                      type="number"
-                      min={1}
-                      max={604}
-                      value={mushafPageNumber}
-                      aria-label="Mushaf page number"
-                      onChange={(event) => {
-                        const nextPage = Number(event.target.value);
-                        if (Number.isInteger(nextPage) && nextPage >= 1 && nextPage <= 604) {
-                          setPageFlipDirection(nextPage > mushafPageNumber ? 'next' : 'previous');
-                          setPendingPagePlayback(false);
-                          setMushafPageNumber(nextPage);
-                        }
-                      }}
+                <div
+                  className={`mb-5 overflow-hidden rounded-2xl border ${
+                    dark
+                      ? 'border-white/10 bg-[#14211e] shadow-[0_12px_32px_rgb(0_0_0/18%)]'
+                      : 'border-[#d9e3d7] bg-white shadow-[0_12px_32px_rgb(20_48_39/6%)]'
+                  }`}
+                  aria-label="Mushaf page navigation"
+                >
+                  <div className={`flex items-center justify-between gap-3 border-b px-4 py-2.5 ${
+                    dark ? 'border-white/[0.07] bg-white/[0.025]' : 'border-stone-100 bg-[#f8faf7]'
+                  }`}>
+                    <div className="flex min-w-0 items-center gap-2">
+                      <BookOpenText className={`h-4 w-4 shrink-0 ${dark ? 'text-emerald-300' : 'text-emerald-800'}`} aria-hidden="true" />
+                      <span className={`truncate text-[10px] font-bold uppercase tracking-[0.16em] ${muted}`}>Mushaf reader</span>
+                    </div>
+                    <span className={`shrink-0 text-[10px] font-semibold tabular-nums ${muted}`}>
+                      {Math.round((mushafPageNumber / 604) * 100)}% complete
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between gap-3 p-3 sm:px-4">
+                    <button
+                      type="button"
+                      aria-label="Previous Mushaf page"
+                      className={`grid h-11 w-11 shrink-0 place-items-center rounded-xl border transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-35 ${
+                        dark
+                          ? 'border-white/10 bg-white/[0.04] text-emerald-200 hover:border-emerald-300/50 hover:bg-emerald-300/10'
+                          : 'border-[#dce6da] bg-[#f7faf6] text-emerald-900 hover:border-emerald-700/40 hover:bg-emerald-50'
+                      }`}
+                      onClick={() => turnMushafPage(-1)}
+                      disabled={mushafPageNumber <= 1 || mushafPageLoading}
+                    >
+                      <ChevronLeft className="h-5 w-5" aria-hidden="true" />
+                    </button>
+                    <label className="flex min-w-0 items-center justify-center gap-2">
+                      <span className={`hidden text-[9px] font-bold uppercase tracking-[0.16em] sm:inline ${muted}`}>Page</span>
+                      <input
+                        className={`h-10 w-16 rounded-lg border text-center text-sm font-bold tabular-nums outline-none transition focus:border-emerald-600 ${
+                          dark
+                            ? 'border-white/10 bg-white/[0.05] text-stone-100'
+                            : 'border-[#dce6da] bg-white text-stone-800'
+                        }`}
+                        type="number"
+                        min={1}
+                        max={604}
+                        value={mushafPageNumber}
+                        aria-label="Mushaf page number"
+                        onChange={(event) => {
+                          const nextPage = Number(event.target.value);
+                          if (Number.isInteger(nextPage) && nextPage >= 1 && nextPage <= 604) {
+                            setPageFlipDirection(nextPage > mushafPageNumber ? 'next' : 'previous');
+                            setPendingPagePlayback(false);
+                            setMushafPageNumber(nextPage);
+                          }
+                        }}
+                      />
+                      <span className={`text-xs ${muted}`}>of 604</span>
+                    </label>
+                    <button
+                      type="button"
+                      aria-label="Next Mushaf page"
+                      className={`grid h-11 w-11 shrink-0 place-items-center rounded-xl border transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-35 ${
+                        dark
+                          ? 'border-white/10 bg-white/[0.04] text-emerald-200 hover:border-emerald-300/50 hover:bg-emerald-300/10'
+                          : 'border-[#dce6da] bg-[#f7faf6] text-emerald-900 hover:border-emerald-700/40 hover:bg-emerald-50'
+                      }`}
+                      onClick={() => turnMushafPage(1)}
+                      disabled={mushafPageNumber >= 604 || mushafPageLoading}
+                    >
+                      <ChevronRight className="h-5 w-5" aria-hidden="true" />
+                    </button>
+                  </div>
+                  <div className={`h-1 ${dark ? 'bg-white/[0.06]' : 'bg-[#edf1eb]'}`} role="progressbar" aria-label="Mushaf reading position" aria-valuemin={1} aria-valuemax={604} aria-valuenow={mushafPageNumber}>
+                    <div
+                      className={`h-full transition-[width] duration-300 ${dark ? 'bg-emerald-300' : 'bg-emerald-800'}`}
+                      style={{ width: `${(mushafPageNumber / 604) * 100}%` }}
                     />
-                    <small className="text-[11px]">of 604</small>
-                  </label>
-                  <button
-                    type="button"
-                    aria-label="Next Mushaf page"
-                    className="grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-[var(--app-line)] bg-[var(--app-surface)] text-2xl text-emerald-800 transition hover:-translate-y-0.5 hover:border-emerald-500 disabled:cursor-not-allowed disabled:opacity-40 dark:text-emerald-200"
-                    onClick={() => turnMushafPage(1)}
-                    disabled={mushafPageNumber >= 604 || mushafPageLoading}
-                  >
-                    <ChevronRight className="h-5 w-5" aria-hidden="true" />
-                  </button>
+                  </div>
                 </div>
               )}
 
@@ -1086,14 +1124,29 @@ export default function QuranPage() {
               )}
 
               {settings.viewMode === 'mushaf' && (
-                <section className="relative min-w-0 p-1 [perspective:1400px]" aria-label={`Mushaf page ${mushafPageNumber}`}>
+                <section
+                  className={`relative min-w-0 rounded-[2rem] p-2.5 [perspective:1600px] sm:p-5 ${
+                    dark
+                      ? 'bg-[radial-gradient(ellipse_at_50%_0%,rgb(48_79_64/42%),rgb(12_24_20/0%)_72%)]'
+                      : 'bg-[radial-gradient(ellipse_at_50%_0%,rgb(207_221_198/72%),rgb(237_242_233/0%)_72%)]'
+                  }`}
+                  aria-label={`Mushaf page ${mushafPageNumber}`}
+                >
                   {mushafPageLoading && (
-                    <p className={`px-2 py-6 text-center text-xs ${muted}`} role="status">
-                      Opening page {mushafPageNumber}…
-                    </p>
+                    <div className={`mx-auto grid min-h-[min(70vh,52rem)] w-[min(100%,44rem)] place-items-center rounded-[1.5rem] border p-6 text-center ${
+                      dark ? 'border-[#496657] bg-[#17251f] text-stone-300' : 'border-[#bdcdb7] bg-[#fffdf6] text-stone-600'
+                    }`} role="status">
+                      <div>
+                        <BookOpenText className={`mx-auto mb-3 h-7 w-7 ${dark ? 'text-emerald-300' : 'text-emerald-800'}`} aria-hidden="true" />
+                        <p className="text-sm font-semibold">Opening page {mushafPageNumber}</p>
+                        <p className={`mt-1 text-xs ${muted}`}>Preparing your reading page…</p>
+                      </div>
+                    </div>
                   )}
                   {mushafPageError && (
-                    <p className="px-2 py-6 text-center text-xs text-red-600" role="alert">{mushafPageError}</p>
+                    <div className="mx-auto max-w-xl rounded-2xl border border-red-500/20 bg-red-500/[0.06] px-5 py-6 text-center text-sm text-red-700 dark:text-red-300" role="alert">
+                      {mushafPageError}
+                    </div>
                   )}
                   {!mushafPageLoading &&
                     !mushafPageError &&
@@ -1102,10 +1155,10 @@ export default function QuranPage() {
                     mushafPage.reciter === settings.reciter && (
                       <article
                         key={mushafPage.page}
-                        className={`relative mx-auto min-h-[min(72vh,54rem)] w-[min(100%,42rem)] overflow-hidden rounded-lg border px-5 pb-12 pt-6 [transform-origin:left_center] sm:px-8 sm:pt-8 ${
+                        className={`relative isolate mx-auto min-h-[min(72vh,58rem)] w-[min(100%,44rem)] overflow-hidden rounded-[1.35rem] border px-6 pb-20 pt-8 [transform-origin:left_center] sm:px-12 sm:pb-24 sm:pt-12 ${
                           dark
-                            ? 'border-[#496657] bg-[#16231e] text-[#e5f3e8] shadow-[0_20px_50px_rgb(0_0_0/25%),inset_0_0_0_0.35rem_#16231e,inset_0_0_0_0.43rem_#476b57,inset_0_0_0_0.52rem_#293f33]'
-                            : 'border-[#b5c8b4] bg-[#fffdf7] text-[#152b21] shadow-[0_20px_50px_rgb(20_48_39/12%),inset_0_0_0_0.35rem_#fffdf4,inset_0_0_0_0.43rem_#98b58e,inset_0_0_0_0.52rem_#e5ebd5]'
+                            ? 'border-[#5e7968] bg-[#f0e8d4] text-[#253b2d] shadow-[0_28px_70px_rgb(0_0_0/38%),inset_0_0_0_1px_rgb(241_224_177/25%),inset_8px_0_18px_rgb(25_44_32/16%)]'
+                            : 'border-[#b6a978] bg-[#fffaf0] text-[#263d2c] shadow-[0_28px_70px_rgb(39_57_41/18%),inset_0_0_0_1px_rgb(255_255_255/85%),inset_8px_0_18px_rgb(95_83_43/7%)]'
                         } ${
                           pageFlipDirection === 'next'
                             ? 'animate-[mushaf-page-turn-next_420ms_cubic-bezier(0.2,0.75,0.2,1)_both]'
@@ -1113,13 +1166,21 @@ export default function QuranPage() {
                         }`}
                         aria-label={`Mushaf page ${mushafPage.page}`}
                       >
-                        <div className="mb-5 mt-1 flex min-h-11 items-center justify-center gap-3 border border-[#1c6747]/50 bg-[linear-gradient(90deg,#174c37,#277b53_18%,#dce7ce_18%,#dce7ce_82%,#277b53_82%,#174c37)] font-arabic text-lg font-bold text-[#16442f] outline outline-1 outline-[#1c6747]/20 [outline-offset:3px]" aria-hidden="true">
-                          <span className="text-base text-[#e9d79a]">۞</span>
-                          <span className="px-1">الْقُرْآنُ الْكَرِيمُ</span>
-                          <span className="text-base text-[#e9d79a]">۞</span>
+                        <div className="pointer-events-none absolute inset-[0.65rem] rounded-[0.9rem] border border-[#b6a978]/45 sm:inset-[0.85rem]" aria-hidden="true" />
+                        <div className="pointer-events-none absolute inset-x-0 top-0 h-2 bg-[linear-gradient(90deg,#355c43,#d5c58f_18%,#547a59_50%,#d5c58f_82%,#355c43)]" aria-hidden="true" />
+                        <div className="relative mb-8 flex items-center justify-between border-b border-[#8d9b6b]/45 pb-3 text-[9px] font-semibold uppercase tracking-[0.16em] text-[#6c7654]">
+                          <span className="max-w-[65%] truncate">{mushafPage.verses[0]?.surahName ?? 'Al-Qur’an'}</span>
+                          <span>Al-Qur’an al-Karīm</span>
+                        </div>
+                        <div className="relative mx-auto mb-8 flex max-w-[29rem] items-center justify-center gap-3 text-center">
+                          <span className="h-px flex-1 bg-gradient-to-r from-transparent to-[#a78d4c]/60" aria-hidden="true" />
+                          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-[#a78d4c]/45 bg-[#efe5c8] font-arabic text-lg text-[#796333] shadow-[0_2px_8px_rgb(91_76_36/10%)]" aria-hidden="true">۞</span>
+                          <span className="font-arabic text-sm font-bold text-[#355c43] sm:text-base" lang="ar">الْقُرْآنُ الْكَرِيمُ</span>
+                          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-[#a78d4c]/45 bg-[#efe5c8] font-arabic text-lg text-[#796333] shadow-[0_2px_8px_rgb(91_76_36/10%)]" aria-hidden="true">۞</span>
+                          <span className="h-px flex-1 bg-gradient-to-l from-transparent to-[#a78d4c]/60" aria-hidden="true" />
                         </div>
                         <div
-                          className="px-2 py-1 font-arabic leading-[2.45] text-justify [text-align-last:center] [text-justify:inter-word]"
+                          className="relative px-1 py-1 font-arabic leading-[2.5] text-justify [text-align-last:center] [text-justify:inter-word] sm:px-2"
                           dir="rtl"
                           lang="ar"
                           style={{ fontSize: `${settings.arabicFontSize}px` }}
@@ -1139,18 +1200,18 @@ export default function QuranPage() {
                             return (
                               <span key={`${surahNumber}:${verse.number}`} className="contents">
                                 {startsSurah && (
-                                  <span className={`my-4 flex items-center justify-center gap-3 rounded-full border py-2 text-[1.05em] font-bold leading-loose ${
+                                  <span className={`my-6 flex items-center justify-center gap-3 rounded-xl border border-x-0 px-3 py-2 text-[1.03em] font-bold leading-loose ${
                                     dark
-                                      ? 'border-[#79c59b]/25 bg-[#79c59b]/[0.08] text-[#a9d9b4]'
-                                      : 'border-[#1c6747]/[0.28] bg-[#277b53]/[0.09] text-[#216844]'
+                                      ? 'border-[#718d70]/50 bg-[#e4e2c8]/60 text-[#355c43]'
+                                      : 'border-[#8d9b6b]/65 bg-[#f0ead7] text-[#355c43]'
                                   }`}>
-                                    <span className="text-[0.8em] text-[#9a8044]" aria-hidden="true">۞</span>
+                                    <span className="text-[0.8em] text-[#92783d]" aria-hidden="true">۞</span>
                                     <span>{surahName}</span>
-                                    <span className="text-[0.8em] text-[#9a8044]" aria-hidden="true">۞</span>
+                                    <span className="text-[0.8em] text-[#92783d]" aria-hidden="true">۞</span>
                                   </span>
                                 )}
                                 {showBismillah && (
-                                  <span className="my-1 block text-center text-[0.82em]" lang="ar">
+                                  <span className="my-2 block text-center text-[0.78em] text-[#536f54]" lang="ar">
                                     بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحِيْمِ
                                   </span>
                                 )}
@@ -1192,10 +1253,10 @@ export default function QuranPage() {
                                 </span>{' '}
                                 {settings.showTranslation && (
                                   <span
-                                    className={`mb-2 block border-b pb-1 text-left text-[9px] leading-[1.45] ${
+                                    className={`mb-3 mt-1 block rounded-md border-l-2 border-[#a78d4c]/45 bg-[#f4eedf]/75 px-2 py-1.5 text-left text-[9px] leading-[1.5] ${
                                       dark
-                                        ? 'border-[#79c59b]/[0.12] text-[#a2b7aa]'
-                                        : 'border-[#1c6747]/[0.12] text-stone-500'
+                                        ? 'text-[#526552]'
+                                        : 'text-[#687361]'
                                     }`}
                                     dir="ltr"
                                     lang={settings.language}
@@ -1207,11 +1268,11 @@ export default function QuranPage() {
                             );
                           })}
                         </div>
-                        <footer className={`absolute inset-x-5 bottom-3 flex items-center justify-between border-t pt-1 text-[10px] ${
-                          dark ? 'border-[#79c59b]/[0.17] text-[#a2b7aa]' : 'border-[#1c6747]/[0.17] text-stone-500'
-                        }`}>
-                          <span>{mushafPage.verses[0]?.surahName ?? 'Al-Qur’an'}</span>
-                          <span>{mushafPage.page}</span>
+                        <footer className="absolute inset-x-8 bottom-4 flex items-center justify-center gap-3 text-[9px] font-semibold uppercase tracking-[0.12em] text-[#6c7654] sm:inset-x-12 sm:bottom-5">
+                          <span className="h-px flex-1 bg-gradient-to-r from-transparent to-[#a78d4c]/45" aria-hidden="true" />
+                          <span className="max-w-[55%] truncate">{mushafPage.verses[0]?.surahName ?? 'Al-Qur’an'}</span>
+                          <span className="grid h-8 min-w-8 place-items-center rounded-full border border-[#a78d4c]/55 bg-[#f5edda] px-2 text-[10px] tabular-nums text-[#596743]">{mushafPage.page}</span>
+                          <span className="h-px flex-1 bg-gradient-to-l from-transparent to-[#a78d4c]/45" aria-hidden="true" />
                         </footer>
                       </article>
                     )}
