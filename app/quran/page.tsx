@@ -45,7 +45,7 @@ interface ChapterCache {
 
 interface QuranEditionSurah extends QuranSurah {
   edition: QuranEdition;
-  ayahs: { number: number; numberInSurah: number; text: string; audio?: string; page?: number }[];
+  ayahs: { number: number; numberInSurah: number; text: string; audio?: string; page: number }[];
 }
 
 interface QuranEditionPage {
@@ -183,6 +183,29 @@ export default function QuranPage() {
     chapter.arabicScript === 'indopak'
       ? chapter
       : null;
+  const mushafChapterPages = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          visibleChapter?.verses
+            .map((verse) => verse.page)
+            .filter(
+              (page): page is number =>
+                typeof page === 'number' &&
+                Number.isInteger(page) &&
+                page >= 1 &&
+                page <= 604,
+            ) ??
+            [],
+        ),
+      ).sort((left, right) => left - right),
+    [visibleChapter],
+  );
+  const mushafPagePosition = Math.max(
+    1,
+    mushafChapterPages.indexOf(mushafPageNumber) + 1,
+  );
+  const mushafPageCount = mushafChapterPages.length || 1;
   const playbackVerses = useMemo(() => {
     if (settings.viewMode !== 'mushaf') return visibleChapter?.verses ?? [];
     return mushafPage?.translation === settings.translation &&
@@ -818,8 +841,9 @@ export default function QuranPage() {
     toggleBookmark({ surah: settings.surah, ayah });
 
   const turnMushafPage = (direction: -1 | 1) => {
-    const nextPage = Math.min(604, Math.max(1, mushafPageNumber + direction));
-    if (nextPage === mushafPageNumber) return;
+    const currentIndex = mushafChapterPages.indexOf(mushafPageNumber);
+    const nextPage = mushafChapterPages[currentIndex + direction];
+    if (nextPage === undefined) return;
     setPageFlipDirection(direction > 0 ? 'next' : 'previous');
     setPendingPagePlayback(false);
     setMushafPageNumber(nextPage);
@@ -1013,7 +1037,7 @@ export default function QuranPage() {
                       ? 'border-white/10 bg-[#14211e] shadow-[0_12px_32px_rgb(0_0_0/18%)]'
                       : 'border-[#d9e3d7] bg-white shadow-[0_12px_32px_rgb(20_48_39/6%)]'
                   }`}
-                  aria-label="Mushaf page navigation"
+                  aria-label={`Mushaf page navigation, page ${mushafPagePosition} of ${mushafPageCount} in ${currentSurah?.englishName ?? 'this surah'}`}
                 >
                   <div className={`flex items-center justify-between gap-3 border-b px-4 py-2.5 ${
                     dark ? 'border-white/[0.07] bg-white/[0.025]' : 'border-stone-100 bg-[#f8faf7]'
@@ -1023,7 +1047,7 @@ export default function QuranPage() {
                       <span className={`truncate text-[10px] font-bold uppercase tracking-[0.16em] ${muted}`}>Mushaf reader</span>
                     </div>
                     <span className={`shrink-0 text-[10px] font-semibold tabular-nums ${muted}`}>
-                      {Math.round((mushafPageNumber / 604) * 100)}% complete
+                      {chapterLoading ? 'Loading pages…' : `${Math.round((mushafPagePosition / mushafPageCount) * 100)}% of surah`}
                     </span>
                   </div>
                   <div className="flex items-center justify-between gap-3 p-3 sm:px-4">
@@ -1036,7 +1060,7 @@ export default function QuranPage() {
                           : 'border-[#dce6da] bg-[#f7faf6] text-emerald-900 hover:border-emerald-700/40 hover:bg-emerald-50'
                       }`}
                       onClick={() => turnMushafPage(-1)}
-                      disabled={mushafPageNumber <= 1 || mushafPageLoading}
+                      disabled={chapterLoading || mushafPageLoading || mushafPagePosition <= 1 || !mushafChapterPages.length}
                     >
                       <ChevronLeft className="h-5 w-5" aria-hidden="true" />
                     </button>
@@ -1050,19 +1074,21 @@ export default function QuranPage() {
                         }`}
                         type="number"
                         min={1}
-                        max={604}
-                        value={mushafPageNumber}
-                        aria-label="Mushaf page number"
+                        max={mushafPageCount}
+                        value={mushafPagePosition}
+                        aria-label={`Page number within ${currentSurah?.englishName ?? 'the selected surah'}`}
+                        disabled={chapterLoading || !mushafChapterPages.length}
                         onChange={(event) => {
-                          const nextPage = Number(event.target.value);
-                          if (Number.isInteger(nextPage) && nextPage >= 1 && nextPage <= 604) {
+                          const nextPosition = Number(event.target.value);
+                          const nextPage = mushafChapterPages[nextPosition - 1];
+                          if (Number.isInteger(nextPosition) && nextPage !== undefined) {
                             setPageFlipDirection(nextPage > mushafPageNumber ? 'next' : 'previous');
                             setPendingPagePlayback(false);
                             setMushafPageNumber(nextPage);
                           }
                         }}
                       />
-                      <span className={`text-xs ${muted}`}>of 604</span>
+                      <span className={`text-xs ${muted}`}>of {mushafPageCount}</span>
                     </label>
                     <button
                       type="button"
@@ -1073,15 +1099,15 @@ export default function QuranPage() {
                           : 'border-[#dce6da] bg-[#f7faf6] text-emerald-900 hover:border-emerald-700/40 hover:bg-emerald-50'
                       }`}
                       onClick={() => turnMushafPage(1)}
-                      disabled={mushafPageNumber >= 604 || mushafPageLoading}
+                      disabled={chapterLoading || mushafPageLoading || mushafPagePosition >= mushafPageCount || !mushafChapterPages.length}
                     >
                       <ChevronRight className="h-5 w-5" aria-hidden="true" />
                     </button>
                   </div>
-                  <div className={`h-1 ${dark ? 'bg-white/[0.06]' : 'bg-[#edf1eb]'}`} role="progressbar" aria-label="Mushaf reading position" aria-valuemin={1} aria-valuemax={604} aria-valuenow={mushafPageNumber}>
+                  <div className={`h-1 ${dark ? 'bg-white/[0.06]' : 'bg-[#edf1eb]'}`} role="progressbar" aria-label="Mushaf reading position within surah" aria-valuemin={1} aria-valuemax={mushafPageCount} aria-valuenow={mushafPagePosition}>
                     <div
                       className={`h-full transition-[width] duration-300 ${dark ? 'bg-emerald-300' : 'bg-emerald-800'}`}
-                      style={{ width: `${(mushafPageNumber / 604) * 100}%` }}
+                      style={{ width: `${(mushafPagePosition / mushafPageCount) * 100}%` }}
                     />
                   </div>
                 </div>
