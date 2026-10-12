@@ -4,20 +4,31 @@ import { useEffect, useRef, useCallback, useState } from 'react';
 import type { User } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 import { getAllLogs, saveDayLog, emptyDay } from '@/lib/salahStorage';
+import { clearLocalEdit, getLocalEditTime } from '@/lib/localEdits';
 import {
-  clearLocalEdit,
-  getLocalEditTime,
-  shouldPreserveLocalEdit,
-} from '@/lib/localEdits';
+  latestPracticeEntries,
+  salahEntries,
+  salahFromEntries,
+  diffSalah,
+  type PracticeEntry,
+  type PracticeEntryWrite,
+} from '@/lib/practiceEntries';
 import type { DayLog } from '@/types/salah';
 import type { SyncStatus } from '@/hooks/useSync';
 
-const SALAH_QUEUE_KEY = 'salah_sync_queue_v2';
+const SALAH_QUEUE_KEY = 'salah_sync_queue_v3';
+const LEGACY_SALAH_QUEUE_KEY = 'salah_sync_queue_v2';
 
 interface QueueItem {
   date: string;
-  log: DayLog;
+  entries: PracticeEntry[];
+  snapshot: DayLog;
   queuedAt: number;
+}
+
+interface RemoteSalah {
+  logs: DayLog[];
+  entriesByDate: Record<string, PracticeEntry[]>;
 }
 
 function queueKey(userId: string) {
@@ -26,19 +37,41 @@ function queueKey(userId: string) {
 
 function readQueue(userId: string): QueueItem[] {
   try {
-    return JSON.parse(localStorage.getItem(queueKey(userId)) || '[]') as QueueItem[];
+    const current = JSON.parse(localStorage.getItem(queueKey(userId)) || '[]') as unknown[];
+    return current as QueueItem[];
   } catch (error) {
     console.error('Could not read ṣalāh sync queue:', error);
     return [];
   }
 }
 
+function readLegacyQueue(userId: string): { date: string; log: DayLog; queuedAt: number }[] {
+  try {
+    return JSON.parse(
+      localStorage.getItem(`${LEGACY_SALAH_QUEUE_KEY}_${userId}`) || '[]',
+    ) as { date: string; log: DayLog; queuedAt: number }[];
+  } catch (error) {
+    console.error('Could not read legacy ṣalāh sync queue:', error);
+    return [];
+  }
+}
+
 function enqueue(userId: string, item: QueueItem) {
   try {
-    const queue = readQueue(userId).filter((queued) => queued.date !== item.date);
-    queue.push(item);
-    if (queue.length > 120) queue.splice(0, queue.length - 120);
-    localStorage.setItem(queueKey(userId), JSON.stringify(queue));
+    const queue = readQueue(userId);
+    const sameDate = queue.filter((queued) => queued.date === item.date);
+    const latestByKey = new Map<string, PracticeEntry>();
+    for (const queued of sameDate) {
+      for (const entry of queued.entries) latestByKey.set(entry.item_key, entry);
+    }
+    for (const entry of item.entries) latestByKey.set(entry.item_key, entry);
+    const remaining = queue.filter((queued) => queued.date !== item.date);
+    remaining.push({
+      ...item,
+      entries: [...latestByKey.values()],
+    });
+    if (remaining.length > 120) remaining.splice(0, remaining.length - 120);
+    localStorage.setItem(queueKey(userId), JSON.stringify(remaining));
   } catch (error) {
     console.error('Could not save ṣalāh sync queue:', error);
   }
@@ -51,7 +84,7 @@ function removeQueued(userId: string, item: QueueItem) {
         !(
           queued.date === item.date &&
           queued.queuedAt === item.queuedAt &&
-          JSON.stringify(queued.log) === JSON.stringify(item.log)
+          JSON.stringify(queued.entries) === JSON.stringify(item.entries)
         ),
     );
     if (queue.length > 0) localStorage.setItem(queueKey(userId), JSON.stringify(queue));
@@ -61,21 +94,25 @@ function removeQueued(userId: string, item: QueueItem) {
   }
 }
 
-async function pushLog(userId: string, log: DayLog): Promise<boolean> {
-  const key = `${userId}:${log.date}`;
+const logWrites = new Map<string, Promise<boolean>>();
+
+async function pushEntries(userId: string, entries: PracticeEntry[]): Promise<boolean> {
+  if (entries.length === 0) return true;
+  const date = entries[0].date;
+  const key = `${userId}:${date}`;
   const previousWrite = logWrites.get(key) ?? Promise.resolve(true);
   const write = previousWrite.catch(() => false).then(async () => {
     try {
       const { error } = await supabase
-        .from('salah_progress')
+        .from('practice_entries')
         .upsert(
-          { user_id: userId, date: log.date, log, updated_at: new Date().toISOString() },
-          { onConflict: 'user_id,date' },
+          entries.map((entry): PracticeEntryWrite => ({ user_id: userId, ...entry })),
+          { onConflict: 'user_id,date,area,item_key' },
         );
-      if (error) console.error('Could not sync ṣalāh log:', error.message);
+      if (error) console.error('Could not sync ṣalāh entries:', error.message);
       return !error;
     } catch (error) {
-      console.error('Could not sync ṣalāh log:', error);
+      console.error('Could not sync ṣalāh entries:', error);
       return false;
     }
   });
@@ -88,26 +125,82 @@ async function pushLog(userId: string, log: DayLog): Promise<boolean> {
   }
 }
 
-async function pullAllLogs(userId: string): Promise<DayLog[]> {
+async function pullAllLogs(userId: string): Promise<RemoteSalah> {
+  const [entriesRes, legacyRes] = await Promise.all([
+    supabase
+      .from('practice_entries')
+      .select('date, area, item_key, value, updated_at')
+      .eq('user_id', userId)
+      .eq('area', 'salah')
+      .order('date', { ascending: false })
+      .limit(5000),
+    supabase
+      .from('salah_progress')
+      .select('date, log, updated_at')
+      .eq('user_id', userId)
+      .order('date', { ascending: false })
+      .limit(120),
+  ]);
+  if (entriesRes.error) throw entriesRes.error;
+  if (legacyRes.error) throw legacyRes.error;
+
+  const normalized = (entriesRes.data ?? []) as PracticeEntry[];
+  const legacy = (legacyRes.data ?? []).flatMap((row) => {
+    const log = {
+      ...emptyDay(row.date),
+      ...(row.log as Partial<DayLog>),
+      date: row.date,
+    };
+    return salahEntries(log, row.updated_at);
+  });
+  const latest = latestPracticeEntries([...legacy, ...normalized]);
+  const normalizedByKey = new Map(
+    normalized.map((entry) => [`${entry.date}:${entry.item_key}`, entry]),
+  );
+  const migrate = latest.filter((entry) => {
+    const current = normalizedByKey.get(`${entry.date}:${entry.item_key}`);
+    return !current || Date.parse(entry.updated_at) > Date.parse(current.updated_at);
+  });
+  if (migrate.length > 0) {
+    const { error } = await supabase
+      .from('practice_entries')
+      .upsert(
+        migrate.map((entry): PracticeEntryWrite => ({ user_id: userId, ...entry })),
+        { onConflict: 'user_id,date,area,item_key' },
+      );
+    if (error) throw error;
+  }
+
+  const entriesByDate: Record<string, PracticeEntry[]> = {};
+  for (const entry of latest) (entriesByDate[entry.date] ??= []).push(entry);
+  return {
+    entriesByDate,
+    logs: Object.entries(entriesByDate).map(([date, entries]) =>
+      salahFromEntries(date, entries),
+    ),
+  };
+}
+
+async function pullDay(userId: string, date: string): Promise<PracticeEntry[]> {
   const { data, error } = await supabase
-    .from('salah_progress')
-    .select('date, log')
+    .from('practice_entries')
+    .select('date, area, item_key, value, updated_at')
     .eq('user_id', userId)
-    .order('date', { ascending: false })
-    .limit(120);
+    .eq('area', 'salah')
+    .eq('date', date)
+    .order('item_key', { ascending: true });
   if (error) throw error;
-  return (data ?? []).map((row) => ({
-    ...emptyDay(row.date),
-    ...(row.log as Partial<DayLog>),
-    date: row.date,
-  }));
+  return (data ?? []) as PracticeEntry[];
 }
 
-function prayerCount(log: DayLog) {
-  return Object.values(log.prayers).filter(Boolean).length;
+function clearSyncedEdits(date: string, entries: PracticeEntry[]) {
+  for (const entry of entries) {
+    const editTime = getLocalEditTime('salah', date, entry.item_key);
+    if (editTime !== null) {
+      clearLocalEdit('salah', date, entry.item_key, editTime);
+    }
+  }
 }
-
-const logWrites = new Map<string, Promise<boolean>>();
 
 interface UseSalahSyncOptions {
   user: User | null;
@@ -133,14 +226,12 @@ export function useSalahSync({
   const lastPushed = useRef<string>('__init__');
   const pendingLocal = useRef<string>('__init__');
   const latestLog = useRef(log);
+  const logBaseline = useRef(log);
   latestLog.current = log;
 
   const settleStatus = useCallback((userId: string) => {
     if (!navigator.onLine) setStatus('offline');
-    else if (
-      pendingLocal.current !== lastPushed.current ||
-      readQueue(userId).length > 0
-    ) {
+    else if (pendingLocal.current !== lastPushed.current || readQueue(userId).length > 0) {
       setStatus('syncing');
     } else {
       setStatus('synced');
@@ -159,18 +250,14 @@ export function useSalahSync({
     let failed = false;
     try {
       for (const item of readQueue(userId)) {
-        if (await pushLog(userId, item.log)) {
+        if (await pushEntries(userId, item.entries)) {
           removeQueued(userId, item);
-          if (
-            item.date === today &&
-            JSON.stringify(item.log) === pendingLocal.current
-          ) {
+          clearSyncedEdits(item.date, item.entries);
+          if (item.date === today && JSON.stringify(item.snapshot) === pendingLocal.current) {
             lastPushed.current = pendingLocal.current;
           }
-          if (
-            item.date === today &&
-            JSON.stringify(item.log) === JSON.stringify(latestLog.current)
-          ) {
+          if (item.date === today &&
+            JSON.stringify(item.snapshot) === JSON.stringify(latestLog.current)) {
             clearLocalEdit('salah', today);
           }
         } else {
@@ -205,89 +292,139 @@ export function useSalahSync({
     const initialize = async () => {
       setStatus('syncing');
       try {
-        await flushQueue(user.id);
-        if (cancelled) return;
-        setStatus('syncing');
-        const remoteLogs = await pullAllLogs(user.id);
+        const remote = await pullAllLogs(user.id);
         if (cancelled) return;
 
-        const remoteByDate = new Map(remoteLogs.map((item) => [item.date, item]));
+        const remoteByDate = new Map(remote.logs.map((item) => [item.date, item]));
         const localLogs = getAllLogs();
-        const resolvedByDate: Record<string, DayLog> = {};
+        const legacyQueue = readLegacyQueue(user.id);
+        const queueByDate = new Map<string, typeof legacyQueue>();
+        for (const item of legacyQueue) {
+          const items = queueByDate.get(item.date) ?? [];
+          items.push(item);
+          queueByDate.set(item.date, items);
+        }
+        const dates = new Set([
+          ...Object.keys(localLogs),
+          ...remoteByDate.keys(),
+          ...queueByDate.keys(),
+          today,
+        ]);
+        const resolvedByDate = new Map<string, DayLog>();
 
-        for (const remoteLog of remoteLogs) {
-          const localLog = localLogs[remoteLog.date];
-          const localEditTime = getLocalEditTime('salah', remoteLog.date);
-          const preservePendingEdit =
-            localLog &&
-            shouldPreserveLocalEdit(
-              localEditTime !== null,
-              localLog,
-              remoteLog,
+        for (const date of dates) {
+          const remoteLog = remoteByDate.get(date);
+          const localLog =
+            date === today && localRevision.current !== startingRevision
+              ? latestLog.current
+              : localLogs[date];
+          const queuedItems = queueByDate.get(date) ?? [];
+          if (!remoteLog) {
+            const merged = new Map(
+              salahEntries(localLog ?? emptyDay(date)).map((entry) => [
+                entry.item_key,
+                entry,
+              ]),
             );
-          const resolved =
-            remoteLog.date === today &&
-            localLog &&
-            (preservePendingEdit ||
-              localRevision.current !== startingRevision ||
-              prayerCount(localLog) > prayerCount(remoteLog))
-              ? localLog
-              : remoteLog;
-          if (
-            remoteLog.date === today &&
-            localEditTime !== null &&
-            !preservePendingEdit
-          ) {
-            clearLocalEdit('salah', today, localEditTime);
+            for (const queued of queuedItems) {
+              const queuedEntries = salahEntries(
+                { ...emptyDay(date), ...queued.log, date },
+                new Date(queued.queuedAt).toISOString(),
+              );
+              for (const entry of queuedEntries) {
+                const editTime = getLocalEditTime('salah', date, entry.item_key)
+                  ?? getLocalEditTime('salah', date);
+                if (editTime === null || queued.queuedAt >= editTime) {
+                  merged.set(entry.item_key, entry);
+                }
+              }
+            }
+            const resolved = salahFromEntries(date, [...merged.values()]);
+            resolvedByDate.set(date, resolved);
+            saveDayLog(resolved);
+            continue;
           }
-          resolvedByDate[remoteLog.date] = resolved;
-          saveDayLog(resolved);
-        }
-
-        for (const localLog of Object.values(localLogs)) {
-          if (!remoteByDate.has(localLog.date)) {
-            resolvedByDate[localLog.date] = localLog;
-            saveDayLog(localLog);
+          if (!localLog) {
+            resolvedByDate.set(date, remoteLog);
+            saveDayLog(remoteLog);
+            continue;
           }
-        }
 
-        const latestLocal = latestLog.current;
-        const resolvedToday =
-          localRevision.current !== startingRevision
-            ? latestLocal
-            : resolvedByDate[today] ?? localLogs[today] ?? log;
-        if (localRevision.current !== startingRevision) {
-          resolvedByDate[today] = resolvedToday;
-          saveDayLog(resolvedToday);
-        }
-        const resolvedLogs = Object.values(resolvedByDate);
-        const todaySnapshot = JSON.stringify(resolvedToday);
-        const todayEditTime = getLocalEditTime('salah', today);
-        const remoteToday = remoteByDate.get(today);
-        lastPushed.current = remoteToday ? JSON.stringify(remoteToday) : JSON.stringify(emptyDay(today));
-        pendingLocal.current = todaySnapshot;
-
-        onPullComplete(resolvedLogs);
-
-        for (const resolvedLog of resolvedLogs) {
-          const remoteLog = remoteByDate.get(resolvedLog.date);
-          if (!remoteLog || JSON.stringify(remoteLog) !== JSON.stringify(resolvedLog)) {
-            if (!(await pushLog(user.id, resolvedLog))) {
-              enqueue(user.id, {
-                date: resolvedLog.date,
-                log: resolvedLog,
-                queuedAt: Date.now(),
-              });
-            } else if (resolvedLog.date === today) {
-              lastPushed.current = todaySnapshot;
-              if (
-                todayEditTime !== null &&
-                JSON.stringify(latestLog.current) === todaySnapshot
-              ) {
-                clearLocalEdit('salah', today, todayEditTime);
+          const merged = new Map(
+            (remote.entriesByDate[date] ?? []).map((entry) => [entry.item_key, entry]),
+          );
+          const originalRemoteEntries = new Map(merged);
+          const localEntries = salahEntries(localLog);
+          const dateEditTime = getLocalEditTime('salah', date);
+          for (const queued of queuedItems) {
+            const queuedEntries = salahEntries(
+              { ...emptyDay(date), ...queued.log, date },
+              new Date(queued.queuedAt).toISOString(),
+            );
+            for (const entry of queuedEntries) {
+              const remoteEntry = merged.get(entry.item_key);
+              if (!remoteEntry || queued.queuedAt >= Date.parse(remoteEntry.updated_at)) {
+                merged.set(entry.item_key, entry);
               }
             }
           }
+          for (const entry of localEntries) {
+            const fieldEditTime = getLocalEditTime('salah', date, entry.item_key);
+            const remoteEntry = merged.get(entry.item_key);
+            const originalRemoteEntry = originalRemoteEntries.get(entry.item_key);
+            const localWins =
+              !remoteEntry ||
+              (fieldEditTime !== null &&
+                fieldEditTime >= Date.parse(remoteEntry.updated_at)) ||
+              (dateEditTime !== null &&
+                dateEditTime >= (remoteEntry ? Date.parse(remoteEntry.updated_at) : 0) &&
+                JSON.stringify(entry.value) !== JSON.stringify(originalRemoteEntry?.value));
+            if (localWins) {
+              merged.set(entry.item_key, entry);
+            } else if (fieldEditTime !== null) {
+              clearLocalEdit('salah', date, entry.item_key, fieldEditTime);
+            }
+          }
+          const resolved = salahFromEntries(date, [...merged.values()]);
+          resolvedByDate.set(date, resolved);
+          saveDayLog(resolved);
+        }
+
+        const resolvedToday = resolvedByDate.get(today) ?? emptyDay(today);
+        const remoteToday = remoteByDate.get(today) ?? emptyDay(today);
+        const todaySnapshot = JSON.stringify(resolvedToday);
+        lastPushed.current = JSON.stringify(remoteToday);
+        pendingLocal.current = todaySnapshot;
+        logBaseline.current = resolvedToday;
+        onPullComplete([...resolvedByDate.values()]);
+
+        for (const [date, resolvedLog] of resolvedByDate) {
+          const remoteLog = remoteByDate.get(date);
+          const entries = remoteLog
+            ? diffSalah(resolvedLog, remoteLog)
+            : salahEntries(resolvedLog);
+          if (entries.length === 0) continue;
+          if (await pushEntries(user.id, entries)) {
+            clearSyncedEdits(date, entries);
+            if (date === today) {
+              lastPushed.current = todaySnapshot;
+              if (JSON.stringify(latestLog.current) === todaySnapshot) {
+                clearLocalEdit('salah', today);
+              }
+            } else {
+              clearLocalEdit('salah', date);
+            }
+          } else {
+            enqueue(user.id, {
+              date,
+              entries,
+              snapshot: resolvedLog,
+              queuedAt: Date.now(),
+            });
+          }
+        }
+        if (legacyQueue.length > 0) {
+          localStorage.removeItem(`${LEGACY_SALAH_QUEUE_KEY}_${user.id}`);
         }
         if (cancelled) return;
         setReadyUserId(user.id);
@@ -306,6 +443,7 @@ export function useSalahSync({
       cancelled = true;
       if (retryTimer) clearTimeout(retryTimer);
     };
+    // Pull once per account or local date; callbacks and data are intentionally snapshots.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id, today]);
 
@@ -318,31 +456,24 @@ export function useSalahSync({
         JSON.stringify(latestLog.current) !== lastPushed.current
       ) return;
       const pollRevision = localRevision.current;
-      const { data, error } = await supabase
-        .from('salah_progress')
-        .select('log')
-        .eq('user_id', user.id)
-        .eq('date', today)
-        .maybeSingle();
-      if (error) {
-        console.error('Could not check for remote ṣalāh updates:', error.message);
+      let incomingEntries: PracticeEntry[];
+      try {
+        incomingEntries = await pullDay(user.id, today);
+      } catch (error) {
+        console.error('Could not check for remote ṣalāh updates:', error);
         setStatus(navigator.onLine ? 'error' : 'offline');
-        return;
-      }
-      if (!data) {
-        settleStatus(user.id);
         return;
       }
       if (localRevision.current !== pollRevision) {
         settleStatus(user.id);
         return;
       }
+      if (incomingEntries.length === 0) {
+        settleStatus(user.id);
+        return;
+      }
 
-      const remoteLog: DayLog = {
-        ...emptyDay(today),
-        ...(data.log as Partial<DayLog>),
-        date: today,
-      };
+      const remoteLog = salahFromEntries(today, incomingEntries);
       const incoming = JSON.stringify(remoteLog);
       if (incoming === JSON.stringify(latestLog.current)) {
         settleStatus(user.id);
@@ -350,6 +481,7 @@ export function useSalahSync({
       }
 
       saveDayLog(remoteLog);
+      logBaseline.current = remoteLog;
       lastPushed.current = incoming;
       pendingLocal.current = incoming;
       onRemoteLogUpdate(remoteLog);
@@ -364,11 +496,16 @@ export function useSalahSync({
   useEffect(() => {
     if (!user || readyUserId !== user.id) return;
     const snapshot = JSON.stringify(log);
-    const localEditTime = getLocalEditTime('salah', today);
+    const entries = diffSalah(log, logBaseline.current);
+    logBaseline.current = log;
     pendingLocal.current = snapshot;
+    if (entries.length === 0) {
+      settleStatus(user.id);
+      return;
+    }
 
     if (!navigator.onLine) {
-      enqueue(user.id, { date: today, log, queuedAt: Date.now() });
+      enqueue(user.id, { date: today, entries, snapshot: log, queuedAt: Date.now() });
       setStatus('offline');
       return;
     }
@@ -376,16 +513,12 @@ export function useSalahSync({
     if (debounceRef.current) clearTimeout(debounceRef.current);
     setStatus('syncing');
     debounceRef.current = setTimeout(async () => {
-      const item = { date: today, log, queuedAt: Date.now() };
-      if (await pushLog(user.id, log)) {
+      const item = { date: today, entries, snapshot: log, queuedAt: Date.now() };
+      if (await pushEntries(user.id, entries)) {
         lastPushed.current = snapshot;
         removeQueued(user.id, item);
-        if (
-          localEditTime !== null &&
-          snapshot === JSON.stringify(latestLog.current)
-        ) {
-          clearLocalEdit('salah', today, localEditTime);
-        }
+        clearSyncedEdits(today, entries);
+        if (snapshot === JSON.stringify(latestLog.current)) clearLocalEdit('salah', today);
         settleStatus(user.id);
       } else {
         enqueue(user.id, item);

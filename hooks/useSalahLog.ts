@@ -14,7 +14,7 @@ export function useSalahLog(date: string) {
 
   const updatePrayer = useCallback((prayer: PrayerName, status: PrayerStatus) => {
     localRevision.current += 1;
-    markLocalEdit('salah', date);
+    markLocalEdit('salah', date, `prayer:${prayer}`);
     setLog(prev => {
       const next: DayLog = { ...prev, prayers: { ...prev.prayers, [prayer]: status } };
       saveDayLog(next);
@@ -24,7 +24,7 @@ export function useSalahLog(date: string) {
 
   const cyclePrayer = useCallback((prayer: PrayerName) => {
     localRevision.current += 1;
-    markLocalEdit('salah', date);
+    markLocalEdit('salah', date, `prayer:${prayer}`);
     setLog(prev => {
       const current = prev.prayers[prayer];
       const cycle: PrayerStatus[] = [null, 'prayed', 'jamah', 'delayed', 'missed'];
@@ -38,7 +38,7 @@ export function useSalahLog(date: string) {
 
   const toggleSunnah = useCallback((key: keyof DayLog['sunnah']) => {
     localRevision.current += 1;
-    markLocalEdit('salah', date);
+    markLocalEdit('salah', date, `sunnah:${key}`);
     setLog(prev => {
       const updated: DayLog = { ...prev, sunnah: { ...prev.sunnah, [key]: !prev.sunnah[key] } };
       saveDayLog(updated);
@@ -48,7 +48,7 @@ export function useSalahLog(date: string) {
 
   const updateTahajjud = useCallback((patch: Partial<DayLog['tahajjud']>) => {
     localRevision.current += 1;
-    markLocalEdit('salah', date);
+    markLocalEdit('salah', date, 'night:tahajjud');
     setLog(prev => {
       const updated: DayLog = { ...prev, tahajjud: { ...prev.tahajjud, ...patch } };
       saveDayLog(updated);
@@ -58,7 +58,7 @@ export function useSalahLog(date: string) {
 
   const toggleNafl = useCallback((key: keyof DayLog['nafl']) => {
     localRevision.current += 1;
-    markLocalEdit('salah', date);
+    markLocalEdit('salah', date, `nafl:${key}`);
     setLog(prev => {
       const updated: DayLog = { ...prev, nafl: { ...prev.nafl, [key]: !prev.nafl[key] } };
       saveDayLog(updated);

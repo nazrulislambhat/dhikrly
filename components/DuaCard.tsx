@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Star } from 'lucide-react';
 import type { Dua, TabLabel } from '@/types';
 import SessionPill from './SessionPill';
+import SlideToFinish from './SlideToFinish';
 
 const TABS: TabLabel[] = ['Arabic', 'English', 'Transliteration'];
 
@@ -103,7 +104,7 @@ export default function DuaCard({
           onClick={() => onToggle(dua.id, soundEnabled)}
           aria-label={checked ? 'Mark incomplete' : 'Mark complete'}
           className={[
-            'mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-[7px] border-2 transition-all duration-150 active:scale-90',
+            'mt-0.5 hidden h-7 w-7 shrink-0 items-center justify-center rounded-[7px] border-2 transition-all duration-150 active:scale-90 sm:flex',
             checked
               ? 'border-emerald-500 bg-emerald-500'
               : dark
@@ -125,7 +126,7 @@ export default function DuaCard({
         </button>
 
         {/* Title block */}
-        <div className="min-w-0 flex-1">
+        <div className="min-w-0 flex-1 w-full">
           <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
             <h3
               className={[
@@ -172,6 +173,16 @@ export default function DuaCard({
             >
               {dua.titleAr}
             </span>
+          </div>
+
+          <div className="px-4 w-full pb-3 sm:hidden">
+            <SlideToFinish
+              completed={checked}
+              dark={dark}
+              label="Slide to finish"
+              completedLabel="Completed"
+              onFinish={() => onToggle(dua.id, soundEnabled)}
+            />
           </div>
 
           <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
