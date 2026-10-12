@@ -5,6 +5,7 @@ import { PRAYER_LABELS } from '@/types/salah';
 import { formatTime } from '@/lib/prayerTimes';
 import { Check, Circle, Clock3, Landmark, X } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import SlideToFinish from '@/components/SlideToFinish';
 
 interface PrayerCardProps {
   prayer: PrayerName;
@@ -90,8 +91,8 @@ export default function PrayerCard({
         )}
       </div>
 
-      {/* Action buttons */}
-      <div className="mt-3 flex gap-1.5">
+      {/* Desktop status actions */}
+      <div className="mt-3 hidden gap-1.5 sm:flex">
         {NEXT_OPTIONS.map(opt => (
           <button
             key={String(opt.status)}
@@ -117,6 +118,45 @@ export default function PrayerCard({
             <opt.Icon className="mx-auto h-4 w-4" aria-hidden="true" />
           </button>
         ))}
+      </div>
+
+      <div className="mt-3 space-y-2 sm:hidden">
+        <SlideToFinish
+          completed={status === 'prayed' || status === 'jamah' || status === 'delayed'}
+          dark={dark}
+          label={`Slide to finish ${label.en}`}
+          completedLabel={cfg?.label ?? 'Prayed'}
+          onFinish={() => onStatusChange(
+            status === 'prayed' || status === 'jamah' || status === 'delayed'
+              ? null
+              : 'prayed',
+          )}
+        />
+        <label className="block">
+          <span className="sr-only">{label.en} prayer status</span>
+          <select
+            value={status ?? ''}
+            onChange={(event) => {
+              const selected = NEXT_OPTIONS.find(
+                (option) => String(option.status ?? '') === event.target.value,
+              );
+              if (selected) onStatusChange(selected.status);
+            }}
+            className={`min-h-10 w-full rounded-lg border px-3 text-xs ${
+              dark
+                ? 'border-white/10 bg-[#14211e] text-stone-300'
+                : 'border-stone-200 bg-white text-stone-600'
+            }`}
+          >
+            <option value="">More status options…</option>
+            {NEXT_OPTIONS.filter((option) => option.status !== null).map((option) => (
+              <option key={option.label} value={String(option.status)}>
+                {option.label}
+              </option>
+            ))}
+            {status !== null && <option value="">Clear status</option>}
+          </select>
+        </label>
       </div>
     </div>
   );

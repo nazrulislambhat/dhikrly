@@ -132,9 +132,14 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 
 ## Supabase Setup
 
-1. Run `supabase-schema.sql` in Supabase SQL Editor
+1. For a new project, run `supabase-schema.sql` in Supabase SQL Editor. For an existing project, run `supabase-migrations/20261012_practice_entries.sql` to add and backfill the normalized completion table.
 2. Enable Email + Google providers in Authentication → Providers
 3. Add your domain to Authentication → URL Configuration
+
+Adhkār and Ṣalāh completion syncs one dated item per database row in
+`practice_entries`. The migration backfills the previous `daily_progress` and
+`salah_progress` JSON documents; keep those legacy tables during rollout so
+older app versions can continue syncing.
 
 The Vercel Cron sends scheduled push reminders every minute. Configure
 `CRON_SECRET`, the Supabase service-role key, and the VAPID keys in the Vercel

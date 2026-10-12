@@ -24,7 +24,7 @@ export function useChecked(totalDuas: number) {
   const toggle = useCallback(
     (id: string, soundEnabled = true) => {
       localRevision.current += 1;
-      markLocalEdit('adhkar', today);
+      markLocalEdit('adhkar', today, id);
       setChecked((prev) => {
         const wasChecked = !!prev[id];
         const next = { ...prev, [id]: !wasChecked };
@@ -50,8 +50,14 @@ export function useChecked(totalDuas: number) {
   const reset = useCallback(() => {
     localRevision.current += 1;
     markLocalEdit('adhkar', today);
-    setChecked({});
-  }, [today]);
+    const resetState = Object.fromEntries(
+      Object.keys(checked).map((id) => {
+        markLocalEdit('adhkar', today, id);
+        return [id, false];
+      }),
+    );
+    setChecked(resetState);
+  }, [checked, today]);
 
   /** Mark all duas as complete for a specific day (missed-day recovery). */
   const markDayComplete = useCallback(
@@ -60,6 +66,7 @@ export function useChecked(totalDuas: number) {
       const dayChecked: Record<string, boolean> = {};
       duaIds.forEach((id) => {
         dayChecked[id] = true;
+        markLocalEdit('adhkar', dayKey, id);
       });
       all[dayKey] = dayChecked;
       save(STORAGE_KEY, all);
