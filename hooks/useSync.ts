@@ -7,8 +7,15 @@ import { load, save, STORAGE_KEY, CUSTOM_DUAS_KEY, STREAK_KEY } from '@/lib/stor
 import {
   clearLocalEdit,
   getLocalEditTime,
-  shouldPreserveLocalEdit,
 } from '@/lib/localEdits';
+import {
+  adhkarEntries,
+  checkedFromEntries,
+  diffChecked,
+  latestPracticeEntries,
+  type PracticeEntry,
+  type PracticeEntryWrite,
+} from '@/lib/practiceEntries';
 import type { Dua, Streak } from '@/types';
 
 const QUEUE_KEY = 'adhkar_sync_queue_v2';
@@ -19,6 +26,7 @@ interface QueueItem {
   type: 'progress' | 'custom_duas' | 'streak';
   date?: string;
   payload: unknown;
+  snapshot?: Record<string, boolean>;
   queuedAt: number;
 }
 
@@ -30,10 +38,22 @@ function enqueue(userId: string, item: QueueItem) {
   const key = queueKey(userId);
   try {
     const queue = load<QueueItem[]>(key, []);
+    const matching = queue.filter(
+      (queued) => queued.type === item.type && queued.date === item.date,
+    );
     const filtered = queue.filter(
       (queued) => !(queued.type === item.type && queued.date === item.date),
     );
-    filtered.push(item);
+    if (item.type === 'progress' && item.date && matching.length > 0) {
+      const payload = Object.assign(
+        {},
+        ...matching.map((queued) => queued.payload as Record<string, boolean>),
+        item.payload as Record<string, boolean>,
+      );
+      filtered.push({ ...item, payload });
+    } else {
+      filtered.push(item);
+    }
     if (filtered.length > 90) filtered.splice(0, filtered.length - 90);
     localStorage.setItem(key, JSON.stringify(filtered));
   } catch (error) {
@@ -77,10 +97,19 @@ async function pushProgress(
   const write = previousWrite.catch(() => false).then(async () => {
     try {
       const { error } = await supabase
-        .from('daily_progress')
+        .from('practice_entries')
         .upsert(
-          { user_id: userId, date, checked, updated_at: new Date().toISOString() },
-          { onConflict: 'user_id,date' },
+          adhkarEntries(date, checked).map((entry): PracticeEntryWrite => {
+            const editTime = getLocalEditTime('adhkar', date, entry.item_key);
+            return {
+              user_id: userId,
+              ...entry,
+              updated_at: editTime === null
+                ? entry.updated_at
+                : new Date(editTime).toISOString(),
+            };
+          }),
+          { onConflict: 'user_id,date,area,item_key' },
         );
       if (error) console.error('Could not sync adhkār progress:', error.message);
       return !error;
@@ -156,13 +185,21 @@ async function pushStreak(userId: string, streak: Streak): Promise<boolean> {
 
 export async function pullFromSupabase(userId: string): Promise<{
   checkedByDate: Record<string, Record<string, boolean>>;
+  updatedAtByDateAndItem: Record<string, Record<string, string>>;
   customDuas: Dua[];
   streak: Streak | null;
 }> {
-  const [progressRes, customRes, userRes] = await Promise.all([
+  const [entriesRes, legacyProgressRes, customRes, userRes] = await Promise.all([
+    supabase
+      .from('practice_entries')
+      .select('date, area, item_key, value, updated_at')
+      .eq('user_id', userId)
+      .eq('area', 'adhkar')
+      .order('date', { ascending: false })
+      .limit(5000),
     supabase
       .from('daily_progress')
-      .select('date, checked')
+      .select('date, checked, updated_at')
       .eq('user_id', userId)
       .order('date', { ascending: false })
       .limit(90),
@@ -170,16 +207,50 @@ export async function pullFromSupabase(userId: string): Promise<{
     supabase.from('user_data').select('streak').eq('user_id', userId).maybeSingle(),
   ]);
 
-  const error = progressRes.error ?? customRes.error ?? userRes.error;
+  const error = entriesRes.error ?? legacyProgressRes.error ?? customRes.error ?? userRes.error;
   if (error) throw error;
 
-  const checkedByDate: Record<string, Record<string, boolean>> = {};
-  (progressRes.data ?? []).forEach((row) => {
-    checkedByDate[row.date] = row.checked as Record<string, boolean>;
+  const legacyEntries: PracticeEntry[] = (legacyProgressRes.data ?? []).flatMap((row) =>
+    Object.entries((row.checked ?? {}) as Record<string, boolean>).map(([item_key, value]) => ({
+      date: row.date,
+      area: 'adhkar' as const,
+      item_key,
+      value,
+      updated_at: row.updated_at,
+    })),
+  );
+  const normalizedEntries = (entriesRes.data ?? []) as PracticeEntry[];
+  const latestEntries = latestPracticeEntries([...legacyEntries, ...normalizedEntries]);
+  const normalizedByKey = new Map(
+    normalizedEntries.map((entry) => [`${entry.date}:${entry.item_key}`, entry]),
+  );
+  const entriesToMigrate = latestEntries.filter((entry) => {
+    const normalized = normalizedByKey.get(`${entry.date}:${entry.item_key}`);
+    return !normalized || Date.parse(entry.updated_at) > Date.parse(normalized.updated_at);
   });
+  if (entriesToMigrate.length > 0) {
+    const { error: migrationError } = await supabase
+      .from('practice_entries')
+      .upsert(
+        entriesToMigrate.map((entry): PracticeEntryWrite => ({
+          user_id: userId,
+          ...entry,
+        })),
+        { onConflict: 'user_id,date,area,item_key' },
+      );
+    if (migrationError) throw migrationError;
+  }
+
+  const checkedByDate: Record<string, Record<string, boolean>> = {};
+  const updatedAtByDateAndItem: Record<string, Record<string, string>> = {};
+  for (const entry of latestEntries) {
+    (checkedByDate[entry.date] ??= {})[entry.item_key] = entry.value === true;
+    (updatedAtByDateAndItem[entry.date] ??= {})[entry.item_key] = entry.updated_at;
+  }
 
   return {
     checkedByDate,
+    updatedAtByDateAndItem,
     customDuas: (customRes.data ?? []).map((row) => row.dua as Dua),
     streak: userRes.data?.streak ? (userRes.data.streak as Streak) : null,
   };
@@ -194,6 +265,7 @@ interface UseSyncOptions {
   streak: Streak;
   onPullComplete: (data: {
     checkedByDate: Record<string, Record<string, boolean>>;
+    updatedAtByDateAndItem: Record<string, Record<string, string>>;
     customDuas: Dua[];
     streak: Streak;
   }) => void;
@@ -217,6 +289,7 @@ export function useSync({
   const lastPushedChecked = useRef<string>('__init__');
   const pendingChecked = useRef<string>('__init__');
   const latestChecked = useRef(checked);
+  const checkedBaseline = useRef(checked);
   latestChecked.current = checked;
 
   const settleStatus = useCallback((userId: string) => {
@@ -253,16 +326,20 @@ export function useSync({
           if (
             succeeded &&
             item.date === today &&
-            JSON.stringify(item.payload) === pendingChecked.current
+            item.snapshot &&
+            JSON.stringify(item.snapshot) === pendingChecked.current
           ) {
             lastPushedChecked.current = pendingChecked.current;
           }
-          if (
-            succeeded &&
-            item.date === today &&
-            JSON.stringify(item.payload) === JSON.stringify(latestChecked.current)
-          ) {
-            clearLocalEdit('adhkar', today);
+          if (succeeded) {
+            for (const itemId of Object.keys(item.payload as Record<string, boolean>)) {
+              const editTime = getLocalEditTime('adhkar', item.date, itemId);
+              if (editTime !== null) clearLocalEdit('adhkar', item.date, itemId, editTime);
+            }
+            if (item.date === today && item.snapshot &&
+              JSON.stringify(item.snapshot) === JSON.stringify(latestChecked.current)) {
+              clearLocalEdit('adhkar', today);
+            }
           }
         } else if (item.type === 'custom_duas') {
           succeeded = await pushCustomDuas(userId, item.payload as Dua[]);
@@ -301,42 +378,102 @@ export function useSync({
     setStatus('syncing');
     const initialize = async () => {
       try {
-        await flushQueue(user.id);
-        if (cancelled) return;
         setStatus('syncing');
         const remote = await pullFromSupabase(user.id);
         if (cancelled) return;
 
+        const legacyProgressQueue = dequeue(user.id).filter(
+          (item) => item.type === 'progress' && item.date && !item.snapshot,
+        );
+        const queuedByDate = new Map<string, QueueItem[]>();
+        for (const item of legacyProgressQueue) {
+          const items = queuedByDate.get(item.date!) ?? [];
+          items.push(item);
+          queuedByDate.set(item.date!, items);
+        }
         const localAll = load<Record<string, Record<string, boolean>>>(STORAGE_KEY, {});
-        const mergedByDate = { ...localAll };
-        Object.entries(remote.checkedByDate).forEach(([date, remoteChecked]) => {
-          if (date === today) {
-            const localToday = localAll[today] ?? {};
-            const remoteToday = remote.checkedByDate[today] ?? {};
-            const localEditTime = getLocalEditTime('adhkar', today);
-            if (shouldPreserveLocalEdit(localEditTime !== null, localToday, remoteToday)) {
-              mergedByDate[date] = localToday;
-            } else if (localEditTime !== null) {
-              clearLocalEdit('adhkar', today, localEditTime);
+        const mergedByDate: Record<string, Record<string, boolean>> = {};
+        const dates = new Set([
+          ...Object.keys(localAll),
+          ...Object.keys(remote.checkedByDate),
+          ...queuedByDate.keys(),
+          today,
+        ]);
+        for (const date of dates) {
+          const localDate = localAll[date] ?? (date === today ? latestChecked.current : {});
+          const remoteDate = remote.checkedByDate[date] ?? {};
+          const hasRemoteDate = date in remote.checkedByDate;
+          const merged = { ...remoteDate };
+          const legacyEditTime = getLocalEditTime('adhkar', date);
+          const queued = queuedByDate.get(date) ?? [];
+          const mergedTimeByItem = { ...(remote.updatedAtByDateAndItem[date] ?? {}) };
+          for (const item of queued.sort((a, b) => a.queuedAt - b.queuedAt)) {
+            const queuedSnapshot = item.payload as Record<string, boolean>;
+            if (Object.keys(queuedSnapshot).length === 0) {
+              for (const itemId of Object.keys(remoteDate)) {
+                if (item.queuedAt >= Date.parse(mergedTimeByItem[itemId] ?? '')) {
+                  merged[itemId] = false;
+                  mergedTimeByItem[itemId] = new Date(item.queuedAt).toISOString();
+                }
+              }
             } else {
-              const localDone = Object.values(localToday).filter(Boolean).length;
-              const remoteDone = Object.values(remoteChecked).filter(Boolean).length;
-              if (remoteDone > localDone) mergedByDate[date] = remoteChecked;
+              for (const [itemId, value] of Object.entries(queuedSnapshot)) {
+                const currentTime = mergedTimeByItem[itemId];
+                if (!currentTime || item.queuedAt >= Date.parse(currentTime)) {
+                  merged[itemId] = value;
+                  mergedTimeByItem[itemId] = new Date(item.queuedAt).toISOString();
+                }
+              }
             }
-          } else {
-            mergedByDate[date] = remoteChecked;
           }
-        });
-        if (localRevision.current !== startingRevision) {
-          mergedByDate[today] = latestChecked.current;
+
+          for (const [itemId, localValue] of Object.entries(localDate)) {
+            const editTime = getLocalEditTime('adhkar', date, itemId);
+            const remoteTime = mergedTimeByItem[itemId];
+            const localEditWins =
+              !remoteTime ||
+              (editTime !== null &&
+                editTime >= Date.parse(remoteTime)) ||
+              (legacyEditTime !== null &&
+                legacyEditTime >= Date.parse(remoteTime ?? '') &&
+                localValue !== remoteDate[itemId]);
+            if (localEditWins) {
+              merged[itemId] = date === today && localRevision.current !== startingRevision
+                ? latestChecked.current[itemId] ?? localValue
+                : localValue;
+            } else if (editTime !== null) {
+              clearLocalEdit('adhkar', date, itemId, editTime);
+            }
+          }
+          if ((legacyEditTime !== null || queued.length > 0) && hasRemoteDate) {
+            for (const itemId of Object.keys(remoteDate)) {
+              if (
+                legacyEditTime !== null &&
+                Object.keys(localDate).length === 0 &&
+                legacyEditTime >= Date.parse(mergedTimeByItem[itemId] ?? '')
+              ) {
+                merged[itemId] = false;
+              } else if (
+                queued.length > 0 &&
+                queued.every((item) =>
+                  Object.keys(item.payload as Record<string, boolean>).length === 0,
+                ) &&
+                !Object.hasOwn(merged, itemId)
+              ) {
+                merged[itemId] = false;
+              }
+            }
+          }
+          mergedByDate[date] = merged;
         }
         save(STORAGE_KEY, mergedByDate);
+        for (const item of legacyProgressQueue) removeQueued(user.id, item);
 
         const resolvedToday = mergedByDate[today] ?? {};
         const resolvedTodayString = JSON.stringify(resolvedToday);
-        const resolvedEditTime = getLocalEditTime('adhkar', today);
         lastPushedChecked.current = JSON.stringify(remote.checkedByDate[today] ?? {});
         pendingChecked.current = resolvedTodayString;
+        checkedBaseline.current = resolvedToday;
 
         const localStreak = load<Streak>(STREAK_KEY, {
           current: 0,
@@ -363,34 +500,42 @@ export function useSync({
 
         onPullComplete({
           checkedByDate: mergedByDate,
+          updatedAtByDateAndItem: remote.updatedAtByDateAndItem,
           customDuas: resolvedCustomDuas,
           streak: mergedStreak,
         });
 
         const remoteToday = remote.checkedByDate[today] ?? {};
-        if (JSON.stringify(resolvedToday) !== JSON.stringify(remoteToday)) {
-          if (await pushProgress(user.id, today, resolvedToday)) {
+        const todayChanges = diffChecked(resolvedToday, remoteToday);
+        if (Object.keys(todayChanges).length > 0) {
+          if (await pushProgress(user.id, today, todayChanges)) {
             lastPushedChecked.current = resolvedTodayString;
-            if (resolvedEditTime !== null) {
-              clearLocalEdit('adhkar', today, resolvedEditTime);
+            for (const itemId of Object.keys(todayChanges)) {
+              const editTime = getLocalEditTime('adhkar', today, itemId);
+              if (editTime !== null) clearLocalEdit('adhkar', today, itemId, editTime);
             }
+            if (getLocalEditTime('adhkar', today) !== null) clearLocalEdit('adhkar', today);
           } else {
             enqueue(user.id, {
               type: 'progress',
               date: today,
-              payload: resolvedToday,
+              payload: todayChanges,
+              snapshot: resolvedToday,
               queuedAt: Date.now(),
             });
           }
         }
         for (const [date, localChecked] of Object.entries(mergedByDate)) {
-          if (date === today || remote.checkedByDate[date]) continue;
-          const pushed = await pushProgress(user.id, date, localChecked);
+          if (date === today) continue;
+          const changes = diffChecked(localChecked, remote.checkedByDate[date] ?? {});
+          if (Object.keys(changes).length === 0) continue;
+          const pushed = await pushProgress(user.id, date, changes);
           if (!pushed) {
             enqueue(user.id, {
               type: 'progress',
               date,
-              payload: localChecked,
+              payload: changes,
+              snapshot: localChecked,
               queuedAt: Date.now(),
             });
           }
@@ -446,11 +591,12 @@ export function useSync({
       ) return;
       const pollRevision = localRevision.current;
       const { data, error } = await supabase
-        .from('daily_progress')
-        .select('checked')
+        .from('practice_entries')
+        .select('date, area, item_key, value, updated_at')
         .eq('user_id', user.id)
+        .eq('area', 'adhkar')
         .eq('date', today)
-        .maybeSingle();
+        .order('item_key', { ascending: true });
       if (error) {
         console.error('Could not check for remote adhkār updates:', error.message);
         setStatus(navigator.onLine ? 'error' : 'offline');
@@ -460,23 +606,25 @@ export function useSync({
         settleStatus(user.id);
         return;
       }
-      if (!data) {
+      if (!data || data.length === 0) {
         settleStatus(user.id);
         return;
       }
 
-      const incoming = JSON.stringify(data.checked);
+      const incomingChecked = checkedFromEntries(data as PracticeEntry[]);
+      const incoming = JSON.stringify(incomingChecked);
       if (incoming === JSON.stringify(latestChecked.current)) {
         settleStatus(user.id);
         return;
       }
 
       const all = load<Record<string, Record<string, boolean>>>(STORAGE_KEY, {});
-      all[today] = data.checked as Record<string, boolean>;
+      all[today] = incomingChecked;
       save(STORAGE_KEY, all);
       lastPushedChecked.current = incoming;
       pendingChecked.current = incoming;
-      onRemoteCheckedUpdate(data.checked as Record<string, boolean>);
+      checkedBaseline.current = incomingChecked;
+      onRemoteCheckedUpdate(incomingChecked);
       settleStatus(user.id);
     };
 
@@ -488,14 +636,22 @@ export function useSync({
   useEffect(() => {
     if (!user || readyUserId !== user.id) return;
     const snapshot = JSON.stringify(checked);
-    const localEditTime = getLocalEditTime('adhkar', today);
+    const changes = diffChecked(checked, checkedBaseline.current);
+    checkedBaseline.current = checked;
     pendingChecked.current = snapshot;
+    const changedIds = Object.keys(changes);
+    if (changedIds.length === 0) {
+      settleStatus(user.id);
+      return;
+    }
+    const payload = changes;
 
     if (!navigator.onLine) {
       enqueue(user.id, {
         type: 'progress',
         date: today,
-        payload: checked,
+        payload,
+        snapshot: checked,
         queuedAt: Date.now(),
       });
       setStatus('offline');
@@ -508,19 +664,19 @@ export function useSync({
       const item: QueueItem = {
         type: 'progress',
         date: today,
-        payload: checked,
+        payload,
+        snapshot: checked,
         queuedAt: Date.now(),
       };
-      const succeeded = await pushProgress(user.id, today, checked);
+      const succeeded = await pushProgress(user.id, today, payload);
       if (succeeded) {
         lastPushedChecked.current = snapshot;
         removeQueued(user.id, item);
-        if (
-          localEditTime !== null &&
-          snapshot === JSON.stringify(latestChecked.current)
-        ) {
-          clearLocalEdit('adhkar', today, localEditTime);
+        for (const itemId of changedIds) {
+          const editTime = getLocalEditTime('adhkar', today, itemId);
+          if (editTime !== null) clearLocalEdit('adhkar', today, itemId, editTime);
         }
+        if (snapshot === JSON.stringify(latestChecked.current)) clearLocalEdit('adhkar', today);
         settleStatus(user.id);
       } else {
         enqueue(user.id, item);
