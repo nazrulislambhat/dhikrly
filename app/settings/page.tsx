@@ -72,7 +72,7 @@ export default function SettingsPage() {
   return (
     <div className="min-h-dvh text-[var(--app-ink)]">
       <AppShell active="settings" dark={dark} onToggleDark={() => setDark((value) => !value)}>
-        <main className="mx-auto w-[min(calc(100%-2rem),68rem)] py-9 pb-[calc(7rem+env(safe-area-inset-bottom))] min-[900px]:pb-12">
+        <div className="mx-auto w-[min(calc(100%-2rem),68rem)] px-2 py-6 sm:py-8 lg:px-4">
           <header className="mb-6 flex items-center justify-between gap-4 min-[760px]:mb-8">
             <div>
               <p className="text-[10px] font-extrabold tracking-[0.15em] text-emerald-800 dark:text-emerald-200">YOUR SPACE</p>
@@ -260,7 +260,7 @@ export default function SettingsPage() {
               </Link>
             </section>
           </div>
-        </main>
+        </div>
       </AppShell>
 
       {showAuth && <AuthModal dark={dark} onClose={() => setShowAuth(false)} />}

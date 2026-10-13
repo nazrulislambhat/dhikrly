@@ -1417,7 +1417,7 @@ export default function QuranPage() {
 
             {settingsOpen && (
               <div
-                className="fixed inset-0 z-[60] flex items-end bg-stone-950/45 backdrop-blur-sm lg:items-stretch lg:justify-end"
+                className="fixed inset-0 z-[60] flex items-end bg-stone-950/45 backdrop-blur-sm min-[900px]:items-stretch min-[900px]:justify-end"
                 onClick={(event) => {
                   if (event.target === event.currentTarget) setSettingsOpen(false);
                 }}
@@ -1426,7 +1426,7 @@ export default function QuranPage() {
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="quran-settings-title"
-                className={`max-h-[90dvh] w-full overflow-y-auto rounded-t-3xl border p-5 shadow-2xl lg:h-full lg:max-h-none lg:w-[27rem] lg:rounded-none lg:rounded-l-3xl ${
+                className={`max-h-[90dvh] w-full overflow-y-auto rounded-t-3xl border p-5 shadow-2xl min-[900px]:h-full min-[900px]:max-h-none min-[900px]:w-[27rem] min-[900px]:rounded-none min-[900px]:rounded-l-3xl ${
                   dark
                     ? 'border-white/10 bg-[#14211e] text-stone-100'
                     : 'border-stone-200 bg-white text-stone-800'
@@ -1671,7 +1671,7 @@ export default function QuranPage() {
         {activeAudio && activeAyah !== null && (
           <>
           <section
-            className={`fixed inset-x-3 bottom-[calc(5.2rem+env(safe-area-inset-bottom))] z-[50] grid grid-cols-2 items-center gap-x-3 gap-y-1 rounded-2xl border border-[var(--app-line)] bg-[color-mix(in_srgb,var(--app-surface)_78%,transparent)] p-3 shadow-[0_14px_40px_rgb(17_43_34/16%)] backdrop-blur-xl lg:bottom-5 lg:left-1/2 lg:right-auto lg:w-[min(calc(100vw-4rem),58rem)] lg:-translate-x-1/2 lg:grid-cols-[minmax(0,1fr)_auto_auto_minmax(12rem,0.9fr)] lg:gap-4 ${
+            className={`fixed inset-x-3 bottom-[calc(5.2rem+env(safe-area-inset-bottom))] z-[50] grid grid-cols-2 items-center gap-x-3 gap-y-2 rounded-2xl border border-[var(--app-line)] bg-[color-mix(in_srgb,var(--app-surface)_88%,transparent)] p-3 shadow-[0_14px_40px_rgb(17_43_34/16%)] backdrop-blur-xl min-[900px]:bottom-5 min-[900px]:left-1/2 min-[900px]:right-auto min-[900px]:w-[min(calc(100vw-4rem),58rem)] min-[900px]:-translate-x-1/2 min-[900px]:grid-cols-[minmax(0,1fr)_auto_auto_minmax(12rem,0.9fr)] min-[900px]:gap-4 ${
               dark ? 'text-stone-100' : 'text-stone-800'
             }`}
             aria-label="Quran audio player"
@@ -1688,15 +1688,28 @@ export default function QuranPage() {
               onPlay={() => setShouldPlay(true)}
               onError={() => setAudioError('This recitation could not be loaded. Try another reciter or check your connection.')}
             />
-            <div className="col-span-2 grid min-w-0 gap-0.5 lg:col-span-1">
-              <span className="overflow-hidden text-ellipsis whitespace-nowrap text-sm font-semibold">
+            <div className="col-span-1 grid min-w-0 gap-0.5 min-[900px]:col-span-1">
+              <span className="overflow-hidden text-ellipsis whitespace-nowrap text-xs sm:text-sm font-semibold">
                 {surahs.find((item) => item.number === activeSurah)?.englishName ?? 'The Noble Qur’an'}
               </span>
-              <span className="overflow-hidden text-ellipsis whitespace-nowrap text-[11px] text-stone-500 dark:text-stone-400">
+              <span className="overflow-hidden text-ellipsis whitespace-nowrap text-[10px] sm:text-[11px] text-stone-500 dark:text-stone-400">
                 Verse {activeAyah} · {reciters.find((item) => item.identifier === settings.reciter)?.englishName ?? 'Selected reciter'}
               </span>
             </div>
-            <div className="col-span-2 flex items-center justify-between gap-1 lg:col-span-1 lg:justify-start">
+            <label className="col-span-1 flex items-center justify-self-end gap-1.5 whitespace-nowrap text-[11px] text-stone-500 dark:text-stone-400 min-[900px]:col-span-1 min-[900px]:justify-self-start">
+              <span className="hidden sm:inline">Speed</span>
+              <select
+                className="min-h-8 rounded-lg border border-[var(--app-line)] bg-[var(--app-surface)] px-2 text-xs text-[var(--app-ink)]"
+                aria-label="Playback speed"
+                value={settings.playbackRate}
+                onChange={(event) => updateSetting('playbackRate', Number(event.target.value))}
+              >
+                {PLAYBACK_RATES.map((rate) => (
+                  <option className="bg-white text-stone-900 dark:bg-[#14211e] dark:text-stone-100" key={rate} value={rate}>{rate}×</option>
+                ))}
+              </select>
+            </label>
+            <div className="col-span-2 flex items-center justify-center gap-2 min-[900px]:col-span-1 min-[900px]:justify-start">
               <button
                 type="button"
                 className={`grid h-9 w-9 place-items-center rounded-full text-base ${
@@ -1746,20 +1759,7 @@ export default function QuranPage() {
                 <SkipForward className="h-4 w-4" aria-hidden="true" />
               </button>
             </div>
-            <label className="col-span-2 flex items-center justify-self-end gap-2 whitespace-nowrap text-[11px] text-stone-500 dark:text-stone-400 lg:col-span-1 lg:justify-self-start">
-              <span>Speed</span>
-              <select
-                className="min-h-8 rounded-lg border border-[var(--app-line)] bg-[var(--app-surface)] px-2 text-xs text-[var(--app-ink)]"
-                aria-label="Playback speed"
-                value={settings.playbackRate}
-                onChange={(event) => updateSetting('playbackRate', Number(event.target.value))}
-              >
-                {PLAYBACK_RATES.map((rate) => (
-                  <option className="bg-white text-stone-900 dark:bg-[#14211e] dark:text-stone-100" key={rate} value={rate}>{rate}×</option>
-                ))}
-              </select>
-            </label>
-            <div className="col-span-2 grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 text-[10px] tabular-nums text-stone-500 dark:text-stone-400 lg:col-span-1">
+            <div className="col-span-2 grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 text-[10px] tabular-nums text-stone-500 dark:text-stone-400 min-[900px]:col-span-1">
               <span>{formatTime(playbackTime)}</span>
               <input
                 className="w-full cursor-pointer accent-emerald-700 disabled:cursor-wait"
@@ -1776,7 +1776,7 @@ export default function QuranPage() {
             </div>
             {audioError && <p role="alert" className="col-span-2 m-0 text-xs text-red-600">{audioError}</p>}
           </section>
-          <div aria-hidden="true" className="h-40 lg:h-24" />
+          <div aria-hidden="true" className="h-40 min-[900px]:h-24" />
           </>
         )}
       </AppShell>

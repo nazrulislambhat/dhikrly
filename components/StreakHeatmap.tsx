@@ -150,8 +150,7 @@ export default function StreakHeatmap({ dark, total }: StreakHeatmapProps) {
                       cell,
                     )} ${
                       cell.isToday
-                        ? 'ring-1 ring-amber-400 ring-offset-1 ' +
-                          (dark ? 'ring-offset-[#0c1a2e]' : 'ring-offset-white')
+                        ? `ring-1 ring-amber-400 ring-offset-1 ${dark ? 'ring-offset-[#14211e]' : 'ring-offset-white'}`
                         : ''
                     }`}
                     onMouseEnter={() =>

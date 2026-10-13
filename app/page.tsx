@@ -293,43 +293,43 @@ export default function DuasTracker() {
 
       <div className="mx-auto w-full max-w-[82rem] px-4 py-5 pb-10 sm:px-6 sm:py-8 lg:px-10">
         {/* ── Header ── */}
-        <header className="mb-8 grid gap-3 min-[900px]:grid-cols-[minmax(0,1fr)_auto] min-[900px]:items-center">
-          {/* Top bar: Hijri date left, auth right */}
-          <div className="mb-4 flex items-center justify-between min-[900px]:col-[2] min-[900px]:row-[1] min-[900px]:mb-0">
-            <div className="text-xs font-semibold text-[var(--app-muted)]">
-              {getHijriDate()}
+        <header className="mb-8 grid gap-4 min-[900px]:grid-cols-[minmax(0,1fr)_auto] min-[900px]:items-end">
+          {/* Title block */}
+          <div className="text-left">
+            {/* Top bar on mobile: Hijri date left, auth right */}
+            <div className="mb-3 flex items-center justify-between min-[900px]:hidden">
+              <div className="text-xs font-semibold text-[var(--app-muted)]">
+                {getHijriDate()}
+              </div>
+
+              {authLoading ? (
+                <div
+                  className={`h-7 w-24 animate-pulse rounded-full ${dark ? 'bg-white/5' : 'bg-stone-100'}`}
+                />
+              ) : user ? (
+                <UserMenu
+                  user={user}
+                  dark={dark}
+                  syncStatus={syncStatus}
+                  onSignOut={async () => {
+                    await signOut();
+                    showToast('Signed out.');
+                  }}
+                />
+              ) : (
+                <button
+                  onClick={() => setActiveModal('auth')}
+                  className={`rounded-full border px-3.5 py-1.5 text-[11px] font-semibold transition-all hover:scale-105 active:scale-95 ${
+                    dark
+                      ? 'border-emerald-400/30 text-emerald-200/80 hover:border-emerald-400/50 hover:text-emerald-200'
+                      : 'border-emerald-600/30 text-emerald-800 hover:border-emerald-600 hover:text-emerald-900'
+                  }`}
+                >
+                  ↑ Sync / Login
+                </button>
+              )}
             </div>
 
-            {authLoading ? (
-              <div
-                className={`h-7 w-24 animate-pulse rounded-full ${dark ? 'bg-white/5' : 'bg-stone-100'}`}
-              />
-            ) : user ? (
-              <UserMenu
-                user={user}
-                dark={dark}
-                syncStatus={syncStatus}
-                onSignOut={async () => {
-                  await signOut();
-                  showToast('Signed out.');
-                }}
-              />
-            ) : (
-              <button
-                onClick={() => setActiveModal('auth')}
-                className={`rounded-full border px-3.5 py-1.5 text-[11px] font-semibold transition-all hover:scale-105 active:scale-95 ${
-                  dark
-                    ? 'border-emerald-400/30 text-emerald-200/80 hover:border-emerald-400/50 hover:text-emerald-200'
-                    : 'border-emerald-600/30 text-emerald-800 hover:border-emerald-600 hover:text-emerald-900'
-                }`}
-              >
-                ↑ Sync / Login
-              </button>
-            )}
-          </div>
-
-          {/* Title block */}
-          <div className="text-left min-[900px]:col-[1] min-[900px]:row-[1]">
             <h1
               className={`font-sans text-[clamp(26px,4vw,36px)] font-bold tracking-tight ${dark ? 'text-stone-100' : 'text-stone-900'}`}
             >
@@ -350,38 +350,70 @@ export default function DuasTracker() {
             </p>
           </div>
 
-          {/* Action buttons */}
-          <div className="mt-5 grid max-w-sm grid-cols-2 gap-2">
-            {[
-              {
-                label: soundEnabled ? 'Sound' : 'Muted',
-                Icon: soundEnabled ? Volume2 : VolumeX,
-                onClick: () => setSoundEnabled((s) => !s),
-                active: soundEnabled,
-              },
-              {
-                label: 'Reminders',
-                Icon: Bell,
-                onClick: () => setActiveModal('notifications'),
-              },
-            ].map(({ label, Icon, onClick, active }) => (
-              <button
-                key={label}
-                onClick={onClick}
-                className={`inline-flex min-h-10 w-full items-center justify-center gap-2 whitespace-nowrap rounded-xl border px-3 py-2 text-[11px] font-semibold transition-all hover:scale-[1.02] active:scale-95 ${
-                  active === true
-                    ? dark
-                      ? 'border-emerald-400/30 text-emerald-300'
-                      : 'border-emerald-700/20 bg-white text-emerald-800'
-                    : dark
-                      ? 'border-white/10 text-stone-400 hover:text-stone-200'
-                      : 'border-[var(--app-line)] bg-white text-stone-500 hover:text-stone-700'
-                }`}
-              >
-                <Icon className="h-4 w-4" aria-hidden="true" />
-                {label}
-              </button>
-            ))}
+          {/* Desktop Right actions: Auth top, action buttons bottom */}
+          <div className="flex flex-col gap-3 min-[900px]:items-end">
+            <div className="hidden items-center gap-3 min-[900px]:flex">
+              {authLoading ? (
+                <div
+                  className={`h-7 w-24 animate-pulse rounded-full ${dark ? 'bg-white/5' : 'bg-stone-100'}`}
+                />
+              ) : user ? (
+                <UserMenu
+                  user={user}
+                  dark={dark}
+                  syncStatus={syncStatus}
+                  onSignOut={async () => {
+                    await signOut();
+                    showToast('Signed out.');
+                  }}
+                />
+              ) : (
+                <button
+                  onClick={() => setActiveModal('auth')}
+                  className={`rounded-full border px-3.5 py-1.5 text-[11px] font-semibold transition-all hover:scale-105 active:scale-95 ${
+                    dark
+                      ? 'border-emerald-400/30 text-emerald-200/80 hover:border-emerald-400/50 hover:text-emerald-200'
+                      : 'border-emerald-600/30 text-emerald-800 hover:border-emerald-600 hover:text-emerald-900'
+                  }`}
+                >
+                  ↑ Sync / Login
+                </button>
+              )}
+            </div>
+
+            {/* Action buttons */}
+            <div className="grid w-full max-w-sm grid-cols-2 gap-2">
+              {[
+                {
+                  label: soundEnabled ? 'Sound' : 'Muted',
+                  Icon: soundEnabled ? Volume2 : VolumeX,
+                  onClick: () => setSoundEnabled((s) => !s),
+                  active: soundEnabled,
+                },
+                {
+                  label: 'Reminders',
+                  Icon: Bell,
+                  onClick: () => setActiveModal('notifications'),
+                },
+              ].map(({ label, Icon, onClick, active }) => (
+                <button
+                  key={label}
+                  onClick={onClick}
+                  className={`inline-flex min-h-10 w-full items-center justify-center gap-2 whitespace-nowrap rounded-xl border px-3 py-2 text-[11px] font-semibold transition-all hover:scale-[1.02] active:scale-95 ${
+                    active === true
+                      ? dark
+                        ? 'border-emerald-400/30 text-emerald-300'
+                        : 'border-emerald-700/20 bg-white text-emerald-800'
+                      : dark
+                        ? 'border-white/10 text-stone-400 hover:text-stone-200'
+                        : 'border-[var(--app-line)] bg-white text-stone-500 hover:text-stone-700'
+                  }`}
+                >
+                  <Icon className="h-4 w-4" aria-hidden="true" />
+                  {label}
+                </button>
+              ))}
+            </div>
           </div>
         </header>
 
@@ -438,15 +470,15 @@ export default function DuasTracker() {
             <TiltCard key={item.href} className="h-full min-w-0" intensity={7}>
               <Link
                 href={item.href}
-                className={`grid h-full min-w-0 grid-cols-1 content-start items-center rounded-2xl border border-[var(--app-line)] bg-[var(--app-surface)] p-3 no-underline transition hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-lg min-[900px]:grid-cols-[2.5rem_minmax(0,1fr)] min-[900px]:gap-x-3 min-[900px]:px-4 ${
+                className={`grid h-full min-w-0 grid-cols-1 content-start items-center rounded-2xl border border-[var(--app-line)] bg-[var(--app-surface)] p-2.5 sm:p-3 no-underline transition hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-lg min-[900px]:grid-cols-[2.5rem_minmax(0,1fr)] min-[900px]:gap-x-3 min-[900px]:px-4 ${
                   dark ? 'bg-[#14211e]' : ''
                 }`}
               >
                 <span className="grid h-9 w-9 place-items-center rounded-xl bg-emerald-50 text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-200 min-[900px]:row-span-2" aria-hidden="true">
                   <item.Icon className="h-[18px] w-[18px]" />
                 </span>
-                <span className="mt-2 overflow-hidden text-ellipsis whitespace-nowrap text-xs font-bold text-[var(--app-ink)] min-[900px]:mt-0">{item.title}</span>
-                <span className="mt-0.5 text-[10px] text-[var(--app-muted)] min-[900px]:text-[11px]">{item.note}</span>
+                <span className="mt-2 truncate text-xs font-bold text-[var(--app-ink)] min-[900px]:mt-0">{item.title}</span>
+                <span className="mt-0.5 truncate text-[10px] text-[var(--app-muted)] min-[900px]:text-[11px]">{item.note}</span>
               </Link>
             </TiltCard>
           ))}
@@ -466,7 +498,7 @@ export default function DuasTracker() {
               </div>
               <span className="shrink-0 pb-1 text-xs font-semibold text-[var(--app-muted)]">{done} of {total} complete</span>
             </div>
-            <div className="mb-4 flex flex-wrap gap-2">
+            <div className="mb-4 flex flex-wrap items-center gap-2">
               <label className="relative min-w-[12rem] flex-1">
                 <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--app-muted)]" aria-hidden="true" />
               <input
@@ -485,26 +517,29 @@ export default function DuasTracker() {
               <button
                 onClick={() => setPriOnly((p) => !p)}
                 aria-pressed={priOnly}
-                className={`h-8 rounded-full border px-3 text-[11px] transition-all ${
+                className={`inline-flex h-10 items-center rounded-xl border px-3 text-xs font-semibold transition-all ${
                   priOnly
                     ? dark
                       ? 'border-amber-400/40 bg-amber-400/15 text-amber-300'
                       : 'border-amber-400/50 bg-amber-50 text-amber-700'
                     : dark
-                      ? 'border-white/[0.08] text-stone-500 hover:text-stone-300'
+                      ? 'border-white/[0.08] text-stone-400 hover:text-stone-200'
                       : 'border-[var(--app-line)] bg-white text-stone-500 hover:text-stone-700'
                 }`}
               >
-                <Star className="mr-1 inline h-3.5 w-3.5" aria-hidden="true" /> Priority
+                <Star className="mr-1.5 inline h-3.5 w-3.5" aria-hidden="true" /> Priority
               </button>
               <button
                 onClick={() => setActiveModal('addDua')}
-                className="min-h-10 rounded-xl border border-[var(--app-line)] bg-[var(--app-surface)] px-3 text-xs font-bold text-emerald-800 transition hover:border-emerald-300 hover:bg-emerald-50 dark:bg-[#14211e] dark:text-emerald-200"
+                className="inline-flex h-10 items-center rounded-xl border border-[var(--app-line)] bg-[var(--app-surface)] px-3 text-xs font-semibold text-emerald-800 transition hover:border-emerald-300 hover:bg-emerald-50 dark:bg-[#14211e] dark:text-emerald-200"
               >
-                <Plus className="mr-1 inline h-4 w-4" aria-hidden="true" /> Add Du&apos;ā
+                <Plus className="mr-1.5 inline h-4 w-4" aria-hidden="true" /> Add Du&apos;ā
               </button>
-              <button onClick={handleReset} className="min-h-10 rounded-xl border border-[var(--app-line)] bg-[var(--app-surface)] px-3 text-xs font-bold text-red-700 transition hover:border-red-300 hover:bg-red-50 dark:bg-[#14211e] dark:text-red-300">
-                <RotateCcw className="mr-1 inline h-3.5 w-3.5" aria-hidden="true" /> Reset
+              <button
+                onClick={handleReset}
+                className="inline-flex h-10 items-center rounded-xl border border-[var(--app-line)] bg-[var(--app-surface)] px-3 text-xs font-semibold text-red-700 transition hover:border-red-300 hover:bg-red-50 dark:bg-[#14211e] dark:text-red-300"
+              >
+                <RotateCcw className="mr-1.5 inline h-3.5 w-3.5" aria-hidden="true" /> Reset
               </button>
             </div>
 
@@ -621,30 +656,30 @@ export default function DuasTracker() {
           <div
             className={`mt-4 flex flex-wrap items-center justify-center gap-4 text-[10px] uppercase tracking-widest ${dark ? 'text-stone-700' : 'text-stone-400'}`}
           >
-            <a
+            <Link
               href="/about"
               className={`transition-colors ${dark ? 'hover:text-stone-500' : 'hover:text-stone-600'}`}
             >
               About
-            </a>
-            <a
+            </Link>
+            <Link
               href="/privacy-policy"
               className={`transition-colors ${dark ? 'hover:text-stone-500' : 'hover:text-stone-600'}`}
             >
               Privacy
-            </a>
-            <a
+            </Link>
+            <Link
               href="/terms"
               className={`transition-colors ${dark ? 'hover:text-stone-500' : 'hover:text-stone-600'}`}
             >
               Terms
-            </a>
-            <a
+            </Link>
+            <Link
               href="/contact"
               className={`transition-colors ${dark ? 'hover:text-stone-500' : 'hover:text-stone-600'}`}
             >
               Contact
-            </a>
+            </Link>
           </div>
           <p
             className={`mt-3 text-[9px] ${dark ? 'text-stone-800' : 'text-stone-300'}`}
