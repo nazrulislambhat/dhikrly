@@ -53,7 +53,7 @@ export default function UserMenu({
           : 'bg-amber-400 animate-pulse';
 
   const panel = dark
-    ? 'bg-[#111f33] border-white/10 shadow-2xl'
+    ? 'bg-[#14211e] border-white/10 shadow-2xl'
     : 'bg-white border-stone-200 shadow-xl';
 
   return (
@@ -95,7 +95,7 @@ export default function UserMenu({
           {/* Sync indicator dot */}
           <span
             className={`absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full border ${
-              dark ? 'border-[#111f33]' : 'border-white'
+              dark ? 'border-[#14211e]' : 'border-white'
             } ${syncColor}`}
           />
         </div>

@@ -205,13 +205,13 @@ export default function SalahPage() {
               ) : (
                 <button
                   onClick={() => setShowAuthModal(true)}
-                  className={`rounded-full border px-3 py-1.5 text-[10px] uppercase tracking-widest transition-all hover:scale-105 ${
+                  className={`rounded-full border px-3.5 py-1.5 text-[11px] font-semibold transition-all hover:scale-105 active:scale-95 ${
                     dark
-                      ? 'border-amber-400/30 text-amber-400/70 hover:text-amber-400'
-                      : 'border-amber-500/40 text-amber-600 hover:text-amber-700'
+                      ? 'border-emerald-400/30 text-emerald-200/80 hover:border-emerald-400/50 hover:text-emerald-200'
+                      : 'border-emerald-600/30 text-emerald-800 hover:border-emerald-600 hover:text-emerald-900'
                   }`}
                 >
-                  ↑ Sync
+                  ↑ Sync / Login
                 </button>
               )}
               <button
@@ -255,7 +255,7 @@ export default function SalahPage() {
                 >
                   {next.charAt(0).toUpperCase() + next.slice(1)} is next
                 </p>
-                <p className={`mt-1 text-sm ${dark ? 'text-stone-300' : 'text-amber-950/75'}`}>
+                <p className={`mt-1 text-sm ${dark ? 'text-stone-300' : 'text-emerald-950/80'}`}>
                   {times[next].toLocaleTimeString('en', {
                     hour: 'numeric',
                     minute: '2-digit',
@@ -470,9 +470,7 @@ export default function SalahPage() {
                       }}
                       className={`relative h-6 w-11 rounded-full transition-colors ${
                         settings[opt.key]
-                          ? dark
-                            ? 'bg-green-700'
-                            : 'bg-green-700'
+                          ? 'bg-emerald-600 dark:bg-emerald-500'
                           : dark
                             ? 'bg-stone-700'
                             : 'bg-stone-200'

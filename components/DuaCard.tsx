@@ -26,52 +26,6 @@ export default function DuaCard({
   soundEnabled = true,
 }: DuaCardProps) {
   const [activeTab, setActiveTab] = useState<TabLabel>('Arabic');
-  const [isPlaying, setIsPlaying] = useState(false);
-
-  const stopDua = () => {
-    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
-    window.speechSynthesis.cancel();
-    setIsPlaying(false);
-  };
-
-  const getPreferredArabicVoice = (): Promise<SpeechSynthesisVoice | null> => {
-    if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
-      return Promise.resolve(null);
-    }
-
-    return new Promise((resolve) => {
-      const pickVoice = () => {
-        const voices = window.speechSynthesis.getVoices();
-        const preferredVoice = voices.find(
-          (voice) =>
-            /mishary|alafasy|rashid|arab/i.test(voice.name) &&
-            /^(ar|ar-sa|ar-ae|ar-eg|ar-jo|ar-kw|ar-qa|ar-bh|ar-om|ar-ye)/i.test(
-              voice.lang,
-            ),
-        );
-        const fallbackVoice = voices.find((voice) =>
-          voice.lang.startsWith('ar'),
-        );
-        resolve(preferredVoice ?? fallbackVoice ?? null);
-      };
-
-      pickVoice();
-      if (window.speechSynthesis.getVoices().length > 0) return;
-
-      const handleVoicesChanged = () => {
-        pickVoice();
-        window.speechSynthesis.onvoiceschanged = null;
-      };
-
-      window.speechSynthesis.onvoiceschanged = handleVoicesChanged;
-      window.setTimeout(() => {
-        if (window.speechSynthesis.onvoiceschanged === handleVoicesChanged) {
-          pickVoice();
-          window.speechSynthesis.onvoiceschanged = null;
-        }
-      }, 600);
-    });
-  };
 
   const baseCard = dark
     ? 'bg-white/[0.04] border-white/[0.08]'
@@ -104,7 +58,7 @@ export default function DuaCard({
           onClick={() => onToggle(dua.id, soundEnabled)}
           aria-label={checked ? 'Mark incomplete' : 'Mark complete'}
           className={[
-            'mt-0.5 hidden h-7 w-7 shrink-0 items-center justify-center rounded-[7px] border-2 transition-all duration-150 active:scale-90 sm:flex',
+            'mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-[7px] border-2 transition-all duration-150 active:scale-90',
             checked
               ? 'border-emerald-500 bg-emerald-500'
               : dark
@@ -126,7 +80,7 @@ export default function DuaCard({
         </button>
 
         {/* Title block */}
-        <div className="min-w-0 flex-1 w-full">
+        <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
             <h3
               className={[
@@ -173,16 +127,6 @@ export default function DuaCard({
             >
               {dua.titleAr}
             </span>
-          </div>
-
-          <div className="px-4 w-full pb-3 sm:hidden">
-            <SlideToFinish
-              completed={checked}
-              dark={dark}
-              label="Slide to finish"
-              completedLabel="Completed"
-              onFinish={() => onToggle(dua.id, soundEnabled)}
-            />
           </div>
 
           <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
@@ -307,6 +251,17 @@ export default function DuaCard({
             {dua.transliteration}
           </p>
         )}
+      </div>
+
+      {/* Mobile Slide to finish */}
+      <div className="mx-4 mb-3 sm:hidden">
+        <SlideToFinish
+          completed={checked}
+          dark={dark}
+          label="Slide to finish"
+          completedLabel="Completed"
+          onFinish={() => onToggle(dua.id, soundEnabled)}
+        />
       </div>
     </article>
   );

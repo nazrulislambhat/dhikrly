@@ -1,4 +1,4 @@
-import type { DayLog, SalahSettings, PrayerName, PrayerStatus } from '@/types/salah';
+import type { DayLog, SalahSettings, PrayerStatus } from '@/types/salah';
 
 /** Delayed counts as prayed — the prayer was performed, just not on time */
 export const isPrayed = (s: PrayerStatus): boolean =>

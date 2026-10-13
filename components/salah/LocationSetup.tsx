@@ -80,14 +80,13 @@ export default function LocationSetup({ dark, onLocation }: LocationSetupProps) 
     );
   };
 
-  const panel = dark ? 'bg-[#0d1715]' : 'bg-[var(--app-bg)]';
   const card  = dark ? 'bg-white/[0.04] border-white/[0.08]' : 'bg-white border-[var(--app-line)] shadow-sm';
   const text  = dark ? 'text-stone-200' : 'text-stone-800';
   const muted = dark ? 'text-stone-400' : 'text-stone-500';
   const inp   = dark ? 'bg-white/5 border-white/10 text-stone-200 placeholder-stone-600' : 'bg-white border-[var(--app-line)] text-stone-700 placeholder-stone-400';
 
   return (
-    <div className={`flex min-h-screen flex-col items-center justify-start px-4 py-12 ${panel}`}>
+    <div className="flex w-full max-w-md mx-auto flex-col items-center justify-start px-4 py-8">
       <span className={`mb-4 grid h-14 w-14 place-items-center rounded-2xl ${dark ? 'bg-emerald-400/10 text-emerald-200' : 'bg-emerald-50 text-emerald-800'}`}>
         <Landmark className="h-7 w-7" aria-hidden="true" />
       </span>

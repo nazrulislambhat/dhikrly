@@ -1,5 +1,4 @@
 /* eslint-disable react-hooks/set-state-in-effect */
-/* eslint-disable react-hooks/purity */
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -54,14 +53,18 @@ export default function PWAProvider({
     setInstallPrompt(null);
   };
 
-  if (!installPrompt || installed || dismissed) return null;
+  if (!installPrompt || installed || dismissed) {
+    return children ? <>{children}</> : null;
+  }
 
   return (
-    <div
-      className={`fixed bottom-4 left-1/2 z-[9998] w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 rounded-2xl border p-4 shadow-2xl ${
-        dark ? 'border-white/10 bg-[#111f33]' : 'border-stone-200 bg-white'
-      }`}
-    >
+    <>
+      {children}
+      <div
+        className={`fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom))] min-[900px]:bottom-6 left-1/2 z-[9998] w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 rounded-2xl border p-4 shadow-2xl ${
+          dark ? 'border-white/10 bg-[#14211e]' : 'border-stone-200 bg-white'
+        }`}
+      >
       <div className="flex items-start gap-3">
         <div
           className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-xl ${
@@ -120,5 +123,6 @@ export default function PWAProvider({
         </button>
       </div>
     </div>
+    </>
   );
 }

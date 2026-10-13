@@ -33,27 +33,27 @@ export default function TasbihCounter() {
   };
 
   return (
-    <div className="mx-auto flex w-full flex-col items-center gap-6 rounded-3xl p-6 shadow-sm ring-2 ring-black/5 dark:bg-neutral-900 dark:ring-white/10">
+    <div className="mx-auto flex w-full flex-col items-center gap-5 rounded-2xl border border-[var(--app-line)] bg-[var(--app-surface)] p-5 shadow-sm dark:bg-[#14211e]">
       <div className="flex w-full items-center justify-between">
-        <h2 className="text-sm font-semibold text-neutral-900 dark:text-neutral-50">
+        <h2 className="text-sm font-bold text-[var(--app-ink)]">
           Tasbih Counter
         </h2>
-        <span className="text-xs text-neutral-500 dark:text-neutral-400">
+        <span className="text-xs text-[var(--app-muted)]">
           {rounds} {rounds === 1 ? 'round' : 'rounds'} completed
         </span>
       </div>
 
-      <div className="flex flex-wrap justify-center gap-2">
+      <div className="flex flex-wrap justify-center gap-1.5">
         {TARGETS.map((t) => (
           <button
             key={t}
             type="button"
             onClick={() => setTarget(t)}
             aria-pressed={target === t}
-            className={`rounded-full px-3 py-1 text-sm transition-colors ${
+            className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
               target === t
-                ? 'bg-emerald-600 text-white'
-                : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700'
+                ? 'bg-emerald-800 text-white dark:bg-emerald-400 dark:text-emerald-950'
+                : 'border border-[var(--app-line)] bg-[var(--app-surface)] text-[var(--app-muted)] hover:text-[var(--app-ink)]'
             }`}
           >
             {t}×
@@ -63,17 +63,17 @@ export default function TasbihCounter() {
           type="button"
           onClick={() => setTarget(null)}
           aria-pressed={target === null}
-          className={`rounded-full px-3 py-1 text-sm transition-colors ${
+          className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
             target === null
-              ? 'bg-emerald-600 text-white'
-              : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700'
+              ? 'bg-emerald-800 text-white dark:bg-emerald-400 dark:text-emerald-950'
+              : 'border border-[var(--app-line)] bg-[var(--app-surface)] text-[var(--app-muted)] hover:text-[var(--app-ink)]'
           }`}
         >
           No target
         </button>
       </div>
 
-      <form onSubmit={handleCustomTarget} className="flex items-center gap-2">
+      <form onSubmit={handleCustomTarget} className="flex w-full items-center gap-2">
         <label htmlFor="tasbih-target" className="sr-only">Custom target</label>
         <input
           id="tasbih-target"
@@ -84,11 +84,11 @@ export default function TasbihCounter() {
           step={1}
           required
           placeholder="Custom target"
-          className="w-32 rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-900 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100"
+          className="min-w-0 flex-1 rounded-xl border border-[var(--app-line)] bg-[var(--app-surface)] px-3 py-2 text-xs text-[var(--app-ink)] outline-none focus:border-emerald-500"
         />
         <button
           type="submit"
-          className="rounded-xl bg-neutral-100 px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700"
+          className="shrink-0 rounded-xl border border-[var(--app-line)] bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-800 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-200"
         >
           Set target
         </button>
@@ -98,7 +98,7 @@ export default function TasbihCounter() {
         type="button"
         onClick={increment}
         aria-label={`Count dhikr${target === null ? `, ${count}` : `, ${count} of ${target}`}`}
-        className="relative flex h-54 w-54 select-none items-center justify-center rounded-full bg-emerald-50 text-emerald-900 shadow-inner transition-transform active:scale-95 dark:bg-emerald-950/40 dark:text-emerald-50"
+        className="relative flex h-48 w-48 sm:h-52 sm:w-52 select-none items-center justify-center rounded-full bg-emerald-50 text-emerald-900 shadow-inner transition-transform active:scale-95 dark:bg-emerald-950/40 dark:text-emerald-50"
       >
         <svg className="absolute inset-0 -rotate-90" viewBox="0 0 200 200">
           <circle
@@ -125,15 +125,15 @@ export default function TasbihCounter() {
         </svg>
 
         <div className="flex flex-col items-center">
-          <span className="text-xl font-bold tabular-nums">{count}</span>
-          <span className="mt-1 text-sm text-emerald-700/70 dark:text-emerald-200/60">
+          <span className="text-2xl font-bold tabular-nums">{count}</span>
+          <span className="mt-1 text-xs text-emerald-700/80 dark:text-emerald-200/70">
             {target === null ? 'count' : `of ${target}`}
           </span>
         </div>
       </button>
 
       <p
-        className={`-mt-2 text-sm font-medium text-emerald-600 dark:text-emerald-400 ${
+        className={`-mt-2 text-xs font-semibold text-emerald-600 dark:text-emerald-400 ${
           justCompleted ? 'visible' : 'invisible'
         }`}
         aria-live="polite"
@@ -146,7 +146,7 @@ export default function TasbihCounter() {
           type="button"
           onClick={undo}
           disabled={!canUndo}
-          className="text-sm font-medium text-neutral-500 underline-offset-2 hover:underline disabled:cursor-not-allowed disabled:opacity-40 dark:text-neutral-400"
+          className="text-xs font-semibold text-[var(--app-muted)] underline-offset-2 hover:underline disabled:cursor-not-allowed disabled:opacity-40"
         >
           Undo last
         </button>
@@ -154,7 +154,7 @@ export default function TasbihCounter() {
           type="button"
           onClick={reset}
           disabled={count === 0}
-          className="text-sm font-medium text-neutral-500 underline-offset-2 hover:underline disabled:cursor-not-allowed disabled:opacity-40 dark:text-neutral-400"
+          className="text-xs font-semibold text-[var(--app-muted)] underline-offset-2 hover:underline disabled:cursor-not-allowed disabled:opacity-40"
         >
           Reset count
         </button>

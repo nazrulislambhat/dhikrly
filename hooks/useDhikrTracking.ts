@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -36,12 +37,7 @@ function getStorageKey(userId?: string | null): string {
   return `${STORAGE_PREFIX}${userId ? `:${userId}` : ':local'}`;
 }
 
-function parseTarget(value: string): number {
-  const match = value.match(/(\d+)\s*[x×]/i);
-  return match ? Number.parseInt(match[1], 10) : 0;
-}
-
-function buildTrackedEntries(_duas: Dua[]): DhikrRecord[] {
+function buildTrackedEntries(): DhikrRecord[] {
   return [
     {
       id: 'floating-counter',
@@ -58,6 +54,9 @@ function normalizeState(
   trackedEntries: DhikrRecord[],
 ): DhikrTrackingState {
   const today = getTodayKey();
+  if (raw?.date && raw.date !== today && raw.entries) {
+    return archivePreviousDay(raw as DhikrTrackingState, trackedEntries);
+  }
   const history = Array.isArray(raw?.history) ? raw.history : [];
   const entries: Record<string, DhikrRecord> = {};
 
@@ -116,8 +115,8 @@ function archivePreviousDay(
   };
 }
 
-export function useDhikrTracking(duas: Dua[], userId?: string | null) {
-  const trackedEntries = useMemo(() => buildTrackedEntries(duas), [duas]);
+export function useDhikrTracking(_duas: Dua[], userId?: string | null) {
+  const trackedEntries = useMemo(() => buildTrackedEntries(), []);
   const storageKey = useMemo(() => getStorageKey(userId), [userId]);
 
   const [state, setState] = useState<DhikrTrackingState>(() => {

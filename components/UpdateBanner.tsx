@@ -24,7 +24,7 @@ export default function UpdateBanner({ dark }: UpdateBannerProps) {
         <div
           className={`flex items-center gap-3 rounded-full border px-4 py-2 shadow-2xl backdrop-blur-sm ${
             dark
-              ? 'border-amber-400/20 bg-[#111f33]/95 text-stone-200'
+              ? 'border-emerald-400/20 bg-[#14211e]/95 text-stone-200'
               : 'border-amber-300/50 bg-white/95 text-stone-700 shadow-amber-100/50'
           }`}
         >
@@ -47,7 +47,7 @@ export default function UpdateBanner({ dark }: UpdateBannerProps) {
             onClick={() => setShowModal(true)}
             className={`rounded-full px-3 py-1 text-[11px] font-medium transition-all active:scale-95 ${
               dark
-                ? 'bg-amber-400/20 text-amber-300 hover:bg-amber-400/30'
+                ? 'bg-emerald-400/20 text-emerald-300 hover:bg-emerald-400/30'
                 : 'bg-amber-500 text-white hover:bg-amber-600'
             }`}
           >
@@ -69,13 +69,13 @@ export default function UpdateBanner({ dark }: UpdateBannerProps) {
       {showModal && (
         <div
           className={`fixed inset-0 z-[9995] flex items-end justify-center p-4 sm:items-center ${
-            dark ? 'bg-[#0c1a2e]/80 backdrop-blur-sm' : 'bg-stone-900/40 backdrop-blur-sm'
+            dark ? 'bg-black/65 backdrop-blur-md' : 'bg-stone-900/40 backdrop-blur-md'
           }`}
           onClick={(e) => e.target === e.currentTarget && setShowModal(false)}
         >
           <div
             className={`w-full max-w-md rounded-2xl border shadow-2xl ${
-              dark ? 'bg-[#111f33] border-white/10' : 'bg-white border-stone-200'
+              dark ? 'bg-[#14211e] border-white/10' : 'bg-white border-stone-200'
             }`}
           >
             {/* Modal header */}

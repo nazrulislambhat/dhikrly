@@ -91,14 +91,14 @@ export default function AddDuaModal({
   };
 
   const overlay = dark
-    ? 'bg-[#0c1a2e]/80 backdrop-blur-sm'
-    : 'bg-stone-900/40 backdrop-blur-sm';
+    ? 'bg-black/65 backdrop-blur-md'
+    : 'bg-stone-900/40 backdrop-blur-md';
   const panel = dark
-    ? 'bg-[#111f33] border-white/10'
+    ? 'bg-[#14211e] border-white/10 text-stone-100'
     : 'bg-white border-stone-200';
   const inputBase = dark
-    ? 'bg-white/5 border-white/10 text-stone-200 placeholder-stone-600 focus:border-amber-400/50'
-    : 'bg-stone-50 border-stone-200 text-stone-700 placeholder-stone-400 focus:border-amber-400';
+    ? 'bg-white/5 border-white/10 text-stone-200 placeholder-stone-600 focus:border-emerald-500'
+    : 'bg-stone-50 border-stone-200 text-stone-700 placeholder-stone-400 focus:border-emerald-500';
   const label = dark ? 'text-stone-400' : 'text-stone-500';
   const errCls = 'text-red-400 text-[10px] mt-0.5';
 
@@ -150,7 +150,7 @@ export default function AddDuaModal({
 
   return (
     <div
-      className={`fixed inset-0 z-50 flex items-center justify-center p-4 ${overlay}`}
+      className={`fixed inset-0 z-[100] flex items-center justify-center p-4 ${overlay}`}
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <div

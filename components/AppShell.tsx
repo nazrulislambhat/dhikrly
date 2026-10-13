@@ -73,7 +73,7 @@ export default function AppShell({
       </header>
 
       <main className="min-h-dvh min-w-0 pb-[calc(5.75rem+env(safe-area-inset-bottom))] min-[900px]:pb-8">
-        <div className="flex min-h-[4.25rem] items-center border-b border-[var(--app-line)] bg-[var(--app-bg)]/90 px-4 pt-[max(0.5rem,env(safe-area-inset-top))] pb-2 backdrop-blur-xl min-[900px]:hidden">
+        <div className="sticky top-0 z-30 flex min-h-[4.25rem] items-center border-b border-[var(--app-line)] bg-[var(--app-bg)]/90 px-4 pt-[max(0.5rem,env(safe-area-inset-top))] pb-2 backdrop-blur-xl min-[900px]:hidden">
           <Link href="/" className="mr-auto inline-flex items-center gap-3 no-underline" aria-label="Dhikrly home">
             <span className="grid h-10 w-10 place-items-center rounded-2xl bg-emerald-800 text-xl text-white shadow-sm dark:bg-emerald-400 dark:text-emerald-950" aria-hidden="true">ذ</span>
             <span className="text-lg font-extrabold tracking-tight text-[var(--app-ink)]">Dhikrly</span>
