@@ -1,77 +1,213 @@
 'use client';
 
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useState } from 'react';
 import type { User } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 import { getAllLogs, saveDayLog, emptyDay } from '@/lib/salahStorage';
+import { clearLocalEdit, getLocalEditTime } from '@/lib/localEdits';
+import {
+  latestPracticeEntries,
+  salahEntries,
+  salahFromEntries,
+  diffSalah,
+  type PracticeEntry,
+  type PracticeEntryWrite,
+} from '@/lib/practiceEntries';
 import type { DayLog } from '@/types/salah';
+import type { SyncStatus } from '@/hooks/useSync';
 
-const SALAH_QUEUE_KEY = 'salah_sync_queue_v1';
+const SALAH_QUEUE_KEY = 'salah_sync_queue_v3';
+const LEGACY_SALAH_QUEUE_KEY = 'salah_sync_queue_v2';
 
-/* ── Offline queue ─────────────────────────────────────────────────── */
 interface QueueItem {
   date: string;
-  log: DayLog;
+  entries: PracticeEntry[];
+  snapshot: DayLog;
   queuedAt: number;
 }
 
-function enqueue(item: QueueItem) {
+interface RemoteSalah {
+  logs: DayLog[];
+  entriesByDate: Record<string, PracticeEntry[]>;
+}
+
+function queueKey(userId: string) {
+  return `${SALAH_QUEUE_KEY}_${userId}`;
+}
+
+function readQueue(userId: string): QueueItem[] {
   try {
-    const raw = localStorage.getItem(SALAH_QUEUE_KEY);
-    const q: QueueItem[] = raw ? JSON.parse(raw) : [];
-    const filtered = q.filter(i => i.date !== item.date);
-    filtered.push(item);
-    if (filtered.length > 90) filtered.splice(0, filtered.length - 90);
-    localStorage.setItem(SALAH_QUEUE_KEY, JSON.stringify(filtered));
-  } catch { /* quota */ }
+    const current = JSON.parse(localStorage.getItem(queueKey(userId)) || '[]') as unknown[];
+    return current as QueueItem[];
+  } catch (error) {
+    console.error('Could not read ṣalāh sync queue:', error);
+    return [];
+  }
 }
 
-function dequeue(): QueueItem[] {
+function readLegacyQueue(userId: string): { date: string; log: DayLog; queuedAt: number }[] {
   try {
-    const raw = localStorage.getItem(SALAH_QUEUE_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch { return []; }
+    return JSON.parse(
+      localStorage.getItem(`${LEGACY_SALAH_QUEUE_KEY}_${userId}`) || '[]',
+    ) as { date: string; log: DayLog; queuedAt: number }[];
+  } catch (error) {
+    console.error('Could not read legacy ṣalāh sync queue:', error);
+    return [];
+  }
 }
 
-function clearQueue() {
-  try { localStorage.removeItem(SALAH_QUEUE_KEY); } catch { /* */ }
+function enqueue(userId: string, item: QueueItem) {
+  try {
+    const queue = readQueue(userId);
+    const sameDate = queue.filter((queued) => queued.date === item.date);
+    const latestByKey = new Map<string, PracticeEntry>();
+    for (const queued of sameDate) {
+      for (const entry of queued.entries) latestByKey.set(entry.item_key, entry);
+    }
+    for (const entry of item.entries) latestByKey.set(entry.item_key, entry);
+    const remaining = queue.filter((queued) => queued.date !== item.date);
+    remaining.push({
+      ...item,
+      entries: [...latestByKey.values()],
+    });
+    if (remaining.length > 120) remaining.splice(0, remaining.length - 120);
+    localStorage.setItem(queueKey(userId), JSON.stringify(remaining));
+  } catch (error) {
+    console.error('Could not save ṣalāh sync queue:', error);
+  }
 }
 
-/* ── Supabase push / pull ─────────────────────────────────────────── */
-async function pushLog(userId: string, log: DayLog): Promise<boolean> {
-  const { error } = await supabase
-    .from('salah_progress')
-    .upsert(
-      { user_id: userId, date: log.date, log, updated_at: new Date().toISOString() },
-      { onConflict: 'user_id,date' }
+function removeQueued(userId: string, item: QueueItem) {
+  try {
+    const queue = readQueue(userId).filter(
+      (queued) =>
+        !(
+          queued.date === item.date &&
+          queued.queuedAt === item.queuedAt &&
+          JSON.stringify(queued.entries) === JSON.stringify(item.entries)
+        ),
     );
-  return !error;
+    if (queue.length > 0) localStorage.setItem(queueKey(userId), JSON.stringify(queue));
+    else localStorage.removeItem(queueKey(userId));
+  } catch (error) {
+    console.error('Could not update ṣalāh sync queue:', error);
+  }
 }
 
-async function pullAllLogs(userId: string): Promise<DayLog[]> {
+const logWrites = new Map<string, Promise<boolean>>();
+
+async function pushEntries(userId: string, entries: PracticeEntry[]): Promise<boolean> {
+  if (entries.length === 0) return true;
+  const date = entries[0].date;
+  const key = `${userId}:${date}`;
+  const previousWrite = logWrites.get(key) ?? Promise.resolve(true);
+  const write = previousWrite.catch(() => false).then(async () => {
+    try {
+      const { error } = await supabase
+        .from('practice_entries')
+        .upsert(
+          entries.map((entry): PracticeEntryWrite => ({ user_id: userId, ...entry })),
+          { onConflict: 'user_id,date,area,item_key' },
+        );
+      if (error) console.error('Could not sync ṣalāh entries:', error.message);
+      return !error;
+    } catch (error) {
+      console.error('Could not sync ṣalāh entries:', error);
+      return false;
+    }
+  });
+  logWrites.set(key, write);
+
+  try {
+    return await write;
+  } finally {
+    if (logWrites.get(key) === write) logWrites.delete(key);
+  }
+}
+
+async function pullAllLogs(userId: string): Promise<RemoteSalah> {
+  const [entriesRes, legacyRes] = await Promise.all([
+    supabase
+      .from('practice_entries')
+      .select('date, area, item_key, value, updated_at')
+      .eq('user_id', userId)
+      .eq('area', 'salah')
+      .order('date', { ascending: false })
+      .limit(5000),
+    supabase
+      .from('salah_progress')
+      .select('date, log, updated_at')
+      .eq('user_id', userId)
+      .order('date', { ascending: false })
+      .limit(120),
+  ]);
+  if (entriesRes.error) throw entriesRes.error;
+  if (legacyRes.error) throw legacyRes.error;
+
+  const normalized = (entriesRes.data ?? []) as PracticeEntry[];
+  const legacy = (legacyRes.data ?? []).flatMap((row) => {
+    const log = {
+      ...emptyDay(row.date),
+      ...(row.log as Partial<DayLog>),
+      date: row.date,
+    };
+    return salahEntries(log, row.updated_at);
+  });
+  const latest = latestPracticeEntries([...legacy, ...normalized]);
+  const normalizedByKey = new Map(
+    normalized.map((entry) => [`${entry.date}:${entry.item_key}`, entry]),
+  );
+  const migrate = latest.filter((entry) => {
+    const current = normalizedByKey.get(`${entry.date}:${entry.item_key}`);
+    return !current || Date.parse(entry.updated_at) > Date.parse(current.updated_at);
+  });
+  if (migrate.length > 0) {
+    const { error } = await supabase
+      .from('practice_entries')
+      .upsert(
+        migrate.map((entry): PracticeEntryWrite => ({ user_id: userId, ...entry })),
+        { onConflict: 'user_id,date,area,item_key' },
+      );
+    if (error) throw error;
+  }
+
+  const entriesByDate: Record<string, PracticeEntry[]> = {};
+  for (const entry of latest) (entriesByDate[entry.date] ??= []).push(entry);
+  return {
+    entriesByDate,
+    logs: Object.entries(entriesByDate).map(([date, entries]) =>
+      salahFromEntries(date, entries),
+    ),
+  };
+}
+
+async function pullDay(userId: string, date: string): Promise<PracticeEntry[]> {
   const { data, error } = await supabase
-    .from('salah_progress')
-    .select('date, log')
+    .from('practice_entries')
+    .select('date, area, item_key, value, updated_at')
     .eq('user_id', userId)
-    .order('date', { ascending: false })
-    .limit(120);
-
-  if (error || !data) return [];
-  return data.map(row => ({
-    ...(emptyDay(row.date)),
-    ...(row.log as Partial<DayLog>),
-    date: row.date,
-  }));
+    .eq('area', 'salah')
+    .eq('date', date)
+    .order('item_key', { ascending: true });
+  if (error) throw error;
+  return (data ?? []) as PracticeEntry[];
 }
 
-/* ── Main hook ─────────────────────────────────────────────────────── */
+function clearSyncedEdits(date: string, entries: PracticeEntry[]) {
+  for (const entry of entries) {
+    const editTime = getLocalEditTime('salah', date, entry.item_key);
+    if (editTime !== null) {
+      clearLocalEdit('salah', date, entry.item_key, editTime);
+    }
+  }
+}
+
 interface UseSalahSyncOptions {
   user: User | null;
   today: string;
   log: DayLog;
-  /** Called after initial pull — update local state with remote data */
+  localRevision: { current: number };
   onPullComplete: (logs: DayLog[]) => void;
-  /** Called when another device updates today's log */
   onRemoteLogUpdate: (log: DayLog) => void;
 }
 
@@ -79,114 +215,337 @@ export function useSalahSync({
   user,
   today,
   log,
+  localRevision,
   onPullComplete,
   onRemoteLogUpdate,
 }: UseSalahSyncOptions) {
+  const [status, setStatus] = useState<SyncStatus>('synced');
+  const [readyUserId, setReadyUserId] = useState<string | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const lastPushed = useRef<string>('');
   const isFlushing = useRef(false);
+  const lastPushed = useRef<string>('__init__');
+  const pendingLocal = useRef<string>('__init__');
+  const latestLog = useRef(log);
+  const logBaseline = useRef(log);
+  latestLog.current = log;
 
-  /* ── Flush offline queue ── */
-  const flushQueue = useCallback(async (userId: string) => {
-    if (isFlushing.current) return;
-    isFlushing.current = true;
-    try {
-      const items = dequeue();
-      if (items.length === 0) return;
-      const results = await Promise.all(items.map(item => pushLog(userId, item.log)));
-      if (results.every(Boolean)) clearQueue();
-    } finally {
-      isFlushing.current = false;
+  const settleStatus = useCallback((userId: string) => {
+    if (!navigator.onLine) setStatus('offline');
+    else if (pendingLocal.current !== lastPushed.current || readQueue(userId).length > 0) {
+      setStatus('syncing');
+    } else {
+      setStatus('synced');
     }
   }, []);
 
-  /* ── Initial pull on login ── */
-  useEffect(() => {
-    if (!user) return;
+  const flushQueue = useCallback(async (userId: string) => {
+    if (isFlushing.current) return;
+    if (!navigator.onLine) {
+      setStatus('offline');
+      return;
+    }
 
-    (async () => {
-      const remoteLogs = await pullAllLogs(user.id);
-      if (remoteLogs.length === 0) return;
-
-      // Merge: remote wins, save each to localStorage
-      remoteLogs.forEach(remoteLog => {
-        const localAll = getAllLogs();
-        // Remote wins if it has more prayers logged
-        const localLog = localAll[remoteLog.date];
-        const remoteCount = Object.values(remoteLog.prayers).filter(Boolean).length;
-        const localCount = localLog
-          ? Object.values(localLog.prayers).filter(Boolean).length
-          : 0;
-        if (remoteCount >= localCount) {
-          saveDayLog(remoteLog);
+    isFlushing.current = true;
+    setStatus('syncing');
+    let failed = false;
+    try {
+      for (const item of readQueue(userId)) {
+        if (await pushEntries(userId, item.entries)) {
+          removeQueued(userId, item);
+          clearSyncedEdits(item.date, item.entries);
+          if (item.date === today && JSON.stringify(item.snapshot) === pendingLocal.current) {
+            lastPushed.current = pendingLocal.current;
+          }
+          if (item.date === today &&
+            JSON.stringify(item.snapshot) === JSON.stringify(latestLog.current)) {
+            clearLocalEdit('salah', today);
+          }
+        } else {
+          failed = true;
         }
-      });
+      }
+    } finally {
+      isFlushing.current = false;
+    }
+    setStatus(
+      !navigator.onLine
+        ? 'offline'
+        : failed || readQueue(userId).length > 0
+          ? 'error'
+          : pendingLocal.current !== lastPushed.current
+            ? 'syncing'
+            : 'synced',
+    );
+  }, [today]);
 
-      onPullComplete(remoteLogs);
-      await flushQueue(user.id);
-    })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id]);
-
-  /* ── Poll for remote changes every 5 seconds ── */
   useEffect(() => {
-    if (!user) return;
+    if (!user) {
+      setReadyUserId(null);
+      setStatus('synced');
+      return;
+    }
+
+    let cancelled = false;
+    let retryTimer: ReturnType<typeof setTimeout> | undefined;
+    const startingRevision = localRevision.current;
+    setReadyUserId(null);
+    const initialize = async () => {
+      setStatus('syncing');
+      try {
+        const remote = await pullAllLogs(user.id);
+        if (cancelled) return;
+
+        const remoteByDate = new Map(remote.logs.map((item) => [item.date, item]));
+        const localLogs = getAllLogs();
+        const legacyQueue = readLegacyQueue(user.id);
+        const queueByDate = new Map<string, typeof legacyQueue>();
+        for (const item of legacyQueue) {
+          const items = queueByDate.get(item.date) ?? [];
+          items.push(item);
+          queueByDate.set(item.date, items);
+        }
+        const dates = new Set([
+          ...Object.keys(localLogs),
+          ...remoteByDate.keys(),
+          ...queueByDate.keys(),
+          today,
+        ]);
+        const resolvedByDate = new Map<string, DayLog>();
+
+        for (const date of dates) {
+          const remoteLog = remoteByDate.get(date);
+          const localLog =
+            date === today && localRevision.current !== startingRevision
+              ? latestLog.current
+              : localLogs[date];
+          const queuedItems = queueByDate.get(date) ?? [];
+          if (!remoteLog) {
+            const merged = new Map(
+              salahEntries(localLog ?? emptyDay(date)).map((entry) => [
+                entry.item_key,
+                entry,
+              ]),
+            );
+            for (const queued of queuedItems) {
+              const queuedEntries = salahEntries(
+                { ...emptyDay(date), ...queued.log, date },
+                new Date(queued.queuedAt).toISOString(),
+              );
+              for (const entry of queuedEntries) {
+                const editTime = getLocalEditTime('salah', date, entry.item_key)
+                  ?? getLocalEditTime('salah', date);
+                if (editTime === null || queued.queuedAt >= editTime) {
+                  merged.set(entry.item_key, entry);
+                }
+              }
+            }
+            const resolved = salahFromEntries(date, [...merged.values()]);
+            resolvedByDate.set(date, resolved);
+            saveDayLog(resolved);
+            continue;
+          }
+          if (!localLog) {
+            resolvedByDate.set(date, remoteLog);
+            saveDayLog(remoteLog);
+            continue;
+          }
+
+          const merged = new Map(
+            (remote.entriesByDate[date] ?? []).map((entry) => [entry.item_key, entry]),
+          );
+          const originalRemoteEntries = new Map(merged);
+          const localEntries = salahEntries(localLog);
+          const dateEditTime = getLocalEditTime('salah', date);
+          for (const queued of queuedItems) {
+            const queuedEntries = salahEntries(
+              { ...emptyDay(date), ...queued.log, date },
+              new Date(queued.queuedAt).toISOString(),
+            );
+            for (const entry of queuedEntries) {
+              const remoteEntry = merged.get(entry.item_key);
+              if (!remoteEntry || queued.queuedAt >= Date.parse(remoteEntry.updated_at)) {
+                merged.set(entry.item_key, entry);
+              }
+            }
+          }
+          for (const entry of localEntries) {
+            const fieldEditTime = getLocalEditTime('salah', date, entry.item_key);
+            const remoteEntry = merged.get(entry.item_key);
+            const originalRemoteEntry = originalRemoteEntries.get(entry.item_key);
+            const localWins =
+              !remoteEntry ||
+              (fieldEditTime !== null &&
+                fieldEditTime >= Date.parse(remoteEntry.updated_at)) ||
+              (dateEditTime !== null &&
+                dateEditTime >= (remoteEntry ? Date.parse(remoteEntry.updated_at) : 0) &&
+                JSON.stringify(entry.value) !== JSON.stringify(originalRemoteEntry?.value));
+            if (localWins) {
+              merged.set(entry.item_key, entry);
+            } else if (fieldEditTime !== null) {
+              clearLocalEdit('salah', date, entry.item_key, fieldEditTime);
+            }
+          }
+          const resolved = salahFromEntries(date, [...merged.values()]);
+          resolvedByDate.set(date, resolved);
+          saveDayLog(resolved);
+        }
+
+        const resolvedToday = resolvedByDate.get(today) ?? emptyDay(today);
+        const remoteToday = remoteByDate.get(today) ?? emptyDay(today);
+        const todaySnapshot = JSON.stringify(resolvedToday);
+        lastPushed.current = JSON.stringify(remoteToday);
+        pendingLocal.current = todaySnapshot;
+        logBaseline.current = resolvedToday;
+        onPullComplete([...resolvedByDate.values()]);
+
+        for (const [date, resolvedLog] of resolvedByDate) {
+          const remoteLog = remoteByDate.get(date);
+          const entries = remoteLog
+            ? diffSalah(resolvedLog, remoteLog)
+            : salahEntries(resolvedLog);
+          if (entries.length === 0) continue;
+          if (await pushEntries(user.id, entries)) {
+            clearSyncedEdits(date, entries);
+            if (date === today) {
+              lastPushed.current = todaySnapshot;
+              if (JSON.stringify(latestLog.current) === todaySnapshot) {
+                clearLocalEdit('salah', today);
+              }
+            } else {
+              clearLocalEdit('salah', date);
+            }
+          } else {
+            enqueue(user.id, {
+              date,
+              entries,
+              snapshot: resolvedLog,
+              queuedAt: Date.now(),
+            });
+          }
+        }
+        if (legacyQueue.length > 0) {
+          localStorage.removeItem(`${LEGACY_SALAH_QUEUE_KEY}_${user.id}`);
+        }
+        if (cancelled) return;
+        setReadyUserId(user.id);
+        await flushQueue(user.id);
+      } catch (error) {
+        console.error('Could not pull ṣalāh logs:', error);
+        if (!cancelled) {
+          setStatus(navigator.onLine ? 'error' : 'offline');
+          retryTimer = setTimeout(initialize, 15_000);
+        }
+      }
+    };
+    void initialize();
+
+    return () => {
+      cancelled = true;
+      if (retryTimer) clearTimeout(retryTimer);
+    };
+    // Pull once per account or local date; callbacks and data are intentionally snapshots.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id, today]);
+
+  useEffect(() => {
+    if (!user || readyUserId !== user.id) return;
 
     const poll = async () => {
-      const { data } = await supabase
-        .from('salah_progress')
-        .select('log, updated_at')
-        .eq('user_id', user.id)
-        .eq('date', today)
-        .single();
+      if (
+        pendingLocal.current !== lastPushed.current ||
+        JSON.stringify(latestLog.current) !== lastPushed.current
+      ) return;
+      const pollRevision = localRevision.current;
+      let incomingEntries: PracticeEntry[];
+      try {
+        incomingEntries = await pullDay(user.id, today);
+      } catch (error) {
+        console.error('Could not check for remote ṣalāh updates:', error);
+        setStatus(navigator.onLine ? 'error' : 'offline');
+        return;
+      }
+      if (localRevision.current !== pollRevision) {
+        settleStatus(user.id);
+        return;
+      }
+      if (incomingEntries.length === 0) {
+        settleStatus(user.id);
+        return;
+      }
 
-      if (!data) return;
+      const remoteLog = salahFromEntries(today, incomingEntries);
+      const incoming = JSON.stringify(remoteLog);
+      if (incoming === JSON.stringify(latestLog.current)) {
+        settleStatus(user.id);
+        return;
+      }
 
-      const incoming = JSON.stringify(data.log);
-      if (incoming === lastPushed.current) return;
-      if (incoming === JSON.stringify(log)) return;
-
-      const remoteLog: DayLog = {
-        ...emptyDay(today),
-        ...(data.log as Partial<DayLog>),
-        date: today,
-      };
       saveDayLog(remoteLog);
+      logBaseline.current = remoteLog;
+      lastPushed.current = incoming;
+      pendingLocal.current = incoming;
       onRemoteLogUpdate(remoteLog);
+      settleStatus(user.id);
     };
 
     const interval = setInterval(poll, 5000);
     return () => clearInterval(interval);
-  }, [user?.id, today, log, onRemoteLogUpdate]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id, today, readyUserId]);
 
-  /* ── Debounced push on log change ── */
   useEffect(() => {
-    if (!user) {
-      enqueue({ date: today, log, queuedAt: Date.now() });
+    if (!user || readyUserId !== user.id) return;
+    const snapshot = JSON.stringify(log);
+    const entries = diffSalah(log, logBaseline.current);
+    logBaseline.current = log;
+    pendingLocal.current = snapshot;
+    if (entries.length === 0) {
+      settleStatus(user.id);
+      return;
+    }
+
+    if (!navigator.onLine) {
+      enqueue(user.id, { date: today, entries, snapshot: log, queuedAt: Date.now() });
+      setStatus('offline');
       return;
     }
 
     if (debounceRef.current) clearTimeout(debounceRef.current);
+    setStatus('syncing');
     debounceRef.current = setTimeout(async () => {
-      lastPushed.current = JSON.stringify(log);
-      if (navigator.onLine) {
-        await pushLog(user.id, log);
+      const item = { date: today, entries, snapshot: log, queuedAt: Date.now() };
+      if (await pushEntries(user.id, entries)) {
+        lastPushed.current = snapshot;
+        removeQueued(user.id, item);
+        clearSyncedEdits(today, entries);
+        if (snapshot === JSON.stringify(latestLog.current)) clearLocalEdit('salah', today);
+        settleStatus(user.id);
       } else {
-        enqueue({ date: today, log, queuedAt: Date.now() });
+        enqueue(user.id, item);
+        setStatus(navigator.onLine ? 'error' : 'offline');
       }
-    }, 800);
+    }, 700);
 
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [log]);
+  }, [log, today, user, readyUserId, settleStatus]);
 
-  /* ── Flush queue on reconnect ── */
   useEffect(() => {
-    if (!user) return;
-    const handleOnline = () => flushQueue(user.id);
-    window.addEventListener('online', handleOnline);
-    return () => window.removeEventListener('online', handleOnline);
-  }, [user, flushQueue]);
+    if (!user || readyUserId !== user.id) return;
+    const retry = () => void flushQueue(user.id);
+    const offline = () => setStatus('offline');
+    window.addEventListener('online', retry);
+    window.addEventListener('offline', offline);
+    window.addEventListener('focus', retry);
+    const interval = setInterval(retry, 30_000);
+    return () => {
+      window.removeEventListener('online', retry);
+      window.removeEventListener('offline', offline);
+      window.removeEventListener('focus', retry);
+      clearInterval(interval);
+    };
+  }, [user, flushQueue, readyUserId]);
+
+  return { flushQueue, status };
 }

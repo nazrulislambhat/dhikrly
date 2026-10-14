@@ -6,18 +6,30 @@ import type { NotifSettings } from '@/types';
 // Your VAPID public key from .env.local
 const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!;
 
-function urlBase64ToUint8Array(base64String: string): Uint8Array<ArrayBuffer> {
+async function responseError(response: Response): Promise<string> {
+  const contentType = response.headers.get('content-type') ?? '';
+  if (contentType.includes('application/json')) {
+    try {
+      const body = (await response.json()) as { error?: unknown };
+      if (typeof body.error === 'string') return body.error;
+    } catch (error) {
+      console.error('Push API returned invalid JSON:', error);
+    }
+  } else {
+    console.error(
+      `Push API returned ${contentType || 'an unknown content type'} instead of JSON (${response.status}).`,
+    );
+  }
+  return `Notification service returned an unexpected response (${response.status}).`;
+}
+
+function urlBase64ToUint8Array(base64String: string): Uint8Array {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
   const base64 = (base64String + padding)
     .replace(/-/g, '+')
     .replace(/_/g, '/');
   const rawData = atob(base64);
-  const buffer = new ArrayBuffer(rawData.length);
-  const view = new Uint8Array(buffer);
-  for (let i = 0; i < rawData.length; i++) {
-    view[i] = rawData.charCodeAt(i);
-  }
-  return view;
+  return Uint8Array.from([...rawData].map((c) => c.charCodeAt(0)));
 }
 
 function getDeviceId(): string {
@@ -67,7 +79,7 @@ export function usePushSubscription() {
         if (!pushSub) {
           pushSub = await reg.pushManager.subscribe({
             userVisibleOnly: true,
-            applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
+            applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY) as BufferSource,
           });
         }
 
@@ -88,8 +100,21 @@ export function usePushSubscription() {
         });
 
         if (!res.ok) {
-          const data = await res.json();
-          return { ok: false, error: data.error ?? 'Server error' };
+          return { ok: false, error: await responseError(res) };
+        }
+
+        if (!(res.headers.get('content-type') ?? '').includes('application/json')) {
+          return { ok: false, error: await responseError(res) };
+        }
+        let responseBody: { ok?: boolean };
+        try {
+          responseBody = (await res.json()) as { ok?: boolean };
+        } catch (error) {
+          console.error('Push API returned invalid JSON:', error);
+          return { ok: false, error: 'Notification service returned invalid JSON.' };
+        }
+        if (responseBody.ok !== true) {
+          return { ok: false, error: 'Notification service did not confirm the schedule.' };
         }
 
         setIsSubscribed(true);
@@ -111,11 +136,19 @@ export function usePushSubscription() {
       const reg = await navigator.serviceWorker.ready;
       const sub = await reg.pushManager.getSubscription();
       if (sub) {
-        await fetch('/api/push/unsubscribe', {
+        const response = await fetch('/api/push/unsubscribe', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ endpoint: sub.endpoint }),
         });
+        if (!response.ok) throw new Error(await responseError(response));
+        if (!(response.headers.get('content-type') ?? '').includes('application/json')) {
+          throw new Error(await responseError(response));
+        }
+        const result = (await response.json()) as { ok?: boolean };
+        if (result.ok !== true) {
+          throw new Error('Notification service did not confirm the cancellation.');
+        }
         await sub.unsubscribe();
       }
       setIsSubscribed(false);

@@ -1,8 +1,10 @@
 'use client';
 
 import { useState } from 'react';
+import { Star } from 'lucide-react';
 import type { Dua, TabLabel } from '@/types';
 import SessionPill from './SessionPill';
+import SlideToFinish from './SlideToFinish';
 
 const TABS: TabLabel[] = ['Arabic', 'English', 'Transliteration'];
 
@@ -96,7 +98,7 @@ export default function DuaCard({
               <span
                 className={dark ? 'text-xs text-amber-400/60' : 'text-xs text-amber-500/70'}
               >
-                ★
+                <Star className="h-3 w-3 fill-current" aria-label="Priority" />
               </span>
             )}
             {dua.custom && (
@@ -147,6 +149,7 @@ export default function DuaCard({
           >
             {checked ? 'Done' : 'Pending'}
           </span>
+
           {dua.custom && onDelete && (
             <button
               onClick={() => onDelete(dua.id)}
@@ -240,6 +243,17 @@ export default function DuaCard({
             {dua.transliteration}
           </p>
         )}
+      </div>
+
+      {/* Mobile Slide to finish */}
+      <div className="mx-4 mb-3 sm:hidden">
+        <SlideToFinish
+          completed={checked}
+          dark={dark}
+          label="Slide to finish"
+          completedLabel="Completed"
+          onFinish={() => onToggle(dua.id, soundEnabled)}
+        />
       </div>
     </article>
   );

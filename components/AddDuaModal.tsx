@@ -1,6 +1,8 @@
+/* eslint-disable react-hooks/static-components */
 'use client';
 
 import { useState } from 'react';
+import { Star } from 'lucide-react';
 import type { Dua, Category } from '@/types';
 
 interface AddDuaModalProps {
@@ -40,9 +42,15 @@ const EMPTY: FormState = {
   priority: false,
 };
 
-export default function AddDuaModal({ dark, onAdd, onClose }: AddDuaModalProps) {
+export default function AddDuaModal({
+  dark,
+  onAdd,
+  onClose,
+}: AddDuaModalProps) {
   const [form, setForm] = useState<FormState>(EMPTY);
-  const [errors, setErrors] = useState<Partial<Record<keyof FormState, string>>>({});
+  const [errors, setErrors] = useState<
+    Partial<Record<keyof FormState, string>>
+  >({});
 
   const validate = (): boolean => {
     const e: typeof errors = {};
@@ -83,14 +91,14 @@ export default function AddDuaModal({ dark, onAdd, onClose }: AddDuaModalProps) 
   };
 
   const overlay = dark
-    ? 'bg-[#0c1a2e]/80 backdrop-blur-sm'
-    : 'bg-stone-900/40 backdrop-blur-sm';
+    ? 'bg-black/65 backdrop-blur-md'
+    : 'bg-stone-900/40 backdrop-blur-md';
   const panel = dark
-    ? 'bg-[#111f33] border-white/10'
+    ? 'bg-[#14211e] border-white/10 text-stone-100'
     : 'bg-white border-stone-200';
   const inputBase = dark
-    ? 'bg-white/5 border-white/10 text-stone-200 placeholder-stone-600 focus:border-amber-400/50'
-    : 'bg-stone-50 border-stone-200 text-stone-700 placeholder-stone-400 focus:border-amber-400';
+    ? 'bg-white/5 border-white/10 text-stone-200 placeholder-stone-600 focus:border-emerald-500'
+    : 'bg-stone-50 border-stone-200 text-stone-700 placeholder-stone-400 focus:border-emerald-500';
   const label = dark ? 'text-stone-400' : 'text-stone-500';
   const errCls = 'text-red-400 text-[10px] mt-0.5';
 
@@ -108,16 +116,16 @@ export default function AddDuaModal({ dark, onAdd, onClose }: AddDuaModalProps) 
     dir?: string;
   }) => (
     <div className="mb-3">
-      <label className={`mb-1 block text-[11px] uppercase tracking-wide ${label}`}>
+      <label
+        className={`mb-1 block text-[11px] uppercase tracking-wide ${label}`}
+      >
         {lbl}
       </label>
       {multiline ? (
         <textarea
           rows={3}
           value={form[id] as string}
-          onChange={(e) =>
-            setForm((p) => ({ ...p, [id]: e.target.value }))
-          }
+          onChange={(e) => setForm((p) => ({ ...p, [id]: e.target.value }))}
           placeholder={placeholder}
           dir={dir}
           className={`w-full resize-none rounded-xl border px-3 py-2 text-sm outline-none transition-colors ${inputBase} ${
@@ -128,9 +136,7 @@ export default function AddDuaModal({ dark, onAdd, onClose }: AddDuaModalProps) 
         <input
           type="text"
           value={form[id] as string}
-          onChange={(e) =>
-            setForm((p) => ({ ...p, [id]: e.target.value }))
-          }
+          onChange={(e) => setForm((p) => ({ ...p, [id]: e.target.value }))}
           placeholder={placeholder}
           dir={dir}
           className={`w-full rounded-xl border px-3 py-2 text-sm outline-none transition-colors ${inputBase} ${
@@ -144,7 +150,7 @@ export default function AddDuaModal({ dark, onAdd, onClose }: AddDuaModalProps) 
 
   return (
     <div
-      className={`fixed inset-0 z-50 flex items-center justify-center p-4 ${overlay}`}
+      className={`fixed inset-0 z-[100] flex items-center justify-center p-4 ${overlay}`}
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <div
@@ -156,7 +162,7 @@ export default function AddDuaModal({ dark, onAdd, onClose }: AddDuaModalProps) 
               dark ? 'text-stone-100' : 'text-stone-800'
             }`}
           >
-            Add Custom Du'ā
+            Add Custom Du`ā
           </h2>
           <button
             onClick={onClose}
@@ -170,7 +176,11 @@ export default function AddDuaModal({ dark, onAdd, onClose }: AddDuaModalProps) 
           </button>
         </div>
 
-        <Field id="title" label="English Title *" placeholder="e.g. Dua before eating" />
+        <Field
+          id="title"
+          label="English Title *"
+          placeholder="e.g. Dua before eating"
+        />
         <Field
           id="titleAr"
           label="Arabic Title"
@@ -204,7 +214,9 @@ export default function AddDuaModal({ dark, onAdd, onClose }: AddDuaModalProps) 
 
         {/* Category */}
         <div className="mb-3">
-          <label className={`mb-1.5 block text-[11px] uppercase tracking-wide ${label}`}>
+          <label
+            className={`mb-1.5 block text-[11px] uppercase tracking-wide ${label}`}
+          >
             Category
           </label>
           <div className="flex gap-2">
@@ -264,21 +276,23 @@ export default function AddDuaModal({ dark, onAdd, onClose }: AddDuaModalProps) 
             className={`relative h-6 w-11 rounded-full transition-colors ${
               form.priority
                 ? dark
-                  ? 'bg-amber-500'
-                  : 'bg-amber-500'
+                  ? 'bg-green-500'
+                  : 'bg-green-500'
                 : dark
                   ? 'bg-stone-700'
                   : 'bg-stone-200'
             }`}
           >
             <span
-              className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${
+              className={`absolute left-0 top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${
                 form.priority ? 'translate-x-5' : 'translate-x-0.5'
               }`}
             />
           </button>
-          <span className={`text-[12px] ${dark ? 'text-stone-400' : 'text-stone-500'}`}>
-            Mark as priority (★)
+          <span
+            className={`text-[12px] ${dark ? 'text-stone-400' : 'text-stone-500'}`}
+          >
+            Mark as priority <Star className="ml-1 inline h-3.5 w-3.5" aria-hidden="true" />
           </span>
         </div>
 
@@ -298,10 +312,10 @@ export default function AddDuaModal({ dark, onAdd, onClose }: AddDuaModalProps) 
             className={`flex-1 rounded-xl py-2.5 text-sm font-medium transition-all active:scale-[0.98] ${
               dark
                 ? 'bg-amber-400/20 text-amber-300 hover:bg-amber-400/30'
-                : 'bg-amber-500 text-white hover:bg-amber-600'
+                : 'bg-green-500 text-white hover:bg-amber-600'
             }`}
           >
-            Add Du'ā
+            Add Du`ā
           </button>
         </div>
       </div>

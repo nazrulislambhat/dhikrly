@@ -1,4 +1,10 @@
-import type { PrayerTimesResult, CalcMethod, SalahLocation } from '@/types/salah';
+import type {
+  PrayerName,
+  PrayerTimesResult,
+  CalcMethod,
+  SalahLocation,
+} from '@/types/salah';
+import type * as AdhanType from 'adhan';
 
 /* Dynamically import adhan to avoid SSR issues */
 async function getAdhan() {
@@ -16,7 +22,7 @@ export async function calculatePrayerTimes(
 
   const coords = new adhan.Coordinates(location.lat, location.lng);
 
-  const methodMap: Record<CalcMethod, adhan.CalculationParameters> = {
+  const methodMap: Record<CalcMethod, AdhanType.CalculationParameters> = {
     MuslimWorldLeague: adhan.CalculationMethod.MuslimWorldLeague(),
     Egyptian: adhan.CalculationMethod.Egyptian(),
     Karachi: adhan.CalculationMethod.Karachi(),
@@ -65,14 +71,16 @@ export function formatTime(date: Date, timezone?: string): string {
   });
 }
 
-export function getCurrentAndNextPrayer(times: PrayerTimesResult): {
-  current: string | null;
-  next: string;
+export function getCurrentAndNextPrayer(
+  times: PrayerTimesResult,
+  now = new Date(),
+): {
+  current: PrayerName | null;
+  next: PrayerName;
   nextTime: Date;
   minutesUntilNext: number;
 } {
-  const now = new Date();
-  const order = [
+  const order: { name: PrayerName; time: Date }[] = [
     { name: 'fajr',    time: times.fajr    },
     { name: 'dhuhr',   time: times.dhuhr   },
     { name: 'asr',     time: times.asr     },
@@ -80,8 +88,8 @@ export function getCurrentAndNextPrayer(times: PrayerTimesResult): {
     { name: 'isha',    time: times.isha    },
   ];
 
-  let current: string | null = null;
-  let next = 'fajr';
+  let current: PrayerName | null = null;
+  let next: PrayerName = 'fajr';
   let nextTime = times.fajr;
 
   for (let i = 0; i < order.length; i++) {

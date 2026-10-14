@@ -1,24 +1,78 @@
-@import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Noto+Naskh+Arabic:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Noto+Naskh+Arabic:wght@400;500;600;700&display=swap');
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
 
-/* ── Custom font families ── */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-serif: 'DM Sans', sans-serif;
+  --font-arabic: 'Noto Naskh Arabic', 'Traditional Arabic', serif;
+  --font-ui: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --color-amber-50: #eafbf5;
+  --color-amber-100: #d2f6e9;
+  --color-amber-200: #a9ecd5;
+  --color-amber-300: #77ddbc;
+  --color-amber-400: #42c99e;
+  --color-amber-500: #18b783;
+  --color-amber-600: #0d936b;
+  --color-amber-700: #087657;
+  --color-amber-800: #075d46;
+  --color-amber-900: #064c3b;
+  --color-amber-950: #032b23;
+  --color-stone-50: #f5f8f7;
+  --color-stone-100: #eaf0ee;
+  --color-stone-200: #d8e2df;
+  --color-stone-300: #bdccc8;
+  --color-stone-400: #8fa39d;
+  --color-stone-500: #657872;
+  --color-stone-600: #4a5d57;
+  --color-stone-700: #344640;
+  --color-stone-800: #22332e;
+  --color-stone-900: #14221e;
+  --radius-xl: 1.1rem;
+  --radius-2xl: 1.4rem;
+  --shadow-sm: 0 2px 12px rgb(20 48 39 / 5%);
+  --shadow-md: 0 12px 32px rgb(20 48 39 / 8%);
+}
+
 @layer base {
   :root {
-    --font-serif: 'Crimson Pro', Georgia, 'Times New Roman', serif;
-    --font-arabic: 'Noto Naskh Arabic', 'Traditional Arabic', Arial, sans-serif;
+    --app-accent: #16805a;
+    --app-secondary: #287750;
+    --app-bg: #f7f9f7;
+    --app-surface: #ffffff;
+    --app-ink: #14221e;
   }
 
   html {
     scroll-behavior: smooth;
+    background: var(--app-bg);
   }
 
   body {
-    font-family: var(--font-serif);
+    min-height: 100dvh;
+    background: var(--app-bg);
+    color: var(--app-ink);
+    font-family: var(--font-ui);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+
+  button,
+  a,
+  input,
+  select,
+  textarea {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  button {
+    touch-action: manipulation;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--app-accent);
+    outline-offset: 3px;
   }
 
   /* Arabic-specific reset */
@@ -29,18 +83,68 @@
   }
 }
 
-/* ── Utility classes ── */
-@layer utilities {
-  .font-serif {
-    font-family: var(--font-serif);
-  }
+html.dark {
+  --app-bg: #0d1715;
+  --app-surface: #14211e;
+  --app-ink: #edf6f2;
+  --app-accent: #42c99e;
+  --app-secondary: #77ddbc;
+  color-scheme: dark;
+}
 
-  .font-arabic {
-    font-family: var(--font-arabic);
+html:not(.dark) {
+  color-scheme: light;
+}
+
+/* App-wide layout and component refresh */
+:root {
+  --app-line: #e7ece8;
+  --app-muted: #7c8982;
+}
+
+html.dark {
+  --app-line: rgb(219 246 234 / 10%);
+  --app-muted: #8ba39a;
+}
+
+body {
+  background-image: radial-gradient(ellipse at 82% 0%, rgb(22 128 90 / 4%), transparent 34rem);
+}
+
+@keyframes mushaf-page-turn-next {
+  from {
+    opacity: 0.55;
+    transform: rotateY(-16deg) translateX(1.2rem);
+  }
+  to {
+    opacity: 1;
+    transform: rotateY(0) translateX(0);
   }
 }
 
-/* ── Animations ── */
+@keyframes mushaf-page-turn-previous {
+  from {
+    opacity: 0.55;
+    transform: rotateY(16deg) translateX(-1.2rem);
+  }
+  to {
+    opacity: 1;
+    transform: rotateY(0) translateX(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* â”€â”€ Animations â”€â”€ */
 @keyframes fade-in {
   from {
     opacity: 0;
@@ -56,7 +160,7 @@
   animation: fade-in 0.25s ease-out forwards;
 }
 
-/* ── Scrollbar styling ── */
+/* â”€â”€ Scrollbar styling â”€â”€ */
 @media (min-width: 768px) {
   ::-webkit-scrollbar {
     width: 6px;
@@ -85,7 +189,7 @@
   }
 }
 
-/* ── Time input styling ── */
+/* â”€â”€ Time input styling â”€â”€ */
 input[type='time']::-webkit-calendar-picker-indicator {
   opacity: 0.5;
   cursor: pointer;
@@ -96,29 +200,27 @@ input[type='time']::-webkit-calendar-picker-indicator {
   filter: invert(0.8);
 }
 
-/* ── Selection colour ── */
+/* â”€â”€ Selection colour â”€â”€ */
 ::selection {
-  background: rgba(245, 158, 11, 0.2);
+  background: rgb(24 183 131 / 22%);
   color: inherit;
 }
 
-/* ── iOS PWA safe area ── */
-@supports (padding-top: env(safe-area-inset-top)) {
-  .safe-top {
-    padding-top: env(safe-area-inset-top);
-  }
-  .safe-bottom {
-    padding-bottom: env(safe-area-inset-bottom);
-  }
-  .pb-safe {
-    padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
-  }
-}
-
-/* ── Print styles (PDF export window) ── */
+/* â”€â”€ Print styles (PDF export window) â”€â”€ */
 @media print {
   * {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      scroll-behavior: auto !important;
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
   }
 }

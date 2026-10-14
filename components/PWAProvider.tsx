@@ -1,6 +1,8 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 'use client';
 
 import { useEffect, useState } from 'react';
+import { Smartphone } from 'lucide-react';
 import { useServiceWorker } from '@/hooks/useServiceWorker';
 
 interface BeforeInstallPromptEvent extends Event {
@@ -51,23 +53,25 @@ export default function PWAProvider({
     setInstallPrompt(null);
   };
 
-  if (!installPrompt || installed || dismissed) return null;
+  if (!installPrompt || installed || dismissed) {
+    return children ? <>{children}</> : null;
+  }
 
   return (
-    <div
-      className={`fixed bottom-4 left-1/2 z-[9998] w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 rounded-2xl border p-4 shadow-2xl ${
-        dark
-          ? 'border-white/10 bg-[#111f33]'
-          : 'border-stone-200 bg-white'
-      }`}
-    >
+    <>
+      {children}
+      <div
+        className={`fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom))] min-[900px]:bottom-6 left-1/2 z-[9998] w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 rounded-2xl border p-4 shadow-2xl ${
+          dark ? 'border-white/10 bg-[#14211e]' : 'border-stone-200 bg-white'
+        }`}
+      >
       <div className="flex items-start gap-3">
         <div
           className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-xl ${
-            dark ? 'bg-amber-400/15' : 'bg-amber-50'
+            dark ? 'bg-emerald-400/15 text-emerald-200' : 'bg-emerald-50 text-emerald-800'
           }`}
         >
-          🌙
+          <Smartphone className="h-5 w-5" aria-hidden="true" />
         </div>
         <div className="min-w-0 flex-1">
           <p
@@ -111,13 +115,14 @@ export default function PWAProvider({
           onClick={handleInstall}
           className={`flex-1 rounded-xl py-2 text-[12px] font-medium transition-all active:scale-95 ${
             dark
-              ? 'bg-amber-400/20 text-amber-300 hover:bg-amber-400/30'
-              : 'bg-amber-500 text-white hover:bg-amber-600'
+              ? 'bg-emerald-400/20 text-emerald-200 hover:bg-emerald-400/30'
+              : 'bg-emerald-800 text-white hover:bg-emerald-900'
           }`}
         >
           Install
         </button>
       </div>
     </div>
+    </>
   );
 }

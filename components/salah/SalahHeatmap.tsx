@@ -79,7 +79,7 @@ export default function SalahHeatmap({ dark }: SalahHeatmapProps) {
                 {week.map(cell => (
                   <div
                     key={cell.date}
-                    className={`h-3 w-full cursor-pointer rounded-[2px] transition-all hover:scale-125 hover:z-10 ${color(cell)} ${cell.isToday ? `ring-1 ring-amber-400 ring-offset-1 ${dark ? 'ring-offset-[#0c1a2e]' : 'ring-offset-white'}` : ''}`}
+                    className={`h-3 w-full cursor-pointer rounded-[2px] transition-all hover:scale-125 hover:z-10 ${color(cell)} ${cell.isToday ? `ring-1 ring-amber-400 ring-offset-1 ${dark ? 'ring-offset-[#14211e]' : 'ring-offset-white'}` : ''}`}
                     onMouseEnter={() => setTooltip(cell)}
                     onMouseLeave={() => setTooltip(null)}
                   />
