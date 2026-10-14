@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { BellRing, Check, Moon, Sun, X } from 'lucide-react';
 import { load, save, NOTIFICATION_KEY } from '@/lib/storage';
 import { usePushSubscription } from '@/hooks/usePushSubscription';
 import type { NotifSettings } from '@/types';
@@ -34,7 +35,7 @@ function checkAndFireInApp(settings: NotifSettings) {
     const diff = nowMinutes - (h * 60 + m);
     if (diff >= 0 && diff < 5) {
       try {
-        new Notification('Daily Adhkār Reminder 🌙', {
+        new Notification('        Daily Adhkār Reminder', {
           body: `Time for your ${label} adhkār & du'ā`,
           icon: '/icon-192.png',
           tag: `adhkar-${prop}`,
@@ -132,17 +133,23 @@ export default function NotificationSettings({
 
     const anyEnabled = settings.morningEnabled || settings.eveningEnabled;
 
-    if (permission === 'granted' && anyEnabled) {
-      // Get user's timezone automatically
-      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      const result = await subscribe(settings, userId, timezone);
-      if (!result.ok) {
-        setStatus('error');
-        setErrorMsg(result.error ?? 'Could not register push notification');
-        return;
+    try {
+      if (permission === 'granted' && anyEnabled) {
+        // Get user's timezone automatically
+        const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        const result = await subscribe(settings, userId, timezone);
+        if (!result.ok) {
+          setStatus('error');
+          setErrorMsg(result.error ?? 'Could not register push notification');
+          return;
+        }
+      } else if (!anyEnabled && isSubscribed) {
+        await unsubscribe();
       }
-    } else if (!anyEnabled && isSubscribed) {
-      await unsubscribe();
+    } catch (error) {
+      setStatus('error');
+      setErrorMsg(error instanceof Error ? error.message : 'Could not save notification settings.');
+      return;
     }
 
     setStatus('saved');
@@ -150,33 +157,34 @@ export default function NotificationSettings({
   }, [settings, permission, userId, subscribe, unsubscribe, isSubscribed]);
 
   /* ── Styles ── */
-  const overlay = dark ? 'bg-[#0c1a2e]/80 backdrop-blur-sm' : 'bg-stone-900/40 backdrop-blur-sm';
-  const panel   = dark ? 'bg-[#111f33] border-white/10'     : 'bg-white border-stone-200';
+  const overlay = dark ? 'bg-black/65 backdrop-blur-md' : 'bg-stone-900/45 backdrop-blur-md';
+  const panel   = dark ? 'bg-[#14211e] border-white/10 text-stone-100' : 'bg-white border-stone-200';
   const input   = dark
     ? 'bg-white/5 border-white/10 text-stone-200 focus:border-amber-400/50'
     : 'bg-stone-50 border-stone-200 text-stone-700 focus:border-amber-400';
 
   return (
     <div
-      className={`fixed inset-0 z-50 flex items-center justify-center p-4 ${overlay}`}
+      className={`fixed inset-0 z-[100] flex items-center justify-center p-4 ${overlay}`}
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div className={`w-full max-w-sm rounded-2xl border p-6 shadow-2xl ${panel}`}>
+      <div className={`max-h-[calc(100dvh-2rem)] w-full max-w-sm overflow-y-auto rounded-2xl border p-6 shadow-2xl ${panel}`}>
 
         {/* Header */}
         <div className="mb-5 flex items-center justify-between">
           <div>
-            <h2 className={`font-serif text-lg font-semibold ${dark ? 'text-stone-100' : 'text-stone-800'}`}>
+            <h2 className={`inline-flex items-center gap-2 font-serif text-lg font-semibold ${dark ? 'text-stone-100' : 'text-stone-800'}`}>
+              <BellRing className="h-4 w-4 text-emerald-700 dark:text-emerald-200" aria-hidden="true" />
               Notification Reminders
             </h2>
             <p className={`mt-0.5 text-[10px] ${dark ? 'text-stone-600' : 'text-stone-400'}`}>
               {isSubscribed
-                ? '✓ Push notifications active — works when app is closed'
+                ? 'Push notifications active — works when app is closed'
                 : 'Enable to receive reminders even when app is closed'}
             </p>
           </div>
-          <button onClick={onClose} className={`rounded-full p-1.5 ${dark ? 'text-stone-500 hover:text-stone-300' : 'text-stone-400 hover:text-stone-600'}`}>
-            ✕
+          <button aria-label="Close notification settings" onClick={onClose} className={`rounded-full p-1.5 ${dark ? 'text-stone-500 hover:text-stone-300' : 'text-stone-400 hover:text-stone-600'}`}>
+            <X className="h-4 w-4" aria-hidden="true" />
           </button>
         </div>
 
@@ -188,8 +196,8 @@ export default function NotificationSettings({
               ? dark ? 'border-red-500/30 bg-red-500/10 text-red-400' : 'border-red-200 bg-red-50 text-red-600'
               : dark ? 'border-amber-500/30 bg-amber-500/10 text-amber-400' : 'border-amber-200 bg-amber-50 text-amber-700'
         }`}>
-          {permission === 'granted' && '✓ Notifications are enabled'}
-          {permission === 'denied' && '✗ Notifications blocked — enable in browser/system settings'}
+          {permission === 'granted' && <span className="inline-flex items-center gap-2"><Check className="h-4 w-4" aria-hidden="true" /> Notifications are enabled</span>}
+          {permission === 'denied' && <span className="inline-flex items-center gap-2"><X className="h-4 w-4" aria-hidden="true" /> Notifications blocked — enable in browser/system settings</span>}
           {permission === 'default' && (
             <div className="flex items-center justify-between gap-3">
               <span>Allow notifications to receive reminders</span>
@@ -207,8 +215,8 @@ export default function NotificationSettings({
         <div className="mb-4">
           <div className="mb-2 flex items-center justify-between">
             <div>
-              <p className={`text-[13px] font-medium ${dark ? 'text-stone-200' : 'text-stone-700'}`}>
-                🌅 Morning Reminder
+              <p className={`inline-flex items-center gap-2 text-[13px] font-medium ${dark ? 'text-stone-200' : 'text-stone-700'}`}>
+                <Sun className="h-4 w-4 text-emerald-700 dark:text-emerald-200" aria-hidden="true" /> Morning Reminder
               </p>
               <p className={`text-[10px] ${dark ? 'text-stone-600' : 'text-stone-400'}`}>
                 Morning adhkār & du'ā
@@ -235,8 +243,8 @@ export default function NotificationSettings({
         <div className="mb-5">
           <div className="mb-2 flex items-center justify-between">
             <div>
-              <p className={`text-[13px] font-medium ${dark ? 'text-stone-200' : 'text-stone-700'}`}>
-                🌙 Evening Reminder
+              <p className={`inline-flex items-center gap-2 text-[13px] font-medium ${dark ? 'text-stone-200' : 'text-stone-700'}`}>
+                <Moon className="h-4 w-4 text-emerald-700 dark:text-emerald-200" aria-hidden="true" /> Evening Reminder
               </p>
               <p className={`text-[10px] ${dark ? 'text-stone-600' : 'text-stone-400'}`}>
                 Evening adhkār & du'ā
@@ -287,7 +295,7 @@ export default function NotificationSettings({
           {status === 'saving' || isLoading
             ? 'Saving…'
             : status === 'saved'
-              ? '✓ Saved & Scheduled'
+              ? 'Saved & Scheduled'
               : 'Save & Schedule'}
         </button>
       </div>

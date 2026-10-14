@@ -1,6 +1,6 @@
 # Dhikrly — ذِكْرلي
 
-![Dhikrly Preview](https://raw.githubusercontent.com/nazrulislambhat/dhikrly/main/public/og-image.png)
+![Dhikrly Preview](https://raw.githubusercontent.com/nazrulislambhat/dhikrly/main/public/dhikrly-cover-4k.svg)
 
 Daily Adhkār, Du'ā & Ṣalāh tracker. Offline-first PWA with cross-device sync.
 
@@ -25,6 +25,15 @@ Daily Adhkār, Du'ā & Ṣalāh tracker. Offline-first PWA with cross-device syn
 - Prayer insights dashboard with weekly chart
 - Nearby masjid finder (OpenStreetMap, no API key needed)
 
+**Qur’an Reader**
+
+- Complete 114-surah reader with selectable translations across available languages
+- Verse-by-verse or continuous full-surah recitation from multiple qāriʾs
+- Adjustable Arabic text size, translation visibility, and reading preferences in a dedicated settings section
+- Recitation player with active verse and word highlighting, playback speed, and verse repeat
+- Reader preferences and saved bookmarks in an on-demand settings drawer
+- Saved reading position, multiple verse bookmarks, and a configurable daily reading goal
+
 **Platform**
 
 - Installable PWA — works offline, add to home screen
@@ -38,9 +47,9 @@ Daily Adhkār, Du'ā & Ṣalāh tracker. Offline-first PWA with cross-device syn
 
 |              |                                 |
 | ------------ | ------------------------------- |
-| Framework    | Next.js 14 (App Router)         |
+| Framework    | Next.js 16 (App Router)         |
 | Language     | TypeScript                      |
-| Styling      | Tailwind CSS v3                 |
+| Styling      | Tailwind CSS v4                 |
 | Prayer Times | adhan.js                        |
 | Charts       | Recharts                        |
 | Auth & Sync  | Supabase                        |
@@ -123,9 +132,18 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 
 ## Supabase Setup
 
-1. Run `supabase-schema.sql` in Supabase SQL Editor
+1. For a new project, run `supabase-schema.sql` in Supabase SQL Editor. For an existing project, run `supabase-migrations/20261012_practice_entries.sql` to add and backfill the normalized completion table.
 2. Enable Email + Google providers in Authentication → Providers
 3. Add your domain to Authentication → URL Configuration
+
+Adhkār and Ṣalāh completion syncs one dated item per database row in
+`practice_entries`. The migration backfills the previous `daily_progress` and
+`salah_progress` JSON documents; keep those legacy tables during rollout so
+older app versions can continue syncing.
+
+The Vercel Cron sends scheduled push reminders every minute. Configure
+`CRON_SECRET`, the Supabase service-role key, and the VAPID keys in the Vercel
+project environment. The deployment plan must support minutely cron schedules.
 
 ---
 

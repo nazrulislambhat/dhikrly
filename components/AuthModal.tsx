@@ -66,16 +66,15 @@ export default function AuthModal({ dark, onClose }: AuthModalProps) {
   };
 
   const overlay = dark
-    ? 'bg-[#0c1a2e]/80 backdrop-blur-sm'
-    : 'bg-stone-900/40 backdrop-blur-sm';
+    ? 'bg-black/65 backdrop-blur-md'
+    : 'bg-stone-900/45 backdrop-blur-md';
   const panel = dark
-    ? 'bg-[#111f33] border-white/10'
+    ? 'bg-[#14211e] border-white/10 text-stone-100'
     : 'bg-white border-stone-200';
   const inputCls = dark
     ? 'bg-white/5 border-white/10 text-stone-200 placeholder-stone-600 focus:border-amber-400/50'
     : 'bg-stone-50 border-stone-200 text-stone-700 placeholder-stone-400 focus:border-amber-400';
   const mutedText = dark ? 'text-stone-500' : 'text-stone-400';
-  const labelText = dark ? 'text-stone-300' : 'text-stone-600';
   const divider = dark ? 'border-white/10' : 'border-stone-200';
 
   const TITLE: Record<AuthView, string> = {
@@ -92,10 +91,10 @@ export default function AuthModal({ dark, onClose }: AuthModalProps) {
 
   return (
     <div
-      className={`fixed inset-0 z-50 flex items-center justify-center p-4 ${overlay}`}
+      className={`fixed inset-0 z-[100] flex items-center justify-center p-4 ${overlay}`}
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div className={`w-full max-w-sm rounded-2xl border p-6 shadow-2xl ${panel}`}>
+      <div className={`max-h-[calc(100dvh-2rem)] w-full max-w-sm overflow-y-auto rounded-2xl border p-6 shadow-2xl ${panel}`}>
 
         {/* Header */}
         <div className="mb-6 flex items-start justify-between">

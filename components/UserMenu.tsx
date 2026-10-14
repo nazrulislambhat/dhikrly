@@ -2,19 +2,20 @@
 
 import { useState, useRef, useEffect } from 'react';
 import type { User } from '@supabase/supabase-js';
+import type { SyncStatus } from '@/hooks/useSync';
 
 interface UserMenuProps {
   user: User;
   dark: boolean;
   onSignOut: () => void;
-  isSynced: boolean;
+  syncStatus: SyncStatus;
 }
 
 export default function UserMenu({
   user,
   dark,
   onSignOut,
-  isSynced,
+  syncStatus,
 }: UserMenuProps) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -30,22 +31,36 @@ export default function UserMenu({
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  const initials = user.email
-    ? user.email.slice(0, 2).toUpperCase()
-    : '??';
+  const initials = user.email ? user.email.slice(0, 2).toUpperCase() : '??';
 
-  const avatarUrl =
-    user.user_metadata?.avatar_url as string | undefined;
+  const avatarUrl = user.user_metadata?.avatar_url as string | undefined;
+  const isSynced = syncStatus === 'synced';
+  const syncLabel =
+    syncStatus === 'synced'
+      ? 'Synced'
+      : syncStatus === 'syncing'
+        ? 'Syncing…'
+        : syncStatus === 'offline'
+          ? 'Offline'
+          : 'Sync failed';
+  const syncColor =
+    syncStatus === 'synced'
+      ? 'bg-emerald-500'
+      : syncStatus === 'error'
+        ? 'bg-red-500'
+        : syncStatus === 'offline'
+          ? 'bg-stone-400'
+          : 'bg-amber-400 animate-pulse';
 
   const panel = dark
-    ? 'bg-[#111f33] border-white/10 shadow-2xl'
+    ? 'bg-[#14211e] border-white/10 shadow-2xl'
     : 'bg-white border-stone-200 shadow-xl';
 
   return (
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen((v) => !v)}
-        className={`flex items-center gap-2 rounded-full border px-2 py-1 transition-all hover:scale-105 active:scale-95 ${
+        className={`flex items-center cursor-pointer gap-2 rounded-full border px-2 py-1 transition-all hover:scale-105 active:scale-95 ${
           dark
             ? 'border-white/10 bg-white/5 hover:bg-white/10'
             : 'border-stone-200 bg-white hover:bg-stone-50 shadow-sm'
@@ -80,12 +95,8 @@ export default function UserMenu({
           {/* Sync indicator dot */}
           <span
             className={`absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full border ${
-              dark ? 'border-[#111f33]' : 'border-white'
-            } ${
-              isSynced
-                ? 'bg-emerald-500'
-                : 'bg-amber-400 animate-pulse'
-            }`}
+              dark ? 'border-[#14211e]' : 'border-white'
+            } ${syncColor}`}
           />
         </div>
 
@@ -95,7 +106,7 @@ export default function UserMenu({
             dark ? 'text-stone-400' : 'text-stone-500'
           }`}
         >
-          {isSynced ? 'Synced' : 'Syncing…'}
+          {syncLabel}
         </span>
 
         {/* Chevron */}
@@ -106,7 +117,12 @@ export default function UserMenu({
           viewBox="0 0 12 12"
           fill="none"
         >
-          <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+          <path
+            d="M2 4l4 4 4-4"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+          />
         </svg>
       </button>
 
@@ -144,14 +160,18 @@ export default function UserMenu({
                 ? dark
                   ? 'bg-emerald-500/10'
                   : 'bg-emerald-50'
-                : dark
-                  ? 'bg-amber-400/10'
-                  : 'bg-amber-50'
+                : syncStatus === 'error'
+                  ? dark
+                    ? 'bg-red-500/10'
+                    : 'bg-red-50'
+                  : dark
+                    ? 'bg-amber-400/10'
+                    : 'bg-amber-50'
             }`}
           >
             <span
               className={`h-1.5 w-1.5 rounded-full ${
-                isSynced ? 'bg-emerald-500' : 'bg-amber-400 animate-pulse'
+                syncColor
               }`}
             />
             <span
@@ -160,14 +180,22 @@ export default function UserMenu({
                   ? dark
                     ? 'text-emerald-400'
                     : 'text-emerald-700'
-                  : dark
-                    ? 'text-amber-400'
-                    : 'text-amber-700'
+                  : syncStatus === 'error'
+                    ? dark
+                      ? 'text-red-400'
+                      : 'text-red-700'
+                    : dark
+                      ? 'text-amber-400'
+                      : 'text-amber-700'
               }`}
             >
-              {isSynced
+              {syncStatus === 'synced'
                 ? 'All changes synced'
-                : 'Syncing changes…'}
+                : syncStatus === 'syncing'
+                  ? 'Syncing changes…'
+                  : syncStatus === 'offline'
+                    ? 'Waiting for connection'
+                    : 'Sync failed; retrying'}
             </span>
           </div>
 
@@ -177,7 +205,7 @@ export default function UserMenu({
               setOpen(false);
               onSignOut();
             }}
-            className={`w-full rounded-xl px-3 py-2 text-left text-[12px] transition-colors ${
+            className={`w-full cursor-pointer rounded-xl px-3 py-2 text-left text-[12px] transition-colors ${
               dark
                 ? 'text-red-400/70 hover:bg-red-500/10 hover:text-red-400'
                 : 'text-red-500 hover:bg-red-50'

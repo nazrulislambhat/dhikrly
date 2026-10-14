@@ -1,11 +1,10 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
-import BottomNavWrapper from '@/components/BottomNavWrapper';
 
 export const metadata: Metadata = {
-  title: "Dhikrly — Adhkār, Du'ā & Ṣalāh",
+  title: "Dhikrly — Adhkār, Qur’an & Ṣalāh",
   description:
-    "Track your daily Islamic remembrances, supplications, and prayers. Morning & evening adhkār with streaks, reminders, and salah tracker.",
+    'Read and listen to the Quran, track daily remembrances and supplications, and keep a record of your prayers.',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
@@ -15,17 +14,16 @@ export const metadata: Metadata = {
   formatDetection: { telephone: false },
   openGraph: {
     type: 'website',
-    title: "Dhikrly — Adhkār, Du'ā & Ṣalāh",
-    description: 'Track your daily Islamic remembrances, supplications, and prayers.',
+    title: "Dhikrly — Adhkār, Qur’an & Ṣalāh",
+    description:
+      'Read and listen to the Quran, track daily remembrances and supplications, and keep a record of your prayers.',
   },
 };
 
 export const viewport: Viewport = {
-  themeColor: '#0c1a2e',
+  themeColor: '#f5f8f7',
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
 };
 
 export default function RootLayout({
@@ -42,13 +40,13 @@ export default function RootLayout({
         <link rel="icon" type="image/png" sizes="32x32" href="/icon-192.png" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta
+          name="apple-mobile-web-app-status-bar-style"
+          content="black-translucent"
+        />
         <meta name="apple-mobile-web-app-title" content="Dhikrly" />
       </head>
-      <body suppressHydrationWarning>
-        {children}
-        <BottomNavWrapper />
-      </body>
+      <body suppressHydrationWarning>{children}</body>
     </html>
   );
 }
