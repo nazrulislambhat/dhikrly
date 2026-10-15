@@ -4,7 +4,13 @@ import Link from 'next/link';
 import {
   Bell,
   BookOpen,
+  CircleDot,
   Clock3,
+  Compass,
+  Headphones,
+  Landmark,
+  LineChart,
+  MoonStar,
   Plus,
   RotateCcw,
   Search,
@@ -416,6 +422,34 @@ export default function DuasTracker() {
             </div>
           </div>
         </header>
+
+        {/* Explore Features Strip */}
+        <div className="mb-6 overflow-x-auto pb-1" aria-label="Explore Dhikrly tools">
+          <div className="flex items-center gap-2 min-w-max">
+            {[
+              { href: '/tasbeeh', label: 'Tasbīḥ Counter', Icon: CircleDot },
+              { href: '/qibla', label: 'Qibla Compass', Icon: Compass },
+              { href: '/ramadan', label: 'Ramadan Tracker', Icon: MoonStar },
+              { href: '/masjids', label: 'Nearby Masjids', Icon: Landmark },
+              { href: '/ambient', label: 'Ambient Focus', Icon: Headphones },
+              { href: '/insights', label: 'Spiritual Insights', Icon: LineChart },
+              { href: '/adhkar', label: 'Adhkār Library', Icon: Sparkles },
+            ].map(({ href, label, Icon }) => (
+              <Link
+                key={href}
+                href={href}
+                className={`inline-flex items-center gap-2 rounded-2xl border px-3.5 py-2 text-xs font-bold no-underline transition-all hover:scale-[1.02] active:scale-95 ${
+                  dark
+                    ? 'border-white/[0.08] bg-[#14211e] text-stone-300 hover:border-emerald-500/40 hover:text-emerald-300'
+                    : 'border-stone-200/80 bg-white text-stone-700 hover:border-emerald-500/40 hover:text-emerald-800 shadow-xs'
+                }`}
+              >
+                <Icon className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                <span>{label}</span>
+              </Link>
+            ))}
+          </div>
+        </div>
 
         <div className="mb-4 grid gap-4 min-[900px]:grid-cols-[minmax(0,1.65fr)_minmax(14rem,0.8fr)] min-[900px]:items-stretch">
         <TiltCard className="h-full min-w-0">

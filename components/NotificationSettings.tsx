@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/set-state-in-effect */
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -77,16 +76,12 @@ function Toggle({
       onClick={onToggle}
       className={`relative h-6 w-11 rounded-full transition-colors ${
         enabled
-          ? color === 'amber'
-            ? 'bg-green-700'
-            : 'bg-green-700'
-          : dark
-            ? 'bg-stone-700'
-            : 'bg-stone-200'
+          ? color === 'amber' ? 'bg-amber-500' : 'bg-violet-500'
+          : dark ? 'bg-stone-700' : 'bg-stone-200'
       }`}
     >
       <span
-        className={`absolute left-0 top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${
+        className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${
           enabled ? 'translate-x-5' : 'translate-x-0.5'
         }`}
       />
@@ -224,7 +219,7 @@ export default function NotificationSettings({
                 <Sun className="h-4 w-4 text-emerald-700 dark:text-emerald-200" aria-hidden="true" /> Morning Reminder
               </p>
               <p className={`text-[10px] ${dark ? 'text-stone-600' : 'text-stone-400'}`}>
-                Morning adhkār & du`ā
+                Morning adhkār & du'ā
               </p>
             </div>
             <Toggle
@@ -252,7 +247,7 @@ export default function NotificationSettings({
                 <Moon className="h-4 w-4 text-emerald-700 dark:text-emerald-200" aria-hidden="true" /> Evening Reminder
               </p>
               <p className={`text-[10px] ${dark ? 'text-stone-600' : 'text-stone-400'}`}>
-                Evening adhkār & du`ā
+                Evening adhkār & du'ā
               </p>
             </div>
             <Toggle
