@@ -1,11 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
   AlertCircle,
   ArrowRight,
-  Brain,
+  BookOpen,
   Calendar,
   CheckCircle2,
   Clock3,
@@ -21,10 +21,10 @@ import {
   Headphones,
   HeartHandshake,
   HelpCircle,
+  Layers,
   LineChart,
   Lock,
   Mic,
-  MoonStar,
   Scale,
   ShieldCheck,
   Sparkles,
@@ -34,9 +34,9 @@ import {
 import AppShell from '@/components/AppShell';
 import DhikrlyProModal from '@/components/DhikrlyProModal';
 import { usePro } from '@/hooks/usePro';
-import { load, SETTINGS_KEY } from '@/lib/storage';
+import { load, save, SETTINGS_KEY } from '@/lib/storage';
 
-interface PipelineFeature {
+interface ProFeature {
   id: string;
   category: 'ai' | 'sync' | 'audio' | 'analytics' | 'zakat' | 'community';
   title: string;
@@ -49,7 +49,7 @@ interface PipelineFeature {
   specs: string;
 }
 
-const PIPELINE_FEATURES: PipelineFeature[] = [
+const PRO_FEATURES: ProFeature[] = [
   {
     id: 'ai_hifdh',
     category: 'ai',
@@ -177,50 +177,36 @@ const PIPELINE_FEATURES: PipelineFeature[] = [
   },
 ];
 
-const ROADMAP_PHASES = [
+const PRO_TIERS = [
   {
-    phase: 'Phase 1 · Q1-Q2 2026',
-    title: 'Multi-Device Sync & Audio Mixer',
-    status: 'In Active Engineering',
-    items: [
-      'Zero-knowledge encrypted cloud sync alpha',
-      'Studio ambient Haramayn stems & multi-track mixer',
-      'Enhanced PWA performance & instant offline loading',
-      'Full Makrooh prayer windows & worldwide masjid locator',
-    ],
+    id: 'annual',
+    title: 'Annual Patron Pass',
+    badge: 'Most Popular · 7-Day Free Trial',
+    price: '$24.99',
+    period: '/year',
+    subtext: 'Only $2.08 / month · Save 30%',
+    description: 'Full access to all Pro features with a 7-day free trial. Cancel anytime with 1 click.',
+    highlight: true,
   },
   {
-    phase: 'Phase 2 · Q2-Q3 2026',
-    title: 'AI Hifdh Coach & Speech Beta',
-    status: 'Research & Prototyping',
-    items: [
-      'Voice-aligned Quran memorization listening engine',
-      '“Mist Mode” (Tadrij) interactive ayah fading',
-      'Weak verse spaced repetition (SRS) scheduler',
-      'Early access beta release for student sponsors',
-    ],
+    id: 'monthly',
+    title: 'Monthly Pass',
+    badge: 'Flexibility',
+    price: '$2.99',
+    period: '/month',
+    subtext: 'Billed monthly · Cancel anytime',
+    description: 'Month-to-month access with complete flexibility and no commitments.',
+    highlight: false,
   },
   {
-    phase: 'Phase 3 · Q3-Q4 2026',
-    title: 'Zakat Screener & Soul Reports',
-    status: 'Shariah Consultation',
-    items: [
-      'AAOIFI Equity, Crypto & 401(k) Zakat Screener',
-      'Automated dividend purification calculator',
-      'Annual Dhikrly Reflections “Soul Report” generator',
-      'Family 30-Juz Ramadan Khatmah Circles',
-    ],
-  },
-  {
-    phase: 'Phase 4 · 2026+',
-    title: 'Global Waqf & Ecosystem',
-    status: 'Planned',
-    items: [
-      'Global 1-for-1 Student of Knowledge Waqf rollout',
-      'Madrasa student verification portal',
-      'Offline desktop apps for macOS, Windows, and Linux',
-      'Community audio packs curated by verified Qari masters',
-    ],
+    id: 'lifetime',
+    title: 'Lifetime Waqf Pass',
+    badge: '1-for-1 Student Sponsor',
+    price: '$49.99',
+    period: 'one-time',
+    subtext: 'Lifetime access + 1 Student Sponsored',
+    description: 'Lifetime VIP access forever. Sponsoring 1 full student account as Sadaqah Jariyah.',
+    highlight: false,
   },
 ];
 
@@ -247,7 +233,7 @@ const FAQS = [
   },
 ];
 
-export default function DhikrlyProPipelinePage() {
+export default function DhikrlyProPage() {
   const [dark, setDark] = useState<boolean>(
     () => load<{ dark: boolean }>(SETTINGS_KEY, { dark: false }).dark,
   );
@@ -258,6 +244,16 @@ export default function DhikrlyProPipelinePage() {
 
   const { isPro, tier, redeemCode, deactivatePro } = usePro();
 
+  /* ── Dark mode persistence & HTML class toggle ── */
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', dark);
+    const existing = load<{ dark: boolean; sound?: boolean }>(SETTINGS_KEY, {
+      dark: false,
+      sound: true,
+    });
+    save(SETTINGS_KEY, { ...existing, dark });
+  }, [dark]);
+
   const handleTestVoucher = (e: React.FormEvent) => {
     e.preventDefault();
     if (!promoCodeInput.trim()) return;
@@ -265,7 +261,7 @@ export default function DhikrlyProPipelinePage() {
     setPromoResult({ text: res.message, isError: !res.success });
   };
 
-  const filteredFeatures = PIPELINE_FEATURES.filter((f) => {
+  const filteredFeatures = PRO_FEATURES.filter((f) => {
     if (activeCategory === 'all') return true;
     if (activeCategory === 'ai') return f.category === 'ai';
     if (activeCategory === 'sync') return f.category === 'sync';
@@ -278,8 +274,8 @@ export default function DhikrlyProPipelinePage() {
   return (
     <div className="min-h-dvh text-[var(--app-ink)]">
       <AppShell active="pro" dark={dark} onToggleDark={() => setDark((v) => !v)}>
-        <div className="mx-auto w-[min(calc(100%-2rem),72rem)] px-2 py-6 sm:py-8 lg:px-4 space-y-8">
-          {/* Hero Section */}
+        <div className="mx-auto w-[min(calc(100%-2rem),72rem)] px-2 py-6 sm:py-8 lg:px-4 space-y-10">
+          {/* Header */}
           <header className="relative overflow-hidden rounded-3xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 via-emerald-950/20 to-transparent p-6 sm:p-10 text-center sm:text-left">
             <div className="absolute -top-20 -right-20 h-64 w-64 rounded-full bg-amber-400/10 blur-3xl pointer-events-none" />
             <div className="absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-emerald-400/10 blur-3xl pointer-events-none" />
@@ -287,16 +283,16 @@ export default function DhikrlyProPipelinePage() {
             <div className="relative z-10 flex flex-col sm:flex-row items-center sm:items-start justify-between gap-6">
               <div className="space-y-3 max-w-2xl">
                 <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/40 bg-amber-500/20 px-3.5 py-1 text-xs font-black uppercase tracking-wider text-amber-800 dark:text-amber-300">
-                  <Construction className="h-4 w-4 animate-bounce" />
-                  <span>UNDER ACTIVE DEVELOPMENT · PIPELINE ROADMAP</span>
+                  <Crown className="h-4 w-4" />
+                  <span>DHIKRLY PRO · MEMBERSHIP & FEATURE PLANS</span>
                 </div>
 
                 <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-[var(--app-ink)] font-serif">
-                  Dhikrly Pro <span className="text-amber-600 dark:text-amber-400 font-sans">Pipeline</span>
+                  Elevate Your <span className="text-amber-600 dark:text-amber-400 font-sans">Spiritual Journey</span>
                 </h1>
 
                 <p className="text-sm sm:text-base text-[var(--app-muted)] leading-relaxed">
-                  We are building the next generation of spiritual intelligence, AI Quran memorization coaching, and zero-knowledge encrypted cloud sync. Explore our open roadmap and test early builds.
+                  Support sustainable, ad-free Islamic software. Unlock AI Quran memorization coaching, encrypted multi-device sync, studio soundscapes, and sponsor a student of knowledge.
                 </p>
 
                 <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 pt-2">
@@ -306,8 +302,17 @@ export default function DhikrlyProPipelinePage() {
                     className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-amber-600 via-amber-500 to-emerald-700 px-5 py-3 text-xs font-black text-white shadow-lg shadow-amber-900/15 hover:brightness-110 active:scale-95 transition-all"
                   >
                     <Crown className="h-4 w-4" />
-                    <span>{isPro ? `Pro Preview Active (${tier.toUpperCase()})` : 'Preview Pro Modal & Vouchers'}</span>
+                    <span>{isPro ? `Pro Preview Active (${tier.toUpperCase()})` : 'Open Pro Modal & Plans'}</span>
                   </button>
+
+                  <Link
+                    href="/pipeline"
+                    className="inline-flex items-center gap-2 rounded-2xl border border-[var(--app-line)] bg-[var(--app-surface)] px-5 py-3 text-xs font-bold text-[var(--app-ink)] hover:border-amber-500/40 transition-colors no-underline"
+                  >
+                    <Layers className="h-4 w-4 text-amber-500" />
+                    <span>Engineering Pipeline (Native Apps & Backend)</span>
+                    <ArrowRight className="h-3 w-3" />
+                  </Link>
 
                   <a
                     href="https://buymeacoffee.com/nazrulislambhat"
@@ -316,21 +321,23 @@ export default function DhikrlyProPipelinePage() {
                     className="inline-flex items-center gap-2 rounded-2xl border border-amber-500/40 bg-[#FFDD00]/25 px-5 py-3 text-xs font-bold text-amber-950 dark:bg-amber-400/20 dark:text-amber-200 hover:bg-[#FFDD00]/40 transition-colors shadow-xs no-underline"
                   >
                     <Coffee className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-                    <span>Support Development</span>
+                    <span>Buy me a coffee</span>
                   </a>
                 </div>
               </div>
 
               {/* Status Badge Box */}
-              <div className="rounded-2xl border border-[var(--app-line)] bg-[var(--app-surface)] p-5 shadow-sm text-center sm:text-right shrink-0 min-w-[240px]">
+              <div className="rounded-2xl border border-[var(--app-line)] bg-[var(--app-surface)] p-5 shadow-sm text-center sm:text-right shrink-0 min-w-[240px] space-y-2">
                 <div className="flex items-center justify-center sm:justify-end gap-2 text-xs font-bold text-amber-700 dark:text-amber-300">
-                  <Hammer className="h-4 w-4" />
-                  <span>Engineering Status</span>
+                  <Construction className="h-4 w-4" />
+                  <span>Pro Feature Preview</span>
                 </div>
-                <p className="mt-1 text-2xl font-black text-emerald-800 dark:text-emerald-300">Phase 1 Active</p>
-                <p className="text-xs text-[var(--app-muted)] mt-0.5">Payment checkout disabled during preview</p>
-                <div className="mt-3 pt-3 border-t border-[var(--app-line)] text-[11px] text-[var(--app-muted)]">
-                  Active Testers Voucher: <span className="font-mono font-bold text-amber-600 dark:text-amber-400">TESTPRO</span>
+                <p className="text-2xl font-black text-emerald-800 dark:text-emerald-300">
+                  {isPro ? `${tier.toUpperCase()} Active` : 'Preview Phase'}
+                </p>
+                <p className="text-xs text-[var(--app-muted)]">Checkouts are simulated for beta testing</p>
+                <div className="pt-2 border-t border-[var(--app-line)] text-[11px] text-[var(--app-muted)]">
+                  Active Testers Code: <span className="font-mono font-bold text-amber-600 dark:text-amber-400">TESTPRO</span>
                 </div>
               </div>
             </div>
@@ -352,7 +359,7 @@ export default function DhikrlyProPipelinePage() {
                   </span>
                 </div>
                 <h2 className="text-lg sm:text-xl font-bold text-[var(--app-ink)]">
-                  Obligatory Worship is 100% Free Forever. Zero Ads. Zero Compromise.
+                  Obligatory Worship is 100% Free Forever. Zero Ads. Zero Tracking.
                 </h2>
                 <p className="text-xs sm:text-sm text-[var(--app-muted)] leading-relaxed">
                   We believe no Muslim should ever have their fard salah, Qibla compass, complete Holy Quran text, or basic Hisn al-Muslim adhkār interrupted by an advertisement, paywall, or data tracking. Dhikrly Pro is strictly reserved for high-compute infrastructure (voice AI model inference, multi-device cloud replication) and funds a 1-for-1 waqf scholarship for students of knowledge worldwide.
@@ -361,22 +368,72 @@ export default function DhikrlyProPipelinePage() {
             </div>
           </section>
 
-          {/* Pipeline Features Grid */}
-          <section className="space-y-5" aria-labelledby="pipeline-features-title">
+          {/* Pro Subscription Tiers Preview */}
+          <section className="space-y-4" aria-labelledby="pricing-title">
+            <div className="text-center sm:text-left">
+              <h2 id="pricing-title" className="text-2xl font-black tracking-tight">
+                Dhikrly Pro Membership Plans
+              </h2>
+              <p className="text-xs text-[var(--app-muted)] mt-0.5">
+                Simple, transparent pricing. Every plan includes all current and upcoming Pro features.
+              </p>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-3">
+              {PRO_TIERS.map((t) => (
+                <div
+                  key={t.id}
+                  className={`relative flex flex-col justify-between rounded-3xl border p-6 transition-all ${
+                    t.highlight
+                      ? 'border-amber-500/50 bg-amber-500/10 ring-2 ring-amber-400/30'
+                      : 'border-[var(--app-line)] bg-[var(--app-surface)]'
+                  }`}
+                >
+                  <div className="space-y-3">
+                    <span className="inline-block rounded-full bg-amber-500/20 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-amber-800 dark:text-amber-300">
+                      {t.badge}
+                    </span>
+                    <h3 className="text-lg font-bold text-[var(--app-ink)]">{t.title}</h3>
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-3xl font-extrabold text-emerald-800 dark:text-emerald-300">{t.price}</span>
+                      <span className="text-xs text-[var(--app-muted)]">{t.period}</span>
+                    </div>
+                    <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-400">{t.subtext}</p>
+                    <p className="text-xs text-[var(--app-muted)] leading-relaxed pt-1 border-t border-[var(--app-line)]">
+                      {t.description}
+                    </p>
+                  </div>
+
+                  <div className="pt-4 mt-4 border-t border-[var(--app-line)]">
+                    <button
+                      type="button"
+                      onClick={() => setShowModal(true)}
+                      className="w-full rounded-2xl bg-gradient-to-r from-amber-600 to-amber-700 px-4 py-2.5 text-xs font-bold text-white shadow-xs hover:brightness-110 active:scale-95 transition-all"
+                    >
+                      <span>Preview {t.title}</span>
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* Pro Features Grid */}
+          <section className="space-y-5" aria-labelledby="pro-features-title">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <h2 id="pipeline-features-title" className="text-2xl font-black tracking-tight">
-                  Features in Development
+                <h2 id="pro-features-title" className="text-2xl font-black tracking-tight">
+                  Planned Dhikrly Pro Features
                 </h2>
                 <p className="text-xs text-[var(--app-muted)] mt-0.5">
-                  Deep-dive into each planned feature and its architectural specifications.
+                  Deep-dive into each planned Pro feature and what makes it special.
                 </p>
               </div>
 
               {/* Category Filter Tabs */}
               <div className="flex flex-wrap gap-1.5 p-1 rounded-2xl border border-[var(--app-line)] bg-[var(--app-surface)] text-xs font-bold">
                 {[
-                  { id: 'all', label: 'All (7)' },
+                  { id: 'all', label: 'All Pro Features (7)' },
                   { id: 'ai', label: 'AI & Hifdh' },
                   { id: 'sync', label: 'Cloud Sync' },
                   { id: 'audio', label: 'Soundscapes' },
@@ -465,54 +522,6 @@ export default function DhikrlyProPipelinePage() {
             </div>
           </section>
 
-          {/* Roadmap Timeline */}
-          <section className="rounded-3xl border border-[var(--app-line)] bg-[var(--app-surface)] p-6 sm:p-8 space-y-6" aria-labelledby="roadmap-title">
-            <div className="flex items-center gap-3">
-              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400">
-                <Calendar className="h-5 w-5" />
-              </span>
-              <div>
-                <h2 id="roadmap-title" className="text-xl sm:text-2xl font-black tracking-tight">
-                  Development Milestones (2026)
-                </h2>
-                <p className="text-xs text-[var(--app-muted)]">
-                  Our quarterly engineering rollout target for Dhikrly Pro.
-                </p>
-              </div>
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {ROADMAP_PHASES.map((p, idx) => (
-                <div
-                  key={idx}
-                  className={`rounded-2xl border p-4 flex flex-col justify-between ${
-                    idx === 0
-                      ? 'border-emerald-500/50 bg-emerald-500/5 ring-1 ring-emerald-500/20'
-                      : 'border-[var(--app-line)] bg-black/[0.02] dark:bg-white/[0.02]'
-                  }`}
-                >
-                  <div className="space-y-2">
-                    <span className="inline-block text-[10px] font-black uppercase tracking-wider text-amber-700 dark:text-amber-400">
-                      {p.phase}
-                    </span>
-                    <h3 className="font-bold text-sm text-[var(--app-ink)]">{p.title}</h3>
-                    <span className="inline-block rounded-full bg-black/5 dark:bg-white/10 px-2 py-0.5 text-[9px] font-bold text-[var(--app-muted)]">
-                      {p.status}
-                    </span>
-                    <ul className="space-y-1.5 pt-2 text-[11px] text-[var(--app-muted)]">
-                      {p.items.map((it, i) => (
-                        <li key={i} className="flex items-start gap-1.5">
-                          <span className="text-emerald-600 dark:text-emerald-400 font-bold">·</span>
-                          <span>{it}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-
           {/* Interactive Testing Voucher Playground */}
           <section className="rounded-3xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 via-emerald-500/5 to-transparent p-6 sm:p-8 space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -573,6 +582,30 @@ export default function DhikrlyProPipelinePage() {
             )}
           </section>
 
+          {/* Architecture Redirect Banner */}
+          <section className="rounded-3xl border border-[var(--app-line)] bg-[var(--app-surface)] p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-300">
+                <Layers className="h-4 w-4" />
+                <span>Engineering & Mobile Pipeline</span>
+              </div>
+              <h2 className="text-lg font-bold text-[var(--app-ink)]">
+                Looking for our Native Apps (iOS, Android, Mac) & Backend Architecture?
+              </h2>
+              <p className="text-xs text-[var(--app-muted)]">
+                We maintain a dedicated technical roadmap for native mobile engineering, Go/Rust microservices, and Whisper speech clusters.
+              </p>
+            </div>
+
+            <Link
+              href="/pipeline"
+              className="inline-flex items-center gap-2 rounded-2xl bg-emerald-800 text-white dark:bg-emerald-400 dark:text-emerald-950 px-5 py-3 text-xs font-bold hover:brightness-110 shrink-0 no-underline"
+            >
+              <span>Explore /pipeline</span>
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </section>
+
           {/* FAQs */}
           <section className="rounded-3xl border border-[var(--app-line)] bg-[var(--app-surface)] p-6 sm:p-8 space-y-6" aria-labelledby="faq-title">
             <div className="flex items-center gap-3">
@@ -596,31 +629,6 @@ export default function DhikrlyProPipelinePage() {
                   <p className="text-xs text-[var(--app-muted)] leading-relaxed">{faq.a}</p>
                 </div>
               ))}
-            </div>
-          </section>
-
-          {/* Support Khidmah CTA Card */}
-          <section className="rounded-3xl border border-amber-500/30 bg-gradient-to-r from-amber-500/15 via-emerald-500/10 to-amber-500/5 p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-6 text-center sm:text-left">
-            <div className="space-y-1.5 max-w-xl">
-              <h2 className="text-xl font-black text-[var(--app-ink)]">
-                Want to Support Dhikrly’s Development Today?
-              </h2>
-              <p className="text-xs sm:text-sm text-[var(--app-muted)] leading-relaxed">
-                While Pro billing is under active development, you can help cover our cloud database, server bandwidth, and continuous improvements by buying a coffee.
-              </p>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-3 shrink-0">
-              <a
-                href="https://buymeacoffee.com/nazrulislambhat"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-2xl bg-[#FFDD00] hover:bg-[#FFDD00]/90 text-stone-950 px-6 py-3.5 text-xs font-extrabold shadow-md transition-all active:scale-95 no-underline"
-              >
-                <Coffee className="h-4 w-4" />
-                <span>Buy me a coffee on buymeacoffee.com</span>
-                <ExternalLink className="h-3 w-3 opacity-60" />
-              </a>
             </div>
           </section>
         </div>

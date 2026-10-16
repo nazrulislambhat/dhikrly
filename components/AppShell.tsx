@@ -11,9 +11,11 @@ import {
   Coffee,
   Compass,
   Crown,
+  Cpu,
   Headphones,
   HeartHandshake,
   Landmark,
+  Layers,
   LineChart,
   Moon,
   MoonStar,
@@ -73,7 +75,9 @@ const moreDrawerItems = [
   { href: '/ambient', label: 'Ambient Focus', desc: 'Islamic soundscapes & dhikr breathing', section: 'ambient', Icon: Headphones },
   { href: '/insights', label: 'Spiritual Insights', desc: 'Daily prayer trends & spiritual habits', section: 'insights', Icon: LineChart },
   { href: '/adhkar', label: 'Adhkār Library', desc: 'Fortress of the Muslim authentic collection', section: 'adhkar', Icon: Sparkles },
-  { href: '/pro', label: 'Dhikrly Pro Roadmap', desc: 'Upcoming AI features, cloud sync & waqf pipeline', section: 'pro', Icon: Crown },
+  { href: '/pro', label: 'Dhikrly Pro Plans', desc: 'AI Hifdh coach, cloud sync & student waqf', section: 'pro', Icon: Crown },
+  { href: '/pipeline', label: 'Engineering Pipeline', desc: 'Native apps (iOS, Android, Mac) & backend plan', section: 'pipeline', Icon: Layers },
+  { href: '/tech', label: 'Tech Stack & APIs', desc: 'Open-source libraries, APIs, and architecture', section: 'tech', Icon: Cpu },
   { href: '/settings', label: 'Settings & Profile', desc: 'Account sync, calculation methods & sound', section: 'settings', Icon: UserRound },
 ];
 
@@ -212,7 +216,7 @@ export default function AppShell({
                     <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
                       Explore Dhikrly
                     </span>
-                    <span className="text-[10px] text-stone-400 font-medium">14 Hubs & Pro</span>
+                    <span className="text-[10px] text-stone-400 font-medium">16 Hubs & Plans</span>
                   </div>
 
                   <div className="grid grid-cols-2 gap-1 max-h-[24rem] overflow-y-auto p-0.5">
