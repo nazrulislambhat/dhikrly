@@ -1,6 +1,25 @@
 {
-  "current": "2.0",
+  "current": "2.1",
   "releases": [
+    {
+      "version": "2.1",
+      "date": "2026-10-16",
+      "title": "Qur’an Tracker, Offline Surah Checklists & Enhanced Background Push",
+      "added": [
+        "Qur’an Reading Tracker — log exact Surahs and Ayahs read with reflections, timestamps, and quick jump buttons",
+        "Offline Surahs Checklist — mark completed offline Surahs with batch presets (+ First 5 Surahs, + Juz 30)",
+        "Spiritual Insights Qur’an Analytics — interactive Khatm progress bar, 114 Surahs status grid, and daily Ayahs recitation bar chart",
+        "New Qur’an Reciter and Khatm milestones in the Spiritual Badges system",
+        "Quick 'Track Reading' button in the Qur’an reader toolbar and daily progress section",
+        "Supabase migration helper in Notification Settings with 1-click SQL copy and step-by-step setup"
+      ],
+      "improved": [
+        "Redesigned PWA Web Push notifications with brand icons, gentle Islamic vibration patterns, and action buttons",
+        "Authentic Arabic morning and evening du’ā snippets in push reminders",
+        "Non-destructive multi-device sync for Qur’an tracking logs without database schema dependencies"
+      ],
+      "removed": []
+    },
     {
       "version": "2.0",
       "date": "2026-10-16",
