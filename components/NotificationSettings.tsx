@@ -19,7 +19,34 @@ const DEFAULT_SETTINGS: NotifSettings = {
 ───────────────────────────────────────────────────────────────────── */
 let notifInterval: ReturnType<typeof setInterval> | null = null;
 
-function checkAndFireInApp(settings: NotifSettings) {
+export async function fireNotification(title: string, options: NotificationOptions) {
+  if (typeof window === 'undefined' || !('Notification' in window)) return false;
+  if (Notification.permission !== 'granted') return false;
+
+  // 1. Try Service Worker showNotification (standard for Chrome, Android, PWAs, macOS)
+  if ('serviceWorker' in navigator) {
+    try {
+      const reg = await navigator.serviceWorker.ready;
+      if (reg && 'showNotification' in reg) {
+        await reg.showNotification(title, options);
+        return true;
+      }
+    } catch (e) {
+      console.warn('[Notifications] Service worker showNotification failed:', e);
+    }
+  }
+
+  // 2. Fallback to standard Notification constructor
+  try {
+    new Notification(title, options);
+    return true;
+  } catch (e) {
+    console.warn('[Notifications] Notification constructor fallback failed:', e);
+    return false;
+  }
+}
+
+export async function checkAndFireInApp(settings: NotifSettings) {
   if (typeof window === 'undefined' || !('Notification' in window)) return;
   if (Notification.permission !== 'granted') return;
 
@@ -29,34 +56,40 @@ function checkAndFireInApp(settings: NotifSettings) {
   const fired = load<Record<string, boolean>>(firedKey, {});
   const nowMinutes = now.getHours() * 60 + now.getMinutes();
 
-  const check = (label: string, timeStr: string, enabled: boolean, prop: string) => {
+  const check = async (label: string, timeStr: string, enabled: boolean, prop: string) => {
     if (!enabled || fired[prop]) return;
     const [h, m] = timeStr.split(':').map(Number);
     const diff = nowMinutes - (h * 60 + m);
-    if (diff >= 0 && diff < 5) {
-      try {
-        new Notification('        Daily Adhkār Reminder', {
-          body: `Time for your ${label} adhkār & du'ā`,
-          icon: '/icon-192.png',
-          tag: `adhkar-${prop}`,
-        });
-      } catch { /* ignore */ }
-      fired[prop] = true;
-      save(firedKey, fired);
+    // Fire if within 15 minutes of scheduled time
+    if (diff >= 0 && diff < 15) {
+      const shown = await fireNotification('Daily Adhkār Reminder 🌙', {
+        body: `Time for your ${label.toLowerCase()} adhkār & duʿā`,
+        icon: '/icon-192.png',
+        badge: '/icon-192.png',
+        tag: `adhkar-${prop}`,
+      });
+      if (shown) {
+        fired[prop] = true;
+        save(firedKey, fired);
+      }
     }
   };
 
-  check('Morning', settings.morningTime, settings.morningEnabled, 'morning');
-  check('Evening', settings.eveningTime, settings.eveningEnabled, 'evening');
+  await check('Morning', settings.morningTime, settings.morningEnabled, 'morning');
+  await check('Evening', settings.eveningTime, settings.eveningEnabled, 'evening');
 }
 
-export function scheduleNotifications(settings: NotifSettings): void {
+export function scheduleNotifications(settings?: NotifSettings): void {
   if (typeof window === 'undefined') return;
-  if (notifInterval) { clearInterval(notifInterval); notifInterval = null; }
-  if (!settings.morningEnabled && !settings.eveningEnabled) return;
+  const current = settings ?? load<NotifSettings>(NOTIFICATION_KEY, DEFAULT_SETTINGS);
+  if (notifInterval) {
+    clearInterval(notifInterval);
+    notifInterval = null;
+  }
+  if (!current.morningEnabled && !current.eveningEnabled) return;
   if (!('Notification' in window) || Notification.permission !== 'granted') return;
-  checkAndFireInApp(settings);
-  notifInterval = setInterval(() => checkAndFireInApp(settings), 60_000);
+  void checkAndFireInApp(current);
+  notifInterval = setInterval(() => void checkAndFireInApp(current), 30_000);
 }
 
 /* ── Toggle switch sub-component ── */
@@ -109,6 +142,7 @@ export default function NotificationSettings({
   const [permission, setPermission] = useState<NotificationPermission>('default');
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [errorMsg, setErrorMsg] = useState('');
+  const [testSent, setTestSent] = useState(false);
   const { isSubscribed, isLoading, subscribe, unsubscribe } = usePushSubscription();
 
   useEffect(() => {
@@ -123,38 +157,74 @@ export default function NotificationSettings({
     setPermission(result);
   };
 
+  const handleTestNotification = async () => {
+    if (permission !== 'granted') {
+      await requestPermission();
+    }
+    const sent = await fireNotification('Daily Adhkār Reminder 🌙', {
+      body: "Bismillah! This is a test reminder. Your notifications are working perfectly.",
+      icon: '/icon-192.png',
+      badge: '/icon-192.png',
+      tag: 'adhkar-test',
+    });
+    if (sent) {
+      setTestSent(true);
+      setTimeout(() => setTestSent(false), 3000);
+    } else {
+      setErrorMsg('Could not display test notification. Please check browser permissions.');
+    }
+  };
+
   const handleSave = useCallback(async () => {
     setStatus('saving');
     setErrorMsg('');
 
-    // Always save locally
+    // Always save locally and schedule in-browser
     save(NOTIFICATION_KEY, settings);
     scheduleNotifications(settings);
 
     const anyEnabled = settings.morningEnabled || settings.eveningEnabled;
 
-    try {
-      if (permission === 'granted' && anyEnabled) {
-        // Get user's timezone automatically
-        const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-        const result = await subscribe(settings, userId, timezone);
-        if (!result.ok) {
-          setStatus('error');
-          setErrorMsg(result.error ?? 'Could not register push notification');
-          return;
-        }
-      } else if (!anyEnabled && isSubscribed) {
+    if (!anyEnabled) {
+      // Disabling notifications
+      try {
         await unsubscribe();
+      } catch (err) {
+        console.warn('Unsubscribe warning:', err);
+      }
+      setStatus('saved');
+      setTimeout(() => setStatus('idle'), 2500);
+      return;
+    }
+
+    if (permission !== 'granted') {
+      setStatus('saved');
+      setTimeout(() => setStatus('idle'), 2500);
+      return;
+    }
+
+    try {
+      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const result = await subscribe(settings, userId, timezone);
+      if (!result.ok) {
+        setStatus('saved');
+        if (result.error?.includes('push_subscriptions')) {
+          setErrorMsg('Local reminders saved & active! (Background push requires running the SQL migration in Supabase).');
+        } else {
+          setErrorMsg(result.error ?? 'Local reminders saved. Cloud push registration had an issue.');
+        }
+        return;
       }
     } catch (error) {
-      setStatus('error');
-      setErrorMsg(error instanceof Error ? error.message : 'Could not save notification settings.');
+      console.warn('Push registration warning:', error);
+      setStatus('saved');
+      setErrorMsg('Local reminders saved. Cloud push registration had an issue.');
       return;
     }
 
     setStatus('saved');
     setTimeout(() => setStatus('idle'), 2500);
-  }, [settings, permission, userId, subscribe, unsubscribe, isSubscribed]);
+  }, [settings, permission, userId, subscribe, unsubscribe]);
 
   /* ── Styles ── */
   const overlay = dark ? 'bg-black/65 backdrop-blur-md' : 'bg-stone-900/45 backdrop-blur-md';
@@ -267,37 +337,63 @@ export default function NotificationSettings({
           )}
         </div>
 
-        {/* Error */}
-        {status === 'error' && (
-          <div className={`mb-4 rounded-xl border px-3 py-2 text-[12px] ${dark ? 'border-red-500/30 bg-red-500/10 text-red-400' : 'border-red-200 bg-red-50 text-red-600'}`}>
+        {/* Notice/Warning/Error */}
+        {errorMsg && (
+          <div
+            className={`mb-4 rounded-xl border px-3 py-2 text-[11px] leading-relaxed ${
+              status === 'error'
+                ? dark
+                  ? 'border-red-500/30 bg-red-500/10 text-red-400'
+                  : 'border-red-200 bg-red-50 text-red-600'
+                : dark
+                  ? 'border-amber-500/30 bg-amber-500/10 text-amber-300'
+                  : 'border-amber-200 bg-amber-50 text-amber-700'
+            }`}
+          >
             {errorMsg}
           </div>
         )}
 
         {/* Info */}
-        <p className={`mb-4 text-[10px] leading-relaxed ${dark ? 'text-stone-600' : 'text-stone-400'}`}>
-          Reminders are sent by the server at your scheduled time, so they arrive
-          even when the app is closed. Your timezone is detected automatically.
+        <p className={`mb-4 text-[10px] leading-relaxed ${dark ? 'text-stone-500' : 'text-stone-400'}`}>
+          In-app reminders fire while using Dhikrly. Background push delivers reminders even when the app is closed.
         </p>
 
-        {/* Save button */}
-        <button
-          onClick={handleSave}
-          disabled={permission === 'denied' || status === 'saving' || isLoading}
-          className={`w-full rounded-xl py-2.5 text-sm font-medium transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed ${
-            status === 'saved'
-              ? dark ? 'bg-emerald-500/20 text-emerald-400' : 'bg-emerald-100 text-emerald-700'
-              : dark
-                ? 'bg-amber-400/20 text-amber-300 hover:bg-amber-400/30'
-                : 'bg-amber-500 text-white hover:bg-amber-600'
-          }`}
-        >
-          {status === 'saving' || isLoading
-            ? 'Saving…'
-            : status === 'saved'
-              ? 'Saved & Scheduled'
-              : 'Save & Schedule'}
-        </button>
+        {/* Action buttons */}
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={handleTestNotification}
+            disabled={status === 'saving'}
+            className={`flex-1 rounded-xl py-2.5 text-xs font-medium border transition-all active:scale-[0.98] ${
+              testSent
+                ? dark ? 'border-emerald-500/40 bg-emerald-500/20 text-emerald-300' : 'border-emerald-300 bg-emerald-50 text-emerald-700'
+                : dark
+                  ? 'border-white/10 bg-white/5 text-stone-300 hover:bg-white/10'
+                  : 'border-stone-200 bg-stone-50 text-stone-700 hover:bg-stone-100'
+            }`}
+          >
+            {testSent ? '✓ Sent!' : '🔔 Send Test'}
+          </button>
+
+          <button
+            onClick={handleSave}
+            disabled={permission === 'denied' || status === 'saving' || isLoading}
+            className={`flex-[2] rounded-xl py-2.5 text-xs font-medium transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed ${
+              status === 'saved'
+                ? dark ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-emerald-100 text-emerald-700'
+                : dark
+                  ? 'bg-amber-400/20 text-amber-300 hover:bg-amber-400/30 border border-amber-400/30'
+                  : 'bg-amber-500 text-white hover:bg-amber-600'
+            }`}
+          >
+            {status === 'saving' || isLoading
+              ? 'Saving…'
+              : status === 'saved'
+                ? '✓ Saved & Scheduled'
+                : 'Save & Schedule'}
+          </button>
+        </div>
       </div>
     </div>
   );

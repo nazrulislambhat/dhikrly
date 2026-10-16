@@ -19,15 +19,16 @@ import {
   CircleDot,
 } from 'lucide-react';
 
+import { useServiceWorker } from '@/hooks/useServiceWorker';
+import { scheduleNotifications } from '@/components/NotificationSettings';
+
 export type AppSection =
   | 'adhkar'
-  | 'adhkaar'
   | 'salah'
   | 'quran'
   | 'tasbeeh'
   | 'qibla'
   | 'ramadan'
-  | 'ramadhan'
   | 'masjids'
   | 'ambient'
   | 'insights'
@@ -77,11 +78,24 @@ export default function AppShell({
   onToggleDark,
   children,
 }: AppShellProps) {
+  useServiceWorker();
+
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const muted = dark ? 'text-stone-400' : 'text-stone-500';
   const surface = dark
     ? 'border-white/[0.08] bg-[#14211e]/95'
     : 'border-stone-200/80 bg-white/95';
+
+  useEffect(() => {
+    scheduleNotifications();
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        scheduleNotifications();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => document.removeEventListener('visibilitychange', handleVisibility);
+  }, []);
 
   useEffect(() => {
     document
@@ -101,7 +115,6 @@ export default function AppShell({
   const isMoreActive = [
     'qibla',
     'ramadan',
-    'ramadhan',
     'masjids',
     'ambient',
     'insights',

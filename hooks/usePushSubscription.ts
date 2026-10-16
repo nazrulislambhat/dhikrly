@@ -130,26 +130,27 @@ export function usePushSubscription() {
   );
 
   const unsubscribe = useCallback(async (): Promise<void> => {
-    if (!('serviceWorker' in navigator)) return;
     setIsLoading(true);
     try {
-      const reg = await navigator.serviceWorker.ready;
-      const sub = await reg.pushManager.getSubscription();
-      if (sub) {
-        const response = await fetch('/api/push/unsubscribe', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ endpoint: sub.endpoint }),
-        });
-        if (!response.ok) throw new Error(await responseError(response));
-        if (!(response.headers.get('content-type') ?? '').includes('application/json')) {
-          throw new Error(await responseError(response));
+      if ('serviceWorker' in navigator) {
+        const reg = await navigator.serviceWorker.ready;
+        const sub = await reg.pushManager.getSubscription();
+        if (sub) {
+          try {
+            await fetch('/api/push/unsubscribe', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ endpoint: sub.endpoint }),
+            });
+          } catch (e) {
+            console.warn('Could not reach push unsubscribe endpoint:', e);
+          }
+          try {
+            await sub.unsubscribe();
+          } catch (e) {
+            console.warn('Failed to unsubscribe from push manager:', e);
+          }
         }
-        const result = (await response.json()) as { ok?: boolean };
-        if (result.ok !== true) {
-          throw new Error('Notification service did not confirm the cancellation.');
-        }
-        await sub.unsubscribe();
       }
       setIsSubscribed(false);
     } finally {
