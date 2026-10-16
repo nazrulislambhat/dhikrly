@@ -8,6 +8,7 @@ import {
   ChevronDown,
   CircleDot,
   Clock3,
+  Coffee,
   Compass,
   Headphones,
   HeartHandshake,
@@ -233,6 +234,18 @@ export default function AppShell({
                       );
                     })}
                   </div>
+
+                  <div className="mt-2 pt-2 border-t border-[var(--app-line)]">
+                    <a
+                      href="https://buymeacoffee.com/nazrulislambhat"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center gap-2 w-full rounded-xl py-2 px-3 text-xs font-bold text-amber-950 bg-[#FFDD00]/25 hover:bg-[#FFDD00]/40 dark:bg-amber-400/15 dark:text-amber-200 transition-colors shadow-xs no-underline"
+                    >
+                      <Coffee className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
+                      <span>Support Dhikrly · Buy me a coffee</span>
+                    </a>
+                  </div>
                 </div>
               )}
             </div>
@@ -381,6 +394,19 @@ export default function AppShell({
                   </Link>
                 );
               })}
+            </div>
+
+            {/* Support Dhikrly Buy Me A Coffee */}
+            <div className="mt-4 pt-3 border-t border-[var(--app-line)]">
+              <a
+                href="https://buymeacoffee.com/nazrulislambhat"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-2 w-full rounded-2xl py-3 px-4 text-xs font-bold text-amber-950 bg-[#FFDD00]/25 hover:bg-[#FFDD00]/40 dark:bg-amber-400/15 dark:text-amber-200 transition-colors shadow-xs no-underline"
+              >
+                <Coffee className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                <span>Support Dhikrly · Buy me a coffee</span>
+              </a>
             </div>
           </div>
         </div>
