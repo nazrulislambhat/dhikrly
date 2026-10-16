@@ -68,6 +68,9 @@ const desktopNavItems = [
 ];
 
 const moreDrawerItems = [
+  { href: '/names', label: '99 Names of Allah', desc: 'Asmā’ al-Ḥusnā, audio pronunciation & Hifdh tracker', section: 'names', Icon: Sparkles },
+  { href: '/tadabbur', label: 'Situational Du‘ā & Tadabbur', desc: 'Du‘ās by emotion, anxiety & life situation', section: 'tadabbur', Icon: BookOpen },
+  { href: '/umrah', label: 'Hajj & ‘Umrah Companion', desc: 'Live Ṭawāf & Sa‘ī counters with Talbiyah player', section: 'umrah', Icon: Compass },
   { href: '/sunnah', label: 'Daily Sunnah & Player', desc: 'Revive daily prophetic traditions & notification player', section: 'sunnah', Icon: HeartHandshake },
   { href: '/zakat', label: 'Zakāt & Nisāb', desc: 'Live gold/silver Nisāb & wealth assessment', section: 'zakat', Icon: Scale },
   { href: '/halal', label: 'Halal Food Scanner', desc: 'Scan barcodes & check E-number additives', section: 'halal', Icon: ShieldCheck },
