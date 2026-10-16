@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import {
   AlertCircle,
+  ArrowRight,
   ArrowUpRight,
   BellRing,
   BookOpen,
@@ -14,6 +15,7 @@ import {
   Clock,
   Clock3,
   Compass,
+  Construction,
   Crown,
   Download,
   Flame,
@@ -463,6 +465,10 @@ export default function SettingsPage() {
                     <Crown className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
                     <span>{isPro ? `Dhikrly Pro · ${proTier.toUpperCase()}` : 'Dhikrly Pro Membership'}</span>
                   </span>
+                  <span className="inline-flex items-center gap-1 rounded-full border border-amber-500/30 bg-amber-500/20 px-2.5 py-0.5 text-[10px] font-bold text-amber-800 dark:text-amber-300">
+                    <Construction className="h-3 w-3" />
+                    Under Active Development
+                  </span>
                   {isPro && proStatus.expiresAt && (
                     <span className="text-xs text-[var(--app-muted)]">
                       Renews / Valid until {new Date(proStatus.expiresAt).toLocaleDateString()}
@@ -482,7 +488,7 @@ export default function SettingsPage() {
                   <p className="mt-1 text-xs sm:text-sm text-[var(--app-muted)] max-w-xl leading-relaxed">
                     {isPro
                       ? 'Jazakallahu Khayran! Your support keeps core Quran, Salah, and Adhkar 100% free for millions of Muslims, and funds a 1-for-1 waqf membership for students of knowledge.'
-                      : 'Unlock AI Quran memorization coaching, encrypted multi-device cloud sync, studio ambient mixer, and portfolio zakat screening while sponsoring a student of knowledge.'}
+                      : 'Features are currently in our development pipeline. You can explore the planned roadmap on /pro or test preview access using our testing vouchers.'}
                   </p>
                 </div>
 
@@ -507,13 +513,20 @@ export default function SettingsPage() {
               </div>
 
               <div className="flex flex-col sm:flex-row sm:items-center gap-2.5 shrink-0">
+                <Link
+                  href="/pro"
+                  className="inline-flex items-center justify-center gap-1.5 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-xs font-bold text-emerald-800 dark:text-emerald-300 hover:bg-emerald-500/20 transition-colors no-underline"
+                >
+                  <span>Explore /pro Roadmap</span>
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </Link>
                 <button
                   type="button"
                   onClick={() => setShowProModal(true)}
                   className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-amber-600 via-amber-500 to-emerald-700 px-5 py-3 text-xs font-black text-white shadow-lg shadow-amber-900/10 hover:brightness-110 active:scale-95 transition-all"
                 >
                   <Crown className="h-4 w-4" />
-                  <span>{isPro ? 'Manage Membership' : 'Upgrade to Pro'}</span>
+                  <span>{isPro ? 'Manage Membership' : 'Test Preview'}</span>
                 </button>
                 <button
                   type="button"

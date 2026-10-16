@@ -1,10 +1,13 @@
 'use client';
 
+import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import {
+  ArrowRight,
   Check,
   CheckCircle2,
   Cloud,
+  Construction,
   Crown,
   Headphones,
   HeartHandshake,
@@ -119,6 +122,38 @@ export default function DhikrlyProModal({
 
         {/* Modal Scrollable Body */}
         <div className="flex-1 overflow-y-auto p-5 sm:p-7 space-y-6">
+          {/* Under Active Development Banner */}
+          <div className="rounded-2xl border border-amber-500/40 bg-amber-500/10 p-4 text-xs transition-all">
+            <div className="flex items-start gap-3">
+              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400">
+                <Construction className="h-5 w-5" />
+              </span>
+              <div className="flex-1 space-y-1.5">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="font-extrabold text-amber-900 dark:text-amber-200">
+                    Dhikrly Pro is Under Active Development
+                  </span>
+                  <span className="rounded-full bg-amber-500/25 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-amber-800 dark:text-amber-300">
+                    Feature Pipeline Preview
+                  </span>
+                </div>
+                <p className="text-[11px] text-[var(--app-muted)] leading-relaxed">
+                  These features are currently in development and not yet live. Payments and billing are disabled during this phase. You can explore the full roadmap and pipeline at <strong className="text-[var(--app-ink)]">/pro</strong>, or test early access preview mode with voucher code <code className="font-mono font-bold text-emerald-800 dark:text-emerald-300 bg-black/5 dark:bg-white/10 px-1 py-0.5 rounded">TESTPRO</code>.
+                </p>
+                <div className="pt-1 flex items-center gap-3">
+                  <Link
+                    href="/pro"
+                    onClick={onClose}
+                    className="inline-flex items-center gap-1.5 font-bold text-xs text-emerald-800 dark:text-emerald-300 hover:underline"
+                  >
+                    <span>Explore upcoming features & pipeline on /pro</span>
+                    <ArrowRight className="h-3 w-3" />
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Plan Selector Cards */}
           <div>
             <p className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400 mb-3">
@@ -333,26 +368,38 @@ export default function DhikrlyProModal({
         {/* Bottom CTA Bar */}
         <div className="p-4 sm:p-5 border-t border-[var(--app-line)] bg-[var(--app-surface)] flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
           <div className="text-center sm:text-left">
-            <p className="text-xs font-bold text-[var(--app-ink)]">
-              {selectedPlan === 'annual'
-                ? '7-Day Free Trial · Then $24.99/year'
-                : selectedPlan === 'monthly'
-                  ? '$2.99 / month · Cancel anytime'
-                  : '$49.99 one-time · Access forever'}
-            </p>
-            <p className="text-[10px] text-stone-500 dark:text-stone-400">
-              No contracts. 1-click cancellation anytime in settings.
+            <div className="flex items-center gap-2 justify-center sm:justify-start">
+              <span className="inline-block h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
+              <p className="text-xs font-bold text-[var(--app-ink)]">
+                {selectedPlan === 'annual'
+                  ? 'Annual Patron Pass ($24.99/yr target)'
+                  : selectedPlan === 'monthly'
+                    ? 'Monthly Pass ($2.99/mo target)'
+                    : 'Lifetime Waqf Pass ($49.99 target)'}
+              </p>
+            </div>
+            <p className="text-[10px] text-stone-500 dark:text-stone-400 mt-0.5">
+              Under Development · Checkouts are simulated for testing preview.
             </p>
           </div>
 
-          <div className="flex items-center gap-2 w-full sm:w-auto">
+          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end">
+            <Link
+              href="/pro"
+              onClick={onClose}
+              className="inline-flex items-center justify-center gap-1.5 rounded-2xl border border-[var(--app-line)] px-4 py-3 text-xs font-semibold text-[var(--app-ink)] hover:bg-black/5 dark:hover:bg-white/5 transition-colors no-underline"
+            >
+              <span>View Roadmap</span>
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+
             {isPro && (
               <button
                 type="button"
                 onClick={deactivatePro}
                 className="rounded-xl border border-red-500/30 px-3 py-2.5 text-xs font-semibold text-red-600 hover:bg-red-500/10"
               >
-                Reset to Free
+                Reset
               </button>
             )}
 
@@ -360,7 +407,7 @@ export default function DhikrlyProModal({
               type="button"
               onClick={handleActivate}
               disabled={isActivating}
-              className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-600 to-amber-700 px-6 py-3 text-xs font-extrabold text-stone-950 shadow-md hover:from-amber-400 hover:to-amber-500 active:scale-95 transition-all disabled:opacity-50"
+              className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-600 to-amber-700 px-5 py-3 text-xs font-extrabold text-stone-950 shadow-md hover:from-amber-400 hover:to-amber-500 active:scale-95 transition-all disabled:opacity-50"
             >
               <Crown className="h-4 w-4" />
               <span>
@@ -368,9 +415,7 @@ export default function DhikrlyProModal({
                   ? 'Activating...'
                   : isPro
                     ? `Switch to ${selectedPlan.toUpperCase()}`
-                    : selectedPlan === 'annual'
-                      ? 'Start 7-Day Free Trial'
-                      : `Upgrade to Pro (${selectedPlan.toUpperCase()})`}
+                    : `Test Preview Pass (${selectedPlan.toUpperCase()})`}
               </span>
             </button>
           </div>
