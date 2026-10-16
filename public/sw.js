@@ -3,7 +3,7 @@
    Strategy: Cache-first for static assets, network-first for pages
 ────────────────────────────────────────────────────────────── */
 
-const CACHE_NAME = 'adhkar-v2.2';
+const CACHE_NAME = 'adhkar-v2.3';
 const STATIC_ASSETS = [
   '/',
   '/manifest.json',
