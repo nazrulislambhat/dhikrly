@@ -24,6 +24,15 @@ import AppShell from '@/components/AppShell';
 import QuranTrackerModal from '@/components/QuranTrackerModal';
 import QuranWordModal from '@/components/QuranWordModal';
 import QuranLoopModal from '@/components/QuranLoopModal';
+import { AyahReaderSkeleton, MushafPageSkeleton } from '@/components/Skeleton';
+import {
+  updateMediaMetadata,
+  setMediaPlaybackState,
+  updateMediaPositionState,
+  registerMediaActionHandlers,
+  startBackgroundAudioKeepAlive,
+  stopBackgroundAudioKeepAlive,
+} from '@/lib/mediaSession';
 import { fetchVerseWords, type QuranWord } from '@/lib/quranWbw';
 import { load, save, SETTINGS_KEY } from '@/lib/storage';
 import {
@@ -525,13 +534,46 @@ export default function QuranPage() {
   }, [activeAudio, settings.playbackRate]);
 
   useEffect(() => {
-    if (!activeAudio || !shouldPlay || !audioRef.current) return;
-    void audioRef.current.play().catch((error: unknown) => {
-      console.error('Quran recitation could not be played:', error);
-      setShouldPlay(false);
-      setAudioError('Audio could not be played. Check your connection and try again.');
+    if (!activeAudio || !shouldPlay || !audioRef.current) {
+      setMediaPlaybackState('paused');
+      return;
+    }
+
+    startBackgroundAudioKeepAlive();
+
+    void audioRef.current
+      .play()
+      .then(() => {
+        setMediaPlaybackState('playing');
+      })
+      .catch((error: unknown) => {
+        console.error('Quran recitation could not be played:', error);
+        setShouldPlay(false);
+        setMediaPlaybackState('none');
+        setAudioError('Audio could not be played. Check your connection and try again.');
+      });
+
+    const surahInfo = surahs.find((s) => s.number === activeSurah) || visibleChapter?.surah;
+    const reciterInfo = reciters.find((r) => r.identifier === settings.reciter);
+    updateMediaMetadata({
+      title: `${surahInfo ? surahInfo.englishName : 'Surah'} · Ayah ${activeAyah}`,
+      artist: reciterInfo ? reciterInfo.name : 'Noble Reciter',
+      album: `Qur'an al-Kareem · Surah ${activeSurah}`,
+      artwork: [
+        { src: '/icon-192.png', sizes: '192x192', type: 'image/png' },
+        { src: '/icon-512.png', sizes: '512x512', type: 'image/png' },
+      ],
     });
-  }, [activeAudio, shouldPlay]);
+  }, [
+    activeAudio,
+    activeAyah,
+    activeSurah,
+    reciters,
+    settings.reciter,
+    shouldPlay,
+    surahs,
+    visibleChapter?.surah,
+  ]);
 
   useEffect(() => {
     if (!settingsOpen) return;
@@ -666,6 +708,8 @@ export default function QuranPage() {
 
   const stopPlayback = () => {
     audioRef.current?.pause();
+    stopBackgroundAudioKeepAlive();
+    setMediaPlaybackState('none');
     setActiveAudio('');
     setActiveAyah(null);
     setActiveSurah(null);
@@ -748,7 +792,14 @@ export default function QuranPage() {
     const audio = audioRef.current;
     if (!audio) return;
     setPlaybackTime(audio.currentTime);
-    if (Number.isFinite(audio.duration)) setPlaybackDuration(audio.duration);
+    if (Number.isFinite(audio.duration)) {
+      setPlaybackDuration(audio.duration);
+      updateMediaPositionState({
+        duration: audio.duration,
+        playbackRate: audio.playbackRate,
+        position: audio.currentTime,
+      });
+    }
 
     const verse = playbackVerses.find(
       (item) => item.number === activeAyah && item.surahNumber === activeSurah,
@@ -767,6 +818,55 @@ export default function QuranPage() {
     });
     setActiveWordIndex(wordIndex < 0 ? words.length - 1 : wordIndex);
   }, [activeAyah, activeSurah, playbackVerses]);
+
+  useEffect(() => {
+    if (!activeAudio) return;
+    registerMediaActionHandlers({
+      onPlay: () => {
+        audioRef.current
+          ?.play()
+          .then(() => {
+            setShouldPlay(true);
+            setMediaPlaybackState('playing');
+          })
+          .catch(console.warn);
+      },
+      onPause: () => {
+        audioRef.current?.pause();
+        setShouldPlay(false);
+        setMediaPlaybackState('paused');
+      },
+      onNext: () => {
+        if (playbackVerseIndex >= 0 && playbackVerseIndex < playbackVerses.length - 1) {
+          playVerse(playbackVerses[playbackVerseIndex + 1], true);
+        }
+      },
+      onPrevious: () => {
+        if (playbackVerseIndex > 0) {
+          playVerse(playbackVerses[playbackVerseIndex - 1], true);
+        }
+      },
+      onSeekTo: (details) => {
+        if (audioRef.current && Number.isFinite(details.seekTime)) {
+          audioRef.current.currentTime = details.seekTime;
+        }
+      },
+      onSeekBackward: (offset = 10) => {
+        if (audioRef.current) {
+          audioRef.current.currentTime = Math.max(0, audioRef.current.currentTime - offset);
+        }
+      },
+      onSeekForward: (offset = 10) => {
+        if (audioRef.current) {
+          audioRef.current.currentTime = Math.min(
+            audioRef.current.duration || 0,
+            audioRef.current.currentTime + offset,
+          );
+        }
+      },
+      onStop: stopPlayback,
+    });
+  }, [activeAudio, playbackVerseIndex, playbackVerses, playVerse]);
 
   useEffect(() => {
     if (!shouldPlay) return;
@@ -1462,8 +1562,8 @@ export default function QuranPage() {
               )}
 
               {settings.viewMode === 'reader' && chapterLoading && (
-                <div className={`mb-4 rounded-2xl border p-5 text-center text-sm ${card} ${muted}`} role="status">
-                  Loading this surah and its selected editions…
+                <div className="mb-6" role="status">
+                  <AyahReaderSkeleton count={5} />
                 </div>
               )}
               {settings.viewMode === 'reader' && chapterError && (
@@ -1482,14 +1582,8 @@ export default function QuranPage() {
                   aria-label={`Mushaf page ${mushafPageNumber}`}
                 >
                   {mushafPageLoading && (
-                    <div className={`mx-auto grid min-h-[min(70vh,52rem)] w-[min(100%,44rem)] place-items-center rounded-[1.5rem] border p-6 text-center ${
-                      dark ? 'border-[#496657] bg-[#17251f] text-stone-300' : 'border-[#bdcdb7] bg-[#fffdf6] text-stone-600'
-                    }`} role="status">
-                      <div>
-                        <BookOpenText className={`mx-auto mb-3 h-7 w-7 ${dark ? 'text-emerald-300' : 'text-emerald-800'}`} aria-hidden="true" />
-                        <p className="text-sm font-semibold">Opening page {mushafPageNumber}</p>
-                        <p className={`mt-1 text-xs ${muted}`}>Preparing your reading page…</p>
-                      </div>
+                    <div className="mb-6" role="status">
+                      <MushafPageSkeleton />
                     </div>
                   )}
                   {mushafPageError && (

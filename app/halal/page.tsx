@@ -21,6 +21,7 @@ import {
   XCircle,
 } from 'lucide-react';
 import AppShell from '@/components/AppShell';
+import { HalalScannerSkeleton } from '@/components/Skeleton';
 import { load, SETTINGS_KEY } from '@/lib/storage';
 import {
   COMMON_ADDITIVES,
@@ -655,8 +656,15 @@ export default function HalalScannerPage() {
           )}
         </section>
 
+        {/* Loading Skeleton during Barcode Analysis */}
+        {analyzing && (
+          <div className="mb-8">
+            <HalalScannerSkeleton />
+          </div>
+        )}
+
         {/* Product Scan Result */}
-        {analyzedProduct && (
+        {!analyzing && analyzedProduct && (
           <section className={`${cardClass} mb-8`}>
             <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-6 border-b border-[var(--app-line)]">
               <div>
