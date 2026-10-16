@@ -28,6 +28,7 @@ import SalahHeatmap from '@/components/salah/SalahHeatmap';
 import MasjidFinder from '@/components/salah/MasjidFinder';
 import UserMenu from '@/components/UserMenu';
 import AuthModal from '@/components/AuthModal';
+import { PrayerCardSkeleton } from '@/components/Skeleton';
 
 import type {
   PrayerName,
@@ -369,19 +370,42 @@ export default function SalahPage() {
         {activeTab === 'today' && (
           <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1.25fr)_minmax(17rem,0.75fr)]">
             <section className="space-y-3" aria-label="Prayer times and log">
-              {PRAYERS.map((prayer) => (
-                <PrayerCard
-                  key={prayer}
-                  prayer={prayer}
-                  status={log.prayers[prayer]}
-                  time={prayerTimeMap[prayer]}
-                  timezone={settings.location!.timezone}
-                  isCurrent={current === prayer}
-                  isNext={next === prayer && current !== prayer}
-                  dark={dark}
-                  onStatusChange={(s: PrayerStatus) => updatePrayer(prayer, s)}
-                />
-              ))}
+              {timesLoading ? (
+                <div className="space-y-3">
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <div
+                      key={i}
+                      className={`flex items-center justify-between rounded-2xl border p-4 ${cardBase} animate-pulse`}
+                    >
+                      <div className="flex items-center gap-3.5">
+                        <div className="h-6 w-6 rounded-lg bg-stone-200/70 dark:bg-stone-800/70" />
+                        <div className="space-y-1.5">
+                          <div className="h-4 w-24 rounded bg-stone-200/70 dark:bg-stone-800/70" />
+                          <div className="h-3 w-14 rounded bg-stone-200/50 dark:bg-stone-800/50" />
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="h-5 w-16 rounded-full bg-stone-200/70 dark:bg-stone-800/70" />
+                        <div className="h-8 w-8 rounded-full bg-stone-200/50 dark:bg-stone-800/50" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                PRAYERS.map((prayer) => (
+                  <PrayerCard
+                    key={prayer}
+                    prayer={prayer}
+                    status={log.prayers[prayer]}
+                    time={prayerTimeMap[prayer]}
+                    timezone={settings.location!.timezone}
+                    isCurrent={current === prayer}
+                    isNext={next === prayer && current !== prayer}
+                    dark={dark}
+                    onStatusChange={(s: PrayerStatus) => updatePrayer(prayer, s)}
+                  />
+                ))
+              )}
             </section>
 
             <aside className="space-y-3">
