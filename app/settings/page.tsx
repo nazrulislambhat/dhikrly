@@ -352,14 +352,15 @@ export default function SettingsPage() {
   return (
     <div className="min-h-dvh text-[var(--app-ink)]">
       <AppShell active="settings" dark={dark} onToggleDark={() => setDark((value) => !value)}>
-        <div className="mx-auto w-[min(calc(100%-2rem),68rem)] px-2 py-6 sm:py-8 lg:px-4 space-y-6">
+        <div className="mx-auto w-[min(calc(100%-2rem),72rem)] px-2 py-6 sm:py-8 lg:px-4 space-y-6">
           {/* Header */}
           <header className="flex flex-wrap items-center justify-between gap-4">
             <div>
-              <p className="text-[10px] font-extrabold tracking-[0.18em] text-emerald-800 dark:text-emerald-300 uppercase">
-                Spiritual Identity & Settings
-              </p>
-              <h1 className="mt-1 text-3xl font-extrabold tracking-tight sm:text-4xl">
+              <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-300 mb-2">
+                <UserRound className="h-3.5 w-3.5" />
+                <span>USER PROFILE & APP PREFERENCES</span>
+              </div>
+              <h1 className="mt-0.5 text-3xl font-extrabold tracking-tight sm:text-4xl">
                 Profile & Preferences
               </h1>
               <p className="mt-1.5 text-sm text-[var(--app-muted)]">
