@@ -10,6 +10,15 @@ interface UserMenuProps {
   dark: boolean;
   onSignOut: () => void;
   syncStatus: SyncStatus;
+  onManualSync?: () => Promise<boolean | void> | boolean | void;
+  lastSyncedAt?: number | null;
+}
+
+function formatRelativeTime(timestamp: number): string {
+  const diffSec = Math.floor((Date.now() - timestamp) / 1000);
+  if (diffSec < 60) return 'Just now';
+  if (diffSec < 3600) return `${Math.floor(diffSec / 60)}m ago`;
+  return `${Math.floor(diffSec / 3600)}h ago`;
 }
 
 export default function UserMenu({
@@ -17,8 +26,11 @@ export default function UserMenu({
   dark,
   onSignOut,
   syncStatus,
+  onManualSync,
+  lastSyncedAt,
 }: UserMenuProps) {
   const [open, setOpen] = useState(false);
+  const [manualSyncing, setManualSyncing] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
   // Close on outside click
@@ -33,18 +45,20 @@ export default function UserMenu({
   }, []);
 
   const initials = user.email ? user.email.slice(0, 2).toUpperCase() : '??';
-
   const avatarUrl = user.user_metadata?.avatar_url as string | undefined;
   const isSynced = !hasSupabaseConfig || syncStatus === 'synced';
+  const isSyncInProgress = syncStatus === 'syncing' || manualSyncing;
+
   const syncLabel = !hasSupabaseConfig
     ? 'Local'
-    : syncStatus === 'synced'
-      ? 'Synced'
-      : syncStatus === 'syncing'
-        ? 'Syncing…'
+    : isSyncInProgress
+      ? 'Syncing…'
+      : syncStatus === 'synced'
+        ? 'Synced'
         : syncStatus === 'offline'
           ? 'Offline'
           : 'Sync failed';
+
   const syncColor = !hasSupabaseConfig
     ? 'bg-sky-400'
     : syncStatus === 'synced'
@@ -58,6 +72,16 @@ export default function UserMenu({
   const panel = dark
     ? 'bg-[#14211e] border-white/10 shadow-2xl'
     : 'bg-white border-stone-200 shadow-xl';
+
+  const handleManualSyncClick = async () => {
+    if (!onManualSync || isSyncInProgress) return;
+    setManualSyncing(true);
+    try {
+      await onManualSync();
+    } finally {
+      setManualSyncing(false);
+    }
+  };
 
   return (
     <div ref={ref} className="relative">
@@ -78,7 +102,6 @@ export default function UserMenu({
               className="h-6 w-6 rounded-full object-cover"
               referrerPolicy="no-referrer"
               onError={(e) => {
-                // Hide broken image and show initials div instead
                 const img = e.currentTarget;
                 img.style.display = 'none';
                 const fallback = img.nextElementSibling as HTMLElement | null;
@@ -132,7 +155,7 @@ export default function UserMenu({
       {/* Dropdown */}
       {open && (
         <div
-          className={`absolute right-0 top-10 z-50 w-56 rounded-2xl border p-2 ${panel}`}
+          className={`absolute right-0 top-10 z-50 w-60 rounded-2xl border p-2.5 ${panel}`}
         >
           {/* User info */}
           <div
@@ -156,7 +179,7 @@ export default function UserMenu({
             </p>
           </div>
 
-          {/* Sync status */}
+          {/* Sync status & Manual Sync Button */}
           {!hasSupabaseConfig ? (
             <div
               className={`mb-2 rounded-xl px-3 py-2 text-[10px] ${
@@ -172,9 +195,9 @@ export default function UserMenu({
               </p>
             </div>
           ) : (
-            <div className="mb-2">
+            <div className="mb-2 space-y-2">
               <div
-                className={`flex items-center gap-2 rounded-xl px-3 py-2 ${
+                className={`flex items-center justify-between rounded-xl px-3 py-2 ${
                   isSynced
                     ? dark
                       ? 'bg-emerald-500/10'
@@ -188,42 +211,78 @@ export default function UserMenu({
                         : 'bg-amber-50'
                 }`}
               >
-                <span
-                  className={`h-1.5 w-1.5 rounded-full ${
-                    syncColor
-                  }`}
-                />
-                <span
-                  className={`text-[10px] ${
-                    isSynced
-                      ? dark
-                        ? 'text-emerald-400'
-                        : 'text-emerald-700'
-                      : syncStatus === 'error'
+                <div className="flex items-center gap-2">
+                  <span className={`h-2 w-2 rounded-full ${syncColor}`} />
+                  <span
+                    className={`text-[10px] font-medium ${
+                      isSynced
                         ? dark
-                          ? 'text-red-400'
-                          : 'text-red-700'
-                        : dark
-                          ? 'text-amber-400'
-                          : 'text-amber-700'
+                          ? 'text-emerald-400'
+                          : 'text-emerald-700'
+                        : syncStatus === 'error'
+                          ? dark
+                            ? 'text-red-400'
+                            : 'text-red-700'
+                          : dark
+                            ? 'text-amber-400'
+                            : 'text-amber-700'
+                    }`}
+                  >
+                    {isSyncInProgress
+                      ? 'Syncing changes…'
+                      : syncStatus === 'synced'
+                        ? 'All changes synced'
+                        : syncStatus === 'offline'
+                          ? 'Offline (Queued)'
+                          : 'Sync issue; retrying'}
+                  </span>
+                </div>
+                {lastSyncedAt ? (
+                  <span className="text-[9px] text-stone-400 dark:text-stone-500">
+                    {formatRelativeTime(lastSyncedAt)}
+                  </span>
+                ) : null}
+              </div>
+
+              {/* Manual Sync Button */}
+              {onManualSync && (
+                <button
+                  type="button"
+                  onClick={handleManualSyncClick}
+                  disabled={isSyncInProgress}
+                  className={`flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl px-3 py-2 text-[11px] font-bold transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed ${
+                    dark
+                      ? 'bg-emerald-600/20 text-emerald-300 hover:bg-emerald-600/30 border border-emerald-500/30'
+                      : 'bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border border-emerald-200'
                   }`}
                 >
-                  {syncStatus === 'synced'
-                    ? 'All changes synced'
-                    : syncStatus === 'syncing'
-                      ? 'Syncing changes…'
-                      : syncStatus === 'offline'
-                        ? 'Waiting for connection'
-                        : 'Sync failed; retrying'}
-                </span>
-              </div>
+                  <svg
+                    className={`h-3.5 w-3.5 ${
+                      isSyncInProgress ? 'animate-spin text-amber-400' : 'text-emerald-600 dark:text-emerald-400'
+                    }`}
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2" />
+                  </svg>
+                  <span>{isSyncInProgress ? 'Syncing Now…' : 'Sync Now'}</span>
+                </button>
+              )}
+
               {syncStatus === 'error' && (
                 <button
                   onClick={() => {
                     try {
                       const keys = Object.keys(localStorage);
                       for (const k of keys) {
-                        if (k.startsWith('adhkar_sync_queue') || k.startsWith('salah_sync_queue')) {
+                        if (
+                          k.startsWith('adhkar_sync_queue') ||
+                          k.startsWith('salah_sync_queue')
+                        ) {
                           localStorage.removeItem(k);
                         }
                       }
@@ -232,13 +291,13 @@ export default function UserMenu({
                       console.error(e);
                     }
                   }}
-                  className={`mt-1.5 w-full cursor-pointer rounded-lg px-2.5 py-1.5 text-center text-[10px] font-medium transition-colors ${
+                  className={`w-full cursor-pointer rounded-lg px-2.5 py-1.5 text-center text-[10px] font-medium transition-colors ${
                     dark
                       ? 'bg-red-500/15 text-red-300 hover:bg-red-500/25'
                       : 'bg-red-50 text-red-700 hover:bg-red-100'
                   }`}
                 >
-                  Clear Sync Queue & Reload
+                  Reset Sync Queue & Reload
                 </button>
               )}
             </div>
@@ -250,9 +309,9 @@ export default function UserMenu({
               setOpen(false);
               onSignOut();
             }}
-            className={`w-full cursor-pointer rounded-xl px-3 py-2 text-left text-[12px] transition-colors ${
+            className={`w-full cursor-pointer rounded-xl px-3 py-2 text-left text-[12px] font-medium transition-colors ${
               dark
-                ? 'text-red-400/70 hover:bg-red-500/10 hover:text-red-400'
+                ? 'text-red-400/80 hover:bg-red-500/10 hover:text-red-400'
                 : 'text-red-500 hover:bg-red-50'
             }`}
           >
