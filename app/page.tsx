@@ -52,6 +52,7 @@ import UserMenu from '@/components/UserMenu';
 import PWAProvider from '@/components/PWAProvider';
 import TasbihCounter from '@/components/TasbihCounter';
 import TiltCard from '@/components/TiltCard';
+import JumuahBanner from '@/components/JumuahBanner';
 import { useChecked } from '@/hooks/useChecked';
 import { useStreak } from '@/hooks/useStreak';
 import { useToast } from '@/hooks/useToast';
@@ -300,6 +301,9 @@ export default function DuasTracker() {
       )}
 
       <div className="mx-auto w-full max-w-[82rem] px-4 py-5 pb-10 sm:px-6 sm:py-8 lg:px-10">
+        {/* Jumu'ah Mode */}
+        <JumuahBanner dark={dark} />
+
         {/* ── Header ── */}
         <header className="mb-8 grid gap-4 min-[900px]:grid-cols-[minmax(0,1fr)_auto] min-[900px]:items-end">
           {/* Title block */}

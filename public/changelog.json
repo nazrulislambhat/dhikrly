@@ -1,6 +1,27 @@
 {
-  "current": "2.1",
+  "current": "2.2",
   "releases": [
+    {
+      "version": "2.2",
+      "date": "2026-10-16",
+      "title": "Jumu'ah Mode, Word-by-Word Qur'an, Hifz Looping, Zakāt & Halal Scanner",
+      "added": [
+        "Jumu'ah Mode — automatically surfaces on Fridays with Surah Al-Kahf reminders, 8 Sunnah checklists (ghusl, miswak, early arrival, etc.), Salawāt counter, and Sa'at al-Istijābah du'ā hour indicator",
+        "Word-by-Word Qur'an Translation & Audio — tap individual words in the reader to view transliteration, English meanings, and hear isolated pronunciations",
+        "Hifz (Memorization) Recite Mode — toggleable veiling that blurs upcoming verses until tapped to test your recall",
+        "Audio Repeat & Range Looping — loop single Ayahs N times (1x, 3x, 5x, 10x, ∞) or cycle verse ranges (e.g. Ayah 1–5) for memorization practice",
+        "Zakāt & Nisāb Calculator (/zakat) — live gold & silver Nisāb thresholds, multi-currency assets & deduction calculator with exact 2.5% calculation",
+        "Halal Ingredient Scanner (/halal) — device camera barcode scanner and E-number database flagging additives as Halal, Mushbooh, or Haram",
+        "Smart Missed Prayer (Qadā) Tracker (/qada) — track Fajr, Dhuhr, Asr, Maghrib, Isha & Witr with estimation wizard and daily repayment forecast",
+        "Custom 404 Not-Found Page — spiritually grounded not-found experience with navigation recovery grid"
+      ],
+      "improved": [
+        "Added /zakat, /halal, and /qada to bottom navigation drawer",
+        "Added Jumu'ah Mode preview toggle for testing outside of Fridays",
+        "Synced prayer times with Jumu'ah Khutbah and Sa'at al-Istijābah calculations"
+      ],
+      "removed": []
+    },
     {
       "version": "2.1",
       "date": "2026-10-16",
