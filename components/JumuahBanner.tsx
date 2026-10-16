@@ -53,6 +53,7 @@ export default function JumuahBanner({
   const formattedDhuhr = formatTimeString(dhuhrTime, '12:30');
   const formattedMaghrib = formatTimeString(maghribTime, '18:15');
   const formattedAsr = formatTimeString(asrTime, '15:45');
+  const [mounted, setMounted] = useState(false);
   const [now, setNow] = useState(() => new Date());
   const [forcePreview, setForcePreview] = useState(false);
   const [expanded, setExpanded] = useState(false);
@@ -66,9 +67,14 @@ export default function JumuahBanner({
   const isJumuahActive = windowInfo.isJumuah || forcePreview;
   const fridayKey = windowInfo.fridayDateStr;
 
-  const [state, setState] = useState<JumuahState>(() => getJumuahState(fridayKey));
+  const [state, setState] = useState<JumuahState>({
+    completedSunnahs: {},
+    salawatCount: 0,
+    kahfRead: false,
+  });
 
   useEffect(() => {
+    setMounted(true);
     setState(getJumuahState(fridayKey));
   }, [fridayKey]);
 
@@ -117,6 +123,10 @@ export default function JumuahBanner({
 
   const totalSunnahs = JUMUAH_SUNNAH_ITEMS.length;
   const progressPct = Math.round((completedCount / totalSunnahs) * 100);
+
+  if (!mounted) {
+    return null;
+  }
 
   if (!isJumuahActive) {
     return (
