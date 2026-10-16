@@ -2,8 +2,17 @@
 
 import { useEffect, useRef, useCallback, useState } from 'react';
 import type { User } from '@supabase/supabase-js';
-import { supabase } from '@/lib/supabase';
+import { supabase, hasSupabaseConfig } from '@/lib/supabase';
 import { getAllLogs, saveDayLog, emptyDay } from '@/lib/salahStorage';
+
+function isTableMissingError(err: unknown): boolean {
+  if (!err || typeof err !== 'object') return false;
+  const e = err as { code?: string; message?: string };
+  return (
+    e.code === '42P01' ||
+    Boolean(e.message && (e.message.includes('does not exist') || e.message.includes('relation')))
+  );
+}
 import { clearLocalEdit, getLocalEditTime } from '@/lib/localEdits';
 import {
   latestPracticeEntries,
@@ -97,6 +106,7 @@ function removeQueued(userId: string, item: QueueItem) {
 const logWrites = new Map<string, Promise<boolean>>();
 
 async function pushEntries(userId: string, entries: PracticeEntry[]): Promise<boolean> {
+  if (!hasSupabaseConfig) return true;
   if (entries.length === 0) return true;
   const date = entries[0].date;
   const key = `${userId}:${date}`;
@@ -141,8 +151,15 @@ async function pullAllLogs(userId: string): Promise<RemoteSalah> {
       .order('date', { ascending: false })
       .limit(120),
   ]);
-  if (entriesRes.error) throw entriesRes.error;
-  if (legacyRes.error) throw legacyRes.error;
+
+  const hasEntries = !entriesRes.error;
+  const hasLegacy = !legacyRes.error;
+
+  if (entriesRes.error && !isTableMissingError(entriesRes.error)) throw entriesRes.error;
+  if (legacyRes.error && !isTableMissingError(legacyRes.error)) throw legacyRes.error;
+  if (!hasEntries && !hasLegacy) {
+    throw entriesRes.error ?? legacyRes.error;
+  }
 
   const normalized = (entriesRes.data ?? []) as PracticeEntry[];
   const legacy = (legacyRes.data ?? []).flatMap((row) => {
@@ -161,14 +178,18 @@ async function pullAllLogs(userId: string): Promise<RemoteSalah> {
     const current = normalizedByKey.get(`${entry.date}:${entry.item_key}`);
     return !current || Date.parse(entry.updated_at) > Date.parse(current.updated_at);
   });
-  if (migrate.length > 0) {
-    const { error } = await supabase
-      .from('practice_entries')
-      .upsert(
-        migrate.map((entry): PracticeEntryWrite => ({ user_id: userId, ...entry })),
-        { onConflict: 'user_id,date,area,item_key' },
-      );
-    if (error) throw error;
+  if (migrate.length > 0 && hasEntries) {
+    try {
+      const { error } = await supabase
+        .from('practice_entries')
+        .upsert(
+          migrate.map((entry): PracticeEntryWrite => ({ user_id: userId, ...entry })),
+          { onConflict: 'user_id,date,area,item_key' },
+        );
+      if (error && !isTableMissingError(error)) throw error;
+    } catch {
+      // Don't fail the pull if migration upsert fails
+    }
   }
 
   const entriesByDate: Record<string, PracticeEntry[]> = {};
@@ -182,6 +203,7 @@ async function pullAllLogs(userId: string): Promise<RemoteSalah> {
 }
 
 async function pullDay(userId: string, date: string): Promise<PracticeEntry[]> {
+  if (!hasSupabaseConfig) return [];
   const { data, error } = await supabase
     .from('practice_entries')
     .select('date, area, item_key, value, updated_at')
@@ -189,7 +211,10 @@ async function pullDay(userId: string, date: string): Promise<PracticeEntry[]> {
     .eq('area', 'salah')
     .eq('date', date)
     .order('item_key', { ascending: true });
-  if (error) throw error;
+  if (error) {
+    if (isTableMissingError(error)) return [];
+    throw error;
+  }
   return (data ?? []) as PracticeEntry[];
 }
 
@@ -223,6 +248,7 @@ export function useSalahSync({
   const [readyUserId, setReadyUserId] = useState<string | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isFlushing = useRef(false);
+  const retryCount = useRef(0);
   const lastPushed = useRef<string>('__init__');
   const pendingLocal = useRef<string>('__init__');
   const latestLog = useRef(log);
@@ -239,6 +265,10 @@ export function useSalahSync({
   }, []);
 
   const flushQueue = useCallback(async (userId: string) => {
+    if (!hasSupabaseConfig) {
+      setStatus('synced');
+      return;
+    }
     if (isFlushing.current) return;
     if (!navigator.onLine) {
       setStatus('offline');
@@ -279,7 +309,7 @@ export function useSalahSync({
   }, [today]);
 
   useEffect(() => {
-    if (!user) {
+    if (!user || !hasSupabaseConfig) {
       setReadyUserId(null);
       setStatus('synced');
       return;
@@ -289,9 +319,10 @@ export function useSalahSync({
     let retryTimer: ReturnType<typeof setTimeout> | undefined;
     const startingRevision = localRevision.current;
     setReadyUserId(null);
+    setStatus('syncing');
     const initialize = async () => {
-      setStatus('syncing');
       try {
+        setStatus('syncing');
         const remote = await pullAllLogs(user.id);
         if (cancelled) return;
 
@@ -427,13 +458,36 @@ export function useSalahSync({
           localStorage.removeItem(`${LEGACY_SALAH_QUEUE_KEY}_${user.id}`);
         }
         if (cancelled) return;
+        retryCount.current = 0;
         setReadyUserId(user.id);
         await flushQueue(user.id);
-      } catch (error) {
+      } catch (error: unknown) {
         console.error('Could not pull ṣalāh logs:', error);
+        const err = error as { status?: number; code?: string; message?: string } | undefined;
+        if (
+          err?.status === 401 ||
+          err?.code === 'PGRST301' ||
+          Boolean(err?.message && (err.message.includes('JWT') || err.message.includes('token') || err.message.includes('session')))
+        ) {
+          try {
+            const { error: refreshErr } = await supabase.auth.refreshSession();
+            if (refreshErr) {
+              console.warn('Session expired, signing out to prevent endless sync retries');
+              await supabase.auth.signOut();
+              setStatus('synced');
+              return;
+            }
+          } catch {
+            await supabase.auth.signOut();
+            setStatus('synced');
+            return;
+          }
+        }
         if (!cancelled) {
           setStatus(navigator.onLine ? 'error' : 'offline');
-          retryTimer = setTimeout(initialize, 15_000);
+          retryCount.current += 1;
+          const delay = Math.min(120_000, 15_000 * Math.pow(1.5, Math.min(retryCount.current, 5)));
+          retryTimer = setTimeout(initialize, delay);
         }
       }
     };
@@ -448,7 +502,7 @@ export function useSalahSync({
   }, [user?.id, today]);
 
   useEffect(() => {
-    if (!user || readyUserId !== user.id) return;
+    if (!user || !hasSupabaseConfig || readyUserId !== user.id) return;
 
     const poll = async () => {
       if (
@@ -494,7 +548,7 @@ export function useSalahSync({
   }, [user?.id, today, readyUserId]);
 
   useEffect(() => {
-    if (!user || readyUserId !== user.id) return;
+    if (!user || !hasSupabaseConfig || readyUserId !== user.id) return;
     const snapshot = JSON.stringify(log);
     const entries = diffSalah(log, logBaseline.current);
     logBaseline.current = log;
@@ -532,7 +586,7 @@ export function useSalahSync({
   }, [log, today, user, readyUserId, settleStatus]);
 
   useEffect(() => {
-    if (!user || readyUserId !== user.id) return;
+    if (!user || !hasSupabaseConfig || readyUserId !== user.id) return;
     const retry = () => void flushQueue(user.id);
     const offline = () => setStatus('offline');
     window.addEventListener('online', retry);
