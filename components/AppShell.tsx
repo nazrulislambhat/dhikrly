@@ -204,7 +204,7 @@ export default function AppShell({
 
               {desktopDropdownOpen && (
                 <div
-                  className={`absolute right-0 top-full mt-2 w-88 rounded-2xl border p-2 shadow-2xl backdrop-blur-2xl z-50 animate-in fade-in zoom-in-95 duration-150 ${
+                  className={`absolute right-0 top-full mt-2 w-100 rounded-2xl border p-2 shadow-2xl backdrop-blur-2xl z-50 animate-in fade-in zoom-in-95 duration-150 ${
                     dark ? 'border-white/[0.12] bg-[#14211e]/98 text-stone-200' : 'border-stone-200/90 bg-white/98 text-stone-800'
                   }`}
                 >
