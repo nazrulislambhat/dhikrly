@@ -1,7 +1,9 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import Link from 'next/link';
 import {
+  BookOpen,
   BookOpenText,
   Bookmark,
   ChevronLeft,
@@ -9,12 +11,14 @@ import {
   Headphones,
   Pause,
   Play,
+  Plus,
   Repeat2,
   Settings2,
   SkipBack,
   SkipForward,
 } from 'lucide-react';
 import AppShell from '@/components/AppShell';
+import QuranTrackerModal from '@/components/QuranTrackerModal';
 import { load, save, SETTINGS_KEY } from '@/lib/storage';
 import {
   DEFAULT_QURAN_SETTINGS,
@@ -139,6 +143,7 @@ export default function QuranPage() {
   const [chapterLoading, setChapterLoading] = useState(false);
   const [chapterError, setChapterError] = useState('');
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [trackerOpen, setTrackerOpen] = useState(false);
   const [bookmarks, setBookmarks] = useState<QuranBookmark[]>(() => {
     const savedBookmarks = load<QuranBookmark[]>(QURAN_BOOKMARKS_KEY, []);
     if (savedBookmarks.length > 0) return savedBookmarks;
@@ -904,6 +909,14 @@ export default function QuranPage() {
               </p>
             </div>
             <div className="flex shrink-0 items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setTrackerOpen(true)}
+                className="inline-flex min-h-11 items-center gap-1.5 rounded-xl bg-emerald-800 px-3.5 text-xs font-bold text-white shadow-xs hover:bg-emerald-700 transition-all dark:bg-emerald-400 dark:text-emerald-950 dark:hover:bg-emerald-300"
+              >
+                <Plus className="h-4 w-4" />
+                <span>Track Reading</span>
+              </button>
               {progress.lastRead && (
                 <button
                   type="button"
@@ -931,10 +944,25 @@ export default function QuranPage() {
           <section className={`mb-4 rounded-2xl border px-4 py-3 ${card}`} aria-label="Daily Quran reading progress">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <h2 className="text-xs font-semibold">Today’s reading</h2>
+                <h2 className="text-xs font-semibold">Today’s reading & Khatm Tracker</h2>
                 <p className={`mt-0.5 text-[11px] ${muted}`}>
                   {todayVerseCount} of {dailyGoal} verses · {goalProgress}% of daily goal
                 </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setTrackerOpen(true)}
+                  className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-xs font-bold text-emerald-800 dark:text-emerald-200 hover:bg-emerald-500/20 transition-all"
+                >
+                  + Log to Tracker
+                </button>
+                <Link
+                  href="/insights"
+                  className="rounded-xl border border-[var(--app-line)] px-3 py-1.5 text-xs font-medium hover:bg-black/5 dark:hover:bg-white/5 transition-all"
+                >
+                  View Graphs →
+                </Link>
               </div>
             </div>
             <div
@@ -1414,6 +1442,13 @@ export default function QuranPage() {
                 </div>
               )}
             </section>
+
+            <QuranTrackerModal
+              dark={dark}
+              isOpen={trackerOpen}
+              onClose={() => setTrackerOpen(false)}
+              initialSurahNumber={settings.surah}
+            />
 
             {settingsOpen && (
               <div

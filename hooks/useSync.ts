@@ -6,6 +6,12 @@ import { supabase, hasSupabaseConfig } from '@/lib/supabase';
 import { load, save, STORAGE_KEY, CUSTOM_DUAS_KEY, STREAK_KEY } from '@/lib/storage';
 import { clearLocalEdit, getLocalEditTime } from '@/lib/localEdits';
 import { diffChecked } from '@/lib/practiceEntries';
+import {
+  getQuranTrackerData,
+  saveQuranTrackerData,
+  mergeQuranTrackerData,
+  type QuranTrackerData,
+} from '@/lib/quranTracker';
 import type { Dua, Streak } from '@/types';
 
 function isTableMissingError(err: unknown): boolean {
@@ -180,23 +186,28 @@ async function pushCustomDuas(userId: string, duas: Dua[]): Promise<boolean> {
 }
 
 /**
- * Push streak to Supabase `user_data`.
+ * Push streak & Quran tracker to Supabase `user_data`.
  */
 async function pushStreak(userId: string, streak: Streak): Promise<boolean> {
   try {
+    const quranTracker = getQuranTrackerData();
+    const streakPayload = {
+      ...streak,
+      quran_tracker: quranTracker,
+    };
     const { error } = await supabase
       .from('user_data')
       .upsert(
-        { user_id: userId, streak, updated_at: new Date().toISOString() },
+        { user_id: userId, streak: streakPayload, updated_at: new Date().toISOString() },
         { onConflict: 'user_id' },
       );
     if (error) {
-      console.error('Could not sync adhkār streak:', error.message);
+      console.error('Could not sync adhkār streak & quran:', error.message);
       return false;
     }
     return true;
   } catch (error) {
-    console.error('Could not sync adhkār streak:', error);
+    console.error('Could not sync adhkār streak & quran:', error);
     return false;
   }
 }
@@ -238,7 +249,20 @@ export async function pullFromSupabase(userId: string): Promise<{
     })
     .filter((d): d is Dua => d !== null);
 
-  const streak = userRes.data?.streak ? (userRes.data.streak as Streak) : null;
+  const rawStreak = userRes.data?.streak as (Streak & { quran_tracker?: QuranTrackerData }) | null;
+  if (rawStreak?.quran_tracker) {
+    const localTracker = getQuranTrackerData();
+    const mergedTracker = mergeQuranTrackerData(localTracker, rawStreak.quran_tracker);
+    saveQuranTrackerData(mergedTracker);
+  }
+
+  const streak = rawStreak
+    ? {
+        current: Number(rawStreak.current) || 0,
+        best: Number(rawStreak.best) || 0,
+        lastComplete: rawStreak.lastComplete || '',
+      }
+    : null;
 
   return {
     checkedByDate,
@@ -681,8 +705,19 @@ export function useSync({
       }
     };
     void syncValue();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [streak, user?.id, readyUserId, settleStatus]);
+
+  // Auto-sync Quran tracker updates
+  useEffect(() => {
+    if (!user || readyUserId !== user.id) return;
+    const handleQuranUpdated = () => {
+      void pushStreak(user.id, streak);
+    };
+    window.addEventListener('dhikrly:quran-tracker-updated', handleQuranUpdated);
+    return () => {
+      window.removeEventListener('dhikrly:quran-tracker-updated', handleQuranUpdated);
+    };
+  }, [user, readyUserId, streak]);
 
   // Background flush on reconnect & focus
   useEffect(() => {
