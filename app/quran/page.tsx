@@ -1080,19 +1080,20 @@ export default function QuranPage() {
         dark={dark}
         onToggleDark={() => setDark((value) => !value)}
       >
-        <div className="mx-auto w-full max-w-6xl px-4 py-4 pb-12 sm:px-6 sm:py-7 lg:px-10">
-          <header className="mb-5 flex items-center justify-between gap-3">
+        <div className="mx-auto w-[min(calc(100%-2rem),72rem)] px-2 py-4 pb-12 sm:px-4 sm:py-7 lg:px-4">
+          <header className="mb-5 flex flex-wrap items-center justify-between gap-3">
             <div className="min-w-0">
-              <p className={`text-[10px] font-semibold uppercase tracking-[0.16em] ${dark ? 'text-emerald-300/70' : 'text-emerald-800/75'}`}>
-                The Noble Qur’an
-              </p>
+              <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-300 mb-2">
+                <BookOpen className="h-3.5 w-3.5" />
+                <span>THE NOBLE QUR'AN · القُرْآن الكَرِيم</span>
+              </div>
               <h1 className={`mt-0.5 truncate font-ui text-2xl font-bold tracking-[-0.045em] sm:text-3xl ${dark ? 'text-stone-900 dark:text-stone-100' : 'text-stone-900'}`}>
                 {currentSurah?.englishName ?? 'Read & listen'}
               </h1>
               <p className={`mt-0.5 text-xs ${muted}`}>
                 {progress.lastRead && lastReadSurah
                   ? `Last read: ${lastReadSurah.englishName} · Verse ${progress.lastRead.ayah}`
-                  : 'Read, listen, and reflect'}
+                  : 'Read, listen, and reflect with word-by-word pronunciation and memorization tools'}
               </p>
             </div>
             <div className="flex shrink-0 items-center gap-2">

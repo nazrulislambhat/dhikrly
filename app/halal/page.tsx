@@ -413,7 +413,7 @@ export default function HalalScannerPage() {
 
   return (
     <AppShell active="halal" dark={dark} onToggleDark={() => setDark((v) => !v)}>
-      <div className="mx-auto w-[min(calc(100%-2rem),64rem)] px-2 py-6 sm:py-8 lg:px-4">
+      <div className="mx-auto w-[min(calc(100%-2rem),72rem)] px-2 py-6 sm:py-8 lg:px-4">
         {/* Header */}
         <header className="mb-8">
           <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-300">
