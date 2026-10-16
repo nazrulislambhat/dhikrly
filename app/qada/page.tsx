@@ -124,7 +124,7 @@ export default function QadaPage() {
 
   return (
     <AppShell active="qada" dark={dark} onToggleDark={() => setDark((v) => !v)}>
-      <div className="mx-auto w-[min(calc(100%-2rem),64rem)] px-2 py-6 sm:py-8 lg:px-4">
+      <div className="mx-auto w-[min(calc(100%-2rem),72rem)] px-2 py-6 sm:py-8 lg:px-4">
         {/* Header */}
         <header className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>

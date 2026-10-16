@@ -169,27 +169,32 @@ export default function SalahPage() {
       )}
 
       <AppShell active="salah" dark={dark} onToggleDark={() => setDark((value) => !value)}>
-      <div className="mx-auto w-full max-w-6xl px-4 pt-5 pb-10 sm:px-6 sm:pt-8 lg:px-10">
+      <div className="mx-auto w-[min(calc(100%-2rem),72rem)] px-2 pt-5 pb-10 sm:px-4 sm:pt-8 lg:px-4">
         {/* ── Header ── */}
         <header className="mb-6">
-          <div className="flex items-start justify-between">
+          <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <p
-                className={`text-[10px] font-semibold uppercase tracking-[0.18em] ${dark ? 'text-emerald-300/70' : 'text-emerald-800/75'}`}
-              >
-                {getHijriDate()}
-              </p>
+              <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-300 mb-2">
+                <Clock3 className="h-3.5 w-3.5" />
+                <span>DAILY PRAYERS & SUNNAH SCHEDULE</span>
+              </div>
               <h1
-                className={`mt-0.5 font-serif text-[clamp(24px,4vw,32px)] font-semibold tracking-tight ${dark ? 'text-stone-100' : 'text-stone-900'}`}
+                className={`font-serif text-[clamp(24px,4vw,32px)] font-semibold tracking-tight ${dark ? 'text-stone-100' : 'text-stone-900'}`}
               >
                 Daily Ṣalāh
               </h1>
-              <p
-                className={`mt-1 inline-flex items-center gap-1.5 text-xs ${dark ? 'text-stone-400' : 'text-stone-500'}`}
-              >
-                <MapPinned className="h-3.5 w-3.5 text-emerald-700" aria-hidden="true" />
-                {settings.location.city}, {settings.location.country}
-              </p>
+              <div className="mt-1 flex flex-wrap items-center gap-2 text-xs">
+                <span className={`font-semibold uppercase tracking-[0.14em] ${dark ? 'text-emerald-300/80' : 'text-emerald-800/80'}`}>
+                  {getHijriDate()}
+                </span>
+                <span className={dark ? 'text-stone-600' : 'text-stone-300'}>•</span>
+                <p
+                  className={`inline-flex items-center gap-1.5 ${dark ? 'text-stone-400' : 'text-stone-500'}`}
+                >
+                  <MapPinned className="h-3.5 w-3.5 text-emerald-700 dark:text-emerald-400" aria-hidden="true" />
+                  {settings.location.city}, {settings.location.country}
+                </p>
+              </div>
             </div>
 
             {/* Auth + change location */}
