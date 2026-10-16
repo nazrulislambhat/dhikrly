@@ -50,6 +50,12 @@ export default function QiblaPage() {
   const [manualHeading, setManualHeading] = useState<number>(0);
   const [gpsLoading, setGpsLoading] = useState<boolean>(false);
   const [showCalibrationHelp, setShowCalibrationHelp] = useState<boolean>(false);
+  const [isAligned, setIsAligned] = useState<boolean>(false);
+
+  const targetHeadingRef = useRef<number>(0);
+  const currentContinuousHeadingRef = useRef<number>(0);
+  const dialRef = useRef<HTMLDivElement>(null);
+  const needleRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', dark);
@@ -76,9 +82,6 @@ export default function QiblaPage() {
   // The needle angle pointing directly toward Kaaba
   const qiblaRelativeAngle = (qiblaBearing - currentHeading + 360) % 360;
 
-  // Aligned check: within +/- 3 degrees
-  const isAligned = Math.abs(qiblaRelativeAngle) <= 3 || Math.abs(qiblaRelativeAngle - 360) <= 3;
-
   // Haptic feedback when device aligns with Qibla
   const hasVibratedRef = useRef(false);
   useEffect(() => {
@@ -96,7 +99,7 @@ export default function QiblaPage() {
     }
   }, [isAligned]);
 
-  // Setup DeviceOrientation listener
+  // Setup DeviceOrientation listener (single source to prevent double-event conflicts)
   useEffect(() => {
     // Check if iOS DeviceOrientation permissions are required
     if (
@@ -108,30 +111,99 @@ export default function QiblaPage() {
       setPermissionRequired(true);
     }
 
-    const handleOrientation = (e: DeviceOrientationEvent) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const webkitCompass = (e as any).webkitCompassHeading;
-      if (typeof webkitCompass === 'number' && !isNaN(webkitCompass)) {
-        setHeading(webkitCompass);
-        setDeviceSensorActive(true);
-      } else if (e.alpha !== null && typeof e.alpha === 'number') {
-        // Standard Android / Web orientation (alpha is counter-clockwise, invert to clockwise)
-        const compass = 360 - e.alpha;
-        setHeading(compass);
+    let absoluteActive = false;
+
+    const handleAbsoluteOrientation = (e: DeviceOrientationEvent) => {
+      if (e.alpha !== null && typeof e.alpha === 'number') {
+        absoluteActive = true;
+        // Standard Android / Web absolute orientation (alpha is counter-clockwise)
+        const compass = (360 - e.alpha) % 360;
+        targetHeadingRef.current = compass;
         setDeviceSensorActive(true);
       }
     };
 
-    window.addEventListener('deviceorientation', handleOrientation, true);
+    const handleStandardOrientation = (e: DeviceOrientationEvent) => {
+      if (absoluteActive) return; // Don't fight with absolute sensor
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const webkitCompass = (e as any).webkitCompassHeading;
+      if (typeof webkitCompass === 'number' && !isNaN(webkitCompass)) {
+        // iOS Safari gives direct clockwise heading (0-360)
+        targetHeadingRef.current = webkitCompass;
+        setDeviceSensorActive(true);
+      } else if (e.alpha !== null && typeof e.alpha === 'number') {
+        const compass = (360 - e.alpha) % 360;
+        targetHeadingRef.current = compass;
+        setDeviceSensorActive(true);
+      }
+    };
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    window.addEventListener('deviceorientationabsolute' as any, handleOrientation, true);
+    window.addEventListener('deviceorientationabsolute' as any, handleAbsoluteOrientation, true);
+    window.addEventListener('deviceorientation', handleStandardOrientation, true);
 
     return () => {
-      window.removeEventListener('deviceorientation', handleOrientation);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      window.removeEventListener('deviceorientationabsolute' as any, handleOrientation);
+      window.removeEventListener('deviceorientationabsolute' as any, handleAbsoluteOrientation);
+      window.removeEventListener('deviceorientation', handleStandardOrientation);
     };
   }, []);
+
+  // Physics animation loop: continuous angle unwrapping + adaptive Exponential Moving Average (EMA) damping
+  useEffect(() => {
+    let animId: number;
+    let lastStateTime = 0;
+
+    const shortestDiff = (target: number, current: number) => {
+      const normCurrent = ((current % 360) + 360) % 360;
+      return ((target - normCurrent + 540) % 360) - 180;
+    };
+
+    const tick = (time: number) => {
+      const target = deviceSensorActive ? targetHeadingRef.current : manualHeading;
+      const diff = shortestDiff(target, currentContinuousHeadingRef.current);
+
+      // Deadband: ignore sensor micro-tremors < 0.25° when phone is held steady
+      if (Math.abs(diff) > 0.25) {
+        // Adaptive EMA filter:
+        // Responsive tracking when device turns quickly (> 18° delta)
+        // Heavy, stable, liquid-damped feel when steady or fine-turning (0.09)
+        const alpha = Math.abs(diff) > 18 ? 0.22 : 0.09;
+        currentContinuousHeadingRef.current += diff * alpha;
+      }
+
+      const continuousHeading = currentContinuousHeadingRef.current;
+      const normalizedHeading = ((continuousHeading % 360) + 360) % 360;
+
+      // Update rotating dial in DOM at native refresh rate (60/120Hz)
+      if (dialRef.current) {
+        dialRef.current.style.transform = `rotate(${-continuousHeading}deg)`;
+      }
+
+      // Update central needle in DOM pointing towards Kaaba
+      const needleAngle = qiblaBearing - continuousHeading;
+      if (needleRef.current) {
+        needleRef.current.style.transform = `rotate(${needleAngle}deg)`;
+      }
+
+      // Alignment check (within 3.5° of Kaaba)
+      const angleDiffToQibla = Math.abs((((qiblaBearing - normalizedHeading + 540) % 360) - 180));
+      const aligned = angleDiffToQibla <= 3.5;
+
+      // Throttle React state updates to 20fps (every 50ms) to avoid re-render thrashing
+      if (time - lastStateTime > 50) {
+        lastStateTime = time;
+        setHeading(normalizedHeading);
+        setIsAligned(aligned);
+      }
+
+      animId = requestAnimationFrame(tick);
+    };
+
+    animId = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(animId);
+  }, [deviceSensorActive, manualHeading, qiblaBearing]);
 
   const requestIosSensor = async () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -270,7 +342,8 @@ export default function QiblaPage() {
 
               {/* Rotating Compass Dial with Degree Markings & Cardinals */}
               <div
-                className="absolute inset-6 rounded-full transition-transform duration-200 ease-out flex items-center justify-center"
+                ref={dialRef}
+                className="absolute inset-6 rounded-full will-change-transform flex items-center justify-center"
                 style={{ transform: `rotate(${-currentHeading}deg)` }}
               >
                 {/* Cardinal Directions */}
@@ -309,7 +382,8 @@ export default function QiblaPage() {
 
               {/* Central Needle pointing to Kaaba relative to device heading */}
               <div
-                className="relative z-20 flex h-64 w-8 items-center justify-center transition-transform duration-150 ease-out"
+                ref={needleRef}
+                className="relative z-20 flex h-64 w-8 items-center justify-center will-change-transform"
                 style={{ transform: `rotate(${qiblaRelativeAngle}deg)` }}
               >
                 {/* Top Arrow: Points to Qibla */}

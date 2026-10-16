@@ -83,7 +83,11 @@ export default function SalahPage() {
     [setLog],
   );
 
-  const { status: syncStatus } = useSalahSync({
+  const {
+    status: syncStatus,
+    manualSync,
+    lastSyncedAt,
+  } = useSalahSync({
     user,
     today,
     log,
@@ -198,6 +202,8 @@ export default function SalahPage() {
                   user={user}
                   dark={dark}
                   syncStatus={syncStatus}
+                  onManualSync={manualSync}
+                  lastSyncedAt={lastSyncedAt}
                   onSignOut={async () => {
                     await signOut();
                   }}

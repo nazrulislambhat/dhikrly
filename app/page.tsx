@@ -144,7 +144,11 @@ export default function DuasTracker() {
     [setChecked],
   );
 
-  const { status: syncStatus } = useSync({
+  const {
+    status: syncStatus,
+    manualSync,
+    lastSyncedAt,
+  } = useSync({
     user,
     today,
     checked,
@@ -317,6 +321,8 @@ export default function DuasTracker() {
                   user={user}
                   dark={dark}
                   syncStatus={syncStatus}
+                  onManualSync={manualSync}
+                  lastSyncedAt={lastSyncedAt}
                   onSignOut={async () => {
                     await signOut();
                     showToast('Signed out.');
@@ -368,6 +374,8 @@ export default function DuasTracker() {
                   user={user}
                   dark={dark}
                   syncStatus={syncStatus}
+                  onManualSync={manualSync}
+                  lastSyncedAt={lastSyncedAt}
                   onSignOut={async () => {
                     await signOut();
                     showToast('Signed out.');
