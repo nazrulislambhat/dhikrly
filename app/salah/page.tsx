@@ -37,6 +37,7 @@ import type {
 } from '@/types/salah';
 import { PRAYERS, PRAYER_LABELS } from '@/types/salah';
 import AppShell from '@/components/AppShell';
+import JumuahBanner from '@/components/JumuahBanner';
 
 type Tab = 'today' | 'insights' | 'masjid';
 
@@ -237,6 +238,16 @@ export default function SalahPage() {
                 <LocateFixed className="h-4 w-4" aria-hidden="true" />
               </button>
             </div>
+          </div>
+
+          {/* Jumu'ah Mode */}
+          <div className="mt-5">
+            <JumuahBanner
+              dark={dark}
+              dhuhrTime={times?.dhuhr}
+              asrTime={times?.asr}
+              maghribTime={times?.maghrib}
+            />
           </div>
 
           {/* Next prayer banner */}

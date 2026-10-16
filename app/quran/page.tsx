@@ -8,6 +8,8 @@ import {
   Bookmark,
   ChevronLeft,
   ChevronRight,
+  Eye,
+  EyeOff,
   Headphones,
   Pause,
   Play,
@@ -16,9 +18,13 @@ import {
   Settings2,
   SkipBack,
   SkipForward,
+  Sparkles,
 } from 'lucide-react';
 import AppShell from '@/components/AppShell';
 import QuranTrackerModal from '@/components/QuranTrackerModal';
+import QuranWordModal from '@/components/QuranWordModal';
+import QuranLoopModal from '@/components/QuranLoopModal';
+import { fetchVerseWords, type QuranWord } from '@/lib/quranWbw';
 import { load, save, SETTINGS_KEY } from '@/lib/storage';
 import {
   DEFAULT_QURAN_SETTINGS,
@@ -180,6 +186,25 @@ export default function QuranPage() {
   const audioRef = useRef<HTMLAudioElement>(null);
   const settingsButtonRef = useRef<HTMLButtonElement>(null);
   const settingsCloseButtonRef = useRef<HTMLButtonElement>(null);
+
+  // Word-by-word state
+  const [selectedWord, setSelectedWord] = useState<QuranWord | null>(null);
+  const [wordModalLocation, setWordModalLocation] = useState<{ surah: number; ayah: number } | null>(null);
+  const [wbwVerseCache, setWbwVerseCache] = useState<Record<string, QuranWord[]>>({});
+
+  // Hifz (Memorization) Recite mode state
+  const [hifzMode, setHifzMode] = useState(false);
+  const [revealedVerses, setRevealedVerses] = useState<Record<string, boolean>>({});
+
+  // Audio Repeat & Range Looping state
+  const [repeatCountTarget, setRepeatCountTarget] = useState<number>(1);
+  const [currentAyahRepeat, setCurrentAyahRepeat] = useState<number>(1);
+  const [rangeLoopActive, setRangeLoopActive] = useState<boolean>(false);
+  const [rangeStartAyah, setRangeStartAyah] = useState<number>(1);
+  const [rangeEndAyah, setRangeEndAyah] = useState<number>(5);
+  const [rangeLoopTarget, setRangeLoopTarget] = useState<number>(3);
+  const [currentRangeLoop, setCurrentRangeLoop] = useState<number>(1);
+  const [repeatModalOpen, setRepeatModalOpen] = useState<boolean>(false);
 
   const visibleChapter =
     chapter?.surah.number === settings.surah &&
@@ -660,6 +685,9 @@ export default function QuranPage() {
       setShouldPlay(false);
       return;
     }
+    if (activeAyah !== verse.number || activeSurah !== verseSurah) {
+      setCurrentAyahRepeat(1);
+    }
     setAudioError('');
     setActiveAyah(verse.number);
     setActiveSurah(verseSurah);
@@ -770,15 +798,61 @@ export default function QuranPage() {
   };
 
   const handleAudioEnded = useCallback(() => {
-    if (settings.repeatVerse && audioRef.current) {
-      audioRef.current.currentTime = 0;
-      void audioRef.current.play().catch((error: unknown) => {
-        console.error('Quran verse repeat could not be played:', error);
-        setShouldPlay(false);
-        setAudioError('Audio could not be replayed. Check your connection and try again.');
-      });
-      return;
+    // 1. Range Looping
+    if (rangeLoopActive && activeAyah !== null) {
+      if (activeAyah < rangeEndAyah) {
+        const nextAyahNumber = activeAyah + 1;
+        const nextVerse = playbackVerses.find(
+          (v) => (v.surahNumber ?? settings.surah) === activeSurah && v.number === nextAyahNumber,
+        );
+        if (nextVerse) {
+          playVerse(nextVerse, true);
+          return;
+        }
+      } else {
+        // Reached end of range
+        if (rangeLoopTarget === -1 || currentRangeLoop < rangeLoopTarget) {
+          setCurrentRangeLoop((c) => c + 1);
+          const startVerse = playbackVerses.find(
+            (v) => (v.surahNumber ?? settings.surah) === activeSurah && v.number === rangeStartAyah,
+          );
+          if (startVerse) {
+            playVerse(startVerse, true);
+            return;
+          }
+        } else {
+          // Finished range loop target
+          setShouldPlay(false);
+          setContinuousSurah(false);
+          updatePlaybackPosition();
+          return;
+        }
+      }
     }
+
+    // 2. Single Ayah repeat (N times or infinite)
+    if (
+      (settings.repeatVerse || repeatCountTarget > 1 || repeatCountTarget === -1) &&
+      audioRef.current
+    ) {
+      const isInfinite = settings.repeatVerse || repeatCountTarget === -1;
+      if (isInfinite || currentAyahRepeat < repeatCountTarget) {
+        if (!isInfinite) {
+          setCurrentAyahRepeat((c) => c + 1);
+        }
+        audioRef.current.currentTime = 0;
+        void audioRef.current.play().catch((error: unknown) => {
+          console.error('Quran verse repeat could not be played:', error);
+          setShouldPlay(false);
+          setAudioError('Audio could not be replayed. Check your connection and try again.');
+        });
+        return;
+      } else {
+        setCurrentAyahRepeat(1);
+      }
+    }
+
+    // 3. Normal progression
     const index = playbackVerses.findIndex(
       (verse) => verse.number === activeAyah && verse.surahNumber === activeSurah,
     );
@@ -786,12 +860,14 @@ export default function QuranPage() {
     const nextVerse =
       candidateNextVerse?.surahNumber === activeSurah ? candidateNextVerse : undefined;
     if ((continuousSurah || settings.autoPlayNext) && nextVerse) {
+      setCurrentAyahRepeat(1);
       playVerse(nextVerse, continuousSurah);
     } else if (
       settings.viewMode === 'mushaf' &&
       (continuousSurah || settings.autoPlayNext) &&
       mushafPageNumber < 604
     ) {
+      setCurrentAyahRepeat(1);
       setPendingPagePlayback(true);
       setPageFlipDirection('next');
       setMushafPageNumber((page) => Math.min(604, page + 1));
@@ -804,14 +880,125 @@ export default function QuranPage() {
     activeAyah,
     activeSurah,
     continuousSurah,
+    currentAyahRepeat,
+    currentRangeLoop,
     mushafPageNumber,
     playbackVerses,
     playVerse,
+    rangeEndAyah,
+    rangeLoopActive,
+    rangeLoopTarget,
+    rangeStartAyah,
+    repeatCountTarget,
     settings.autoPlayNext,
     settings.repeatVerse,
+    settings.surah,
     settings.viewMode,
     updatePlaybackPosition,
   ]);
+
+  const isVerseRevealed = useCallback(
+    (surahNum: number, ayahNum: number) => {
+      if (!hifzMode) return true;
+      return Boolean(revealedVerses[`${surahNum}:${ayahNum}`]);
+    },
+    [hifzMode, revealedVerses],
+  );
+
+  const toggleRevealVerse = useCallback(
+    (surahNum: number, ayahNum: number) => {
+      setRevealedVerses((prev) => {
+        const key = `${surahNum}:${ayahNum}`;
+        return { ...prev, [key]: !prev[key] };
+      });
+    },
+    [],
+  );
+
+  const revealAllVerses = useCallback(() => {
+    if (!visibleChapter) return;
+    const update: Record<string, boolean> = {};
+    visibleChapter.verses.forEach((v) => {
+      update[`${settings.surah}:${v.number}`] = true;
+    });
+    setRevealedVerses((prev) => ({ ...prev, ...update }));
+  }, [settings.surah, visibleChapter]);
+
+  const hideAllVerses = useCallback(() => {
+    if (!visibleChapter) return;
+    const update: Record<string, boolean> = {};
+    visibleChapter.verses.forEach((v) => {
+      update[`${settings.surah}:${v.number}`] = false;
+    });
+    setRevealedVerses((prev) => ({ ...prev, ...update }));
+  }, [settings.surah, visibleChapter]);
+
+  const revealNextAyah = useCallback(() => {
+    if (!visibleChapter) return;
+    const firstUnrevealed = visibleChapter.verses.find(
+      (v) => !revealedVerses[`${settings.surah}:${v.number}`],
+    );
+    if (firstUnrevealed) {
+      setRevealedVerses((prev) => ({
+        ...prev,
+        [`${settings.surah}:${firstUnrevealed.number}`]: true,
+      }));
+      const elem = document.getElementById(`quran-ayah-${firstUnrevealed.number}`);
+      elem?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [revealedVerses, settings.surah, visibleChapter]);
+
+  const handleWordClick = useCallback(
+    async (surahNum: number, ayahNum: number, wordIndex: number, fallbackText: string) => {
+      setWordModalLocation({ surah: surahNum, ayah: ayahNum });
+      const cacheKey = `${surahNum}:${ayahNum}`;
+      let words = wbwVerseCache[cacheKey];
+      if (!words) {
+        words = await fetchVerseWords(surahNum, ayahNum);
+        if (words && words.length > 0) {
+          setWbwVerseCache((prev) => ({ ...prev, [cacheKey]: words }));
+        }
+      }
+      if (words && words.length > 0) {
+        const matched =
+          words.find((w) => w.position === wordIndex + 1) ||
+          words[wordIndex] ||
+          words[0];
+        setSelectedWord(matched);
+      } else {
+        setSelectedWord({
+          id: wordIndex,
+          position: wordIndex + 1,
+          text: fallbackText,
+          charType: 'word',
+          translation: 'Tap audio to listen',
+        });
+      }
+    },
+    [wbwVerseCache],
+  );
+
+  const startRangeLoop = useCallback(
+    (start: number, end: number, loopTarget: number) => {
+      setRangeLoopActive(true);
+      setRangeStartAyah(start);
+      setRangeEndAyah(end);
+      setRangeLoopTarget(loopTarget);
+      setCurrentRangeLoop(1);
+
+      const startVerse = playbackVerses.find(
+        (v) => (v.surahNumber ?? settings.surah) === settings.surah && v.number === start,
+      );
+      if (startVerse) {
+        playVerse(startVerse, true);
+      }
+    },
+    [playbackVerses, playVerse, settings.surah],
+  );
+
+  const stopRangeLoop = useCallback(() => {
+    setRangeLoopActive(false);
+  }, []);
 
   const formatTime = (time: number) => {
     if (!Number.isFinite(time) || time < 0) return '0:00';
@@ -1052,6 +1239,113 @@ export default function QuranPage() {
                   <span className="inline-flex items-center justify-center gap-2"><BookOpenText className="h-4 w-4" aria-hidden="true" /> Mushaf pages</span>
                 </button>
               </div>
+
+              {/* Memorization & Looping Toolbar */}
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  {/* Hifz Mode Toggle */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const next = !hifzMode;
+                      setHifzMode(next);
+                      if (next) {
+                        hideAllVerses();
+                      }
+                    }}
+                    className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-bold transition-all shadow-sm ${
+                      hifzMode
+                        ? 'border-emerald-500 bg-emerald-500/20 text-emerald-800 dark:text-emerald-200 ring-1 ring-emerald-500'
+                        : `${card} text-[var(--app-ink)] hover:border-emerald-500/40`
+                    }`}
+                    title="Toggle Recite / Hifz Mode to veil upcoming verses"
+                  >
+                    {hifzMode ? (
+                      <EyeOff className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                    ) : (
+                      <Eye className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                    )}
+                    <span>Hifz Recite Mode</span>
+                    {hifzMode && <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />}
+                  </button>
+
+                  {/* Audio Repeat & Looping Modal Trigger */}
+                  <button
+                    type="button"
+                    onClick={() => setRepeatModalOpen(true)}
+                    className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-bold transition-all shadow-sm ${
+                      rangeLoopActive || repeatCountTarget > 1 || repeatCountTarget === -1
+                        ? 'border-emerald-500 bg-emerald-500/20 text-emerald-800 dark:text-emerald-200 ring-1 ring-emerald-500'
+                        : `${card} text-[var(--app-ink)] hover:border-emerald-500/40`
+                    }`}
+                    title="Configure Ayah repeat and range looping"
+                  >
+                    <Repeat2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                    <span>
+                      {rangeLoopActive
+                        ? `Range Loop (${rangeStartAyah}–${rangeEndAyah})`
+                        : repeatCountTarget > 1
+                        ? `Repeat ${repeatCountTarget}×`
+                        : repeatCountTarget === -1
+                        ? 'Repeat ∞'
+                        : 'Loop & Memorize'}
+                    </span>
+                  </button>
+                </div>
+
+                <div className="flex items-center gap-1 text-[11px] text-[var(--app-muted)]">
+                  <Sparkles className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                  <span>Tap Arabic words for isolated root audio & meaning</span>
+                </div>
+              </div>
+
+              {/* Hifz Banner when active */}
+              {hifzMode && (
+                <div className="mb-4 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-3.5 text-xs text-emerald-950 dark:text-emerald-200 transition-all">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex items-center gap-2.5">
+                      <div className="grid h-8 w-8 place-items-center rounded-xl bg-emerald-800 text-white dark:bg-emerald-400 dark:text-emerald-950 shadow-sm">
+                        <EyeOff className="h-4 w-4" />
+                      </div>
+                      <div>
+                        <p className="font-bold">Hifz Memorization Mode Active</p>
+                        <p className="text-[11px] opacity-80">Verses are veiled. Test your recall, then tap each verse to check.</p>
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={revealNextAyah}
+                        className="rounded-xl bg-emerald-800 px-3 py-1.5 text-xs font-bold text-white shadow-sm hover:bg-emerald-700 dark:bg-emerald-400 dark:text-emerald-950 dark:hover:bg-emerald-300 transition-all"
+                      >
+                        Reveal Next Ayah
+                      </button>
+                      <button
+                        type="button"
+                        onClick={revealAllVerses}
+                        className="rounded-xl border border-[var(--app-line)] px-2.5 py-1.5 text-xs font-semibold hover:bg-black/5 dark:hover:bg-white/5 transition-all"
+                      >
+                        Reveal All
+                      </button>
+                      <button
+                        type="button"
+                        onClick={hideAllVerses}
+                        className="rounded-xl border border-[var(--app-line)] px-2.5 py-1.5 text-xs font-semibold hover:bg-black/5 dark:hover:bg-white/5 transition-all"
+                      >
+                        Hide All
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setHifzMode(false)}
+                        className="rounded-xl border border-[var(--app-line)] px-2.5 py-1.5 text-xs font-medium text-stone-500 hover:text-stone-900 dark:hover:text-stone-100 transition-all"
+                      >
+                        Exit Mode
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {settings.viewMode === 'mushaf' && (
                 <p className={`-mt-1 mb-3 text-center text-[11px] ${muted}`}>
                   Indo-Pak Arabic with compact translation
@@ -1276,24 +1570,40 @@ export default function QuranPage() {
                                   data-surah={surahNumber}
                                   aria-current={isActiveAyah ? 'true' : undefined}
                                 >
-                                  {arabicWords.map((word, wordIndex) => (
-                                    <span
-                                      key={`${surahNumber}:${verse.number}:${wordIndex}`}
-                                      data-word-index={wordIndex}
-                                      data-word-key={`${surahNumber}:${verse.number}:${wordIndex}`}
-                                      className={`rounded transition-colors duration-100 ${
-                                        isActiveAyah &&
-                                        activeWordIndex === wordIndex &&
-                                        activeAudio
-                                          ? dark
-                                            ? 'bg-[#9ed7a6] text-[#10271b]'
-                                            : 'bg-[#f4d978] text-[#352a10] shadow-[0_0_0_0.1rem_rgb(244_217_120/30%)]'
-                                          : ''
-                                      }`}
+                                  {hifzMode && !isVerseRevealed(surahNumber, verse.number) ? (
+                                    <button
+                                      type="button"
+                                      onClick={() => toggleRevealVerse(surahNumber, verse.number)}
+                                      className="mx-1 inline-flex items-center gap-1 rounded-lg border border-dashed border-emerald-600/40 bg-emerald-500/15 px-2 py-0.5 font-sans text-[0.6em] font-medium text-emerald-900 transition-colors hover:bg-emerald-500/25 dark:text-emerald-200"
+                                      title="Ayah veiled for memorization. Tap to reveal."
                                     >
-                                      {word}{' '}
-                                    </span>
-                                  ))}
+                                      <Eye className="inline h-3 w-3" /> Ayah {verse.number} (Hidden · Tap to reveal)
+                                    </button>
+                                  ) : (
+                                    arabicWords.map((word, wordIndex) => (
+                                      <span
+                                        key={`${surahNumber}:${verse.number}:${wordIndex}`}
+                                        data-word-index={wordIndex}
+                                        data-word-key={`${surahNumber}:${verse.number}:${wordIndex}`}
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          void handleWordClick(surahNumber, verse.number, wordIndex, word);
+                                        }}
+                                        title="Tap for root meaning & pronunciation"
+                                        className={`cursor-pointer rounded transition-colors duration-100 hover:bg-emerald-500/20 ${
+                                          isActiveAyah &&
+                                          activeWordIndex === wordIndex &&
+                                          activeAudio
+                                            ? dark
+                                              ? 'bg-[#9ed7a6] text-[#10271b]'
+                                              : 'bg-[#f4d978] text-[#352a10] shadow-[0_0_0_0.1rem_rgb(244_217_120/30%)]'
+                                            : ''
+                                        }`}
+                                      >
+                                        {word}{' '}
+                                      </span>
+                                    ))
+                                  )}
                                   <button
                                     type="button"
                                     className={`mx-1 rounded-full text-[0.48em] align-[0.2em] text-[#937a42] hover:bg-emerald-500/15 hover:text-emerald-800 ${
@@ -1305,7 +1615,7 @@ export default function QuranPage() {
                                     ۝{verse.number}
                                   </button>
                                 </span>{' '}
-                                {settings.showTranslation && (
+                                {settings.showTranslation && (!hifzMode || isVerseRevealed(surahNumber, verse.number)) && (
                                   <span
                                     className={`mb-3 mt-1 block rounded-md border-l-2 border-[#a78d4c]/45 bg-[#f4eedf]/75 px-2 py-1.5 text-left text-[9px] leading-[1.5] ${
                                       dark
@@ -1346,6 +1656,55 @@ export default function QuranPage() {
                       activeAyah === verse.number &&
                       Boolean(activeAudio);
                     const arabicWords = verse.arabic.trim().split(/\s+/);
+                    const isVeiled = hifzMode && !isVerseRevealed(settings.surah, verse.number);
+
+                    if (isVeiled) {
+                      return (
+                        <article
+                          id={`quran-ayah-${verse.number}`}
+                          data-ayah={verse.number}
+                          data-surah={settings.surah}
+                          data-ayah-key={`${settings.surah}:${verse.number}`}
+                          key={verse.number}
+                          className={`rounded-2xl border p-4 transition-all sm:p-6 ${card}`}
+                        >
+                          <div className="mb-3 flex items-center justify-between gap-3">
+                            <span className={`grid h-8 w-8 shrink-0 place-items-center rounded-full text-xs font-semibold ${
+                              dark ? 'bg-emerald-300/10 text-emerald-200' : 'bg-emerald-100 text-emerald-800'
+                            }`}>
+                              {verse.number}
+                            </span>
+                            <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-300">
+                              Hifz Recite · Veiled
+                            </span>
+                          </div>
+
+                          <div
+                            onClick={() => toggleRevealVerse(settings.surah, verse.number)}
+                            className="group relative cursor-pointer overflow-hidden rounded-2xl border border-dashed border-emerald-500/40 bg-emerald-500/5 p-8 text-center transition-all hover:border-emerald-500 hover:bg-emerald-500/10"
+                          >
+                            <div className="select-none filter blur-md opacity-20 pointer-events-none" aria-hidden="true">
+                              <p className="font-arabic text-3xl" dir="rtl" lang="ar">
+                                {verse.arabic}
+                              </p>
+                            </div>
+                            <div className="absolute inset-0 flex flex-col items-center justify-center p-4">
+                              <button
+                                type="button"
+                                className="inline-flex items-center gap-2 rounded-full bg-emerald-800 px-4 py-2 text-xs font-bold text-white shadow-md transition-transform group-hover:scale-105 dark:bg-emerald-400 dark:text-emerald-950"
+                              >
+                                <Eye className="h-4 w-4" />
+                                <span>Ayah {verse.number} Hidden · Tap to Reveal & Check</span>
+                              </button>
+                              <span className="mt-2 text-[11px] text-[var(--app-muted)]">
+                                Recite first from memory, then verify
+                              </span>
+                            </div>
+                          </div>
+                        </article>
+                      );
+                    }
+
                     return (
                       <article
                         id={`quran-ayah-${verse.number}`}
@@ -1369,6 +1728,16 @@ export default function QuranPage() {
                             {verse.number}
                           </span>
                           <div className="flex items-center gap-2">
+                            {hifzMode && (
+                              <button
+                                type="button"
+                                onClick={() => toggleRevealVerse(settings.surah, verse.number)}
+                                className="rounded-full border border-[var(--app-line)] px-2.5 py-1 text-[11px] font-medium text-[var(--app-muted)] hover:text-[var(--app-ink)] transition-colors"
+                                title="Hide verse again for memorization testing"
+                              >
+                                <EyeOff className="mr-1 inline h-3 w-3" /> Hide
+                              </button>
+                            )}
                             {verse.audio && (
                               <button
                                 type="button"
@@ -1411,13 +1780,18 @@ export default function QuranPage() {
                             <span
                               key={`${verse.number}-${index}`}
                               data-word-key={`${settings.surah}:${verse.number}:${index}`}
-                              className={
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                void handleWordClick(settings.surah, verse.number, index, word);
+                              }}
+                              title="Tap for root meaning & pronunciation"
+                              className={`cursor-pointer rounded px-0.5 transition-colors hover:bg-emerald-500/20 hover:text-emerald-950 dark:hover:text-emerald-100 ${
                                 isActiveAyah && activeWordIndex === index && activeAudio
                                   ? dark
                                     ? 'rounded bg-emerald-300/25 text-emerald-100'
                                     : 'rounded bg-emerald-200 text-emerald-950'
-                                  : undefined
-                              }
+                                  : ''
+                              }`}
                             >
                               {word}{index < arabicWords.length - 1 ? ' ' : ''}
                             </span>
@@ -1747,17 +2121,25 @@ export default function QuranPage() {
             <div className="col-span-2 flex items-center justify-center gap-2 min-[900px]:col-span-1 min-[900px]:justify-start">
               <button
                 type="button"
-                className={`grid h-9 w-9 place-items-center rounded-full text-base ${
-                  settings.repeatVerse
-                    ? 'bg-emerald-500/15 text-emerald-800 dark:text-emerald-200'
-                    : 'text-current'
+                className={`flex h-9 items-center gap-1 rounded-full px-2 text-xs font-bold transition-all ${
+                  settings.repeatVerse || repeatCountTarget > 1 || repeatCountTarget === -1 || rangeLoopActive
+                    ? 'bg-emerald-500/20 text-emerald-800 ring-1 ring-emerald-500/40 dark:text-emerald-200'
+                    : 'text-current hover:bg-black/5 dark:hover:bg-white/10'
                 }`}
-                aria-label={settings.repeatVerse ? 'Turn off verse repeat' : 'Repeat current verse'}
-                aria-pressed={settings.repeatVerse}
-                title={settings.repeatVerse ? 'Repeat verse on' : 'Repeat verse off'}
-                onClick={() => updateSetting('repeatVerse', !settings.repeatVerse)}
+                aria-label="Loop & Repeat options"
+                title="Loop & Repeat options"
+                onClick={() => setRepeatModalOpen(true)}
               >
                 <Repeat2 className="h-4 w-4" aria-hidden="true" />
+                {rangeLoopActive ? (
+                  <span className="text-[10px] tabular-nums font-mono">
+                    {rangeStartAyah}–{rangeEndAyah}
+                  </span>
+                ) : repeatCountTarget > 1 ? (
+                  <span className="text-[10px] tabular-nums font-mono">{repeatCountTarget}×</span>
+                ) : repeatCountTarget === -1 || settings.repeatVerse ? (
+                  <span className="text-[10px] tabular-nums">∞</span>
+                ) : null}
               </button>
               <button
                 type="button"
@@ -1814,6 +2196,38 @@ export default function QuranPage() {
           <div aria-hidden="true" className="h-40 min-[900px]:h-24" />
           </>
         )}
+
+        <QuranWordModal
+          dark={dark}
+          word={selectedWord}
+          surahNumber={wordModalLocation?.surah ?? settings.surah}
+          ayahNumber={wordModalLocation?.ayah ?? 1}
+          onClose={() => {
+            setSelectedWord(null);
+            setWordModalLocation(null);
+          }}
+        />
+
+        <QuranLoopModal
+          dark={dark}
+          isOpen={repeatModalOpen}
+          onClose={() => setRepeatModalOpen(false)}
+          surahNumber={settings.surah}
+          surahName={currentSurah?.englishName ?? 'Surah'}
+          totalVerses={currentSurah?.numberOfAyahs ?? visibleChapter?.verses.length ?? 7}
+          activeAyah={activeAyah}
+          repeatCountTarget={repeatCountTarget}
+          onSetRepeatCountTarget={(cnt) => {
+            setRepeatCountTarget(cnt);
+            updateSetting('repeatVerse', cnt === -1);
+          }}
+          rangeLoopActive={rangeLoopActive}
+          rangeStartAyah={rangeStartAyah}
+          rangeEndAyah={rangeEndAyah}
+          rangeLoopTarget={rangeLoopTarget}
+          onStartRangeLoop={startRangeLoop}
+          onStopRangeLoop={stopRangeLoop}
+        />
       </AppShell>
     </div>
   );

@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import {
   BookOpen,
+  CalendarCheck,
+  CircleDot,
   Clock3,
   Compass,
   Headphones,
@@ -12,11 +14,12 @@ import {
   Moon,
   MoonStar,
   MoreHorizontal,
+  Scale,
+  ShieldCheck,
   Sparkles,
   Sun,
   UserRound,
   X,
-  CircleDot,
 } from 'lucide-react';
 
 import { useServiceWorker } from '@/hooks/useServiceWorker';
@@ -64,6 +67,9 @@ const desktopNavItems = [
 ];
 
 const moreDrawerItems = [
+  { href: '/zakat', label: 'Zakāt & Nisāb', desc: 'Live gold/silver Nisāb & wealth assessment', section: 'zakat', Icon: Scale },
+  { href: '/halal', label: 'Halal Food Scanner', desc: 'Scan barcodes & check E-number additives', section: 'halal', Icon: ShieldCheck },
+  { href: '/qada', label: 'Qadā Tracker', desc: 'Track & repay missed prayers systematically', section: 'qada', Icon: CalendarCheck },
   { href: '/qibla', label: 'Qibla Compass', desc: 'Accurate Ka’bah direction from anywhere', section: 'qibla', Icon: Compass },
   { href: '/ramadan', label: 'Ramadan Tracker', desc: 'Fasting countdown, Tarawih & Khatmah', section: 'ramadan', Icon: MoonStar },
   { href: '/masjids', label: 'Masjid Finder', desc: 'Find nearby mosques & prayer times', section: 'masjids', Icon: Landmark },
