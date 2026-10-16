@@ -140,13 +140,22 @@ export default function DhikrlyProModal({
                 <p className="text-[11px] text-[var(--app-muted)] leading-relaxed">
                   These features are currently in development and not yet live. Payments and billing are disabled during this phase. You can explore the full roadmap and pipeline at <strong className="text-[var(--app-ink)]">/pro</strong>, or test early access preview mode with voucher code <code className="font-mono font-bold text-emerald-800 dark:text-emerald-300 bg-black/5 dark:bg-white/10 px-1 py-0.5 rounded">TESTPRO</code>.
                 </p>
-                <div className="pt-1 flex items-center gap-3">
+                <div className="pt-1 flex flex-wrap items-center gap-3">
                   <Link
                     href="/pro"
                     onClick={onClose}
                     className="inline-flex items-center gap-1.5 font-bold text-xs text-emerald-800 dark:text-emerald-300 hover:underline"
                   >
-                    <span>Explore upcoming features & pipeline on /pro</span>
+                    <span>Explore upcoming features & plans on /pro</span>
+                    <ArrowRight className="h-3 w-3" />
+                  </Link>
+                  <span className="text-[var(--app-muted)] text-[10px]">·</span>
+                  <Link
+                    href="/pipeline"
+                    onClick={onClose}
+                    className="inline-flex items-center gap-1 font-semibold text-xs text-amber-700 dark:text-amber-300 hover:underline"
+                  >
+                    <span>Engineering Pipeline</span>
                     <ArrowRight className="h-3 w-3" />
                   </Link>
                 </div>

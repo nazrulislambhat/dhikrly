@@ -52,7 +52,7 @@ import AddDuaModal from '@/components/AddDuaModal';
 import AuthModal from '@/components/AuthModal';
 import UserMenu from '@/components/UserMenu';
 import PWAProvider from '@/components/PWAProvider';
-import TasbihCounter from '@/components/TasbihCounter';
+import DailyTodoWidget from '@/components/DailyTodoWidget';
 import TiltCard from '@/components/TiltCard';
 import JumuahBanner from '@/components/JumuahBanner';
 import { useChecked } from '@/hooks/useChecked';
@@ -685,7 +685,7 @@ export default function DuasTracker() {
             </div>
 
             <div>
-              <TasbihCounter />
+              <DailyTodoWidget />
             </div>
           </aside>
         </div>
@@ -746,6 +746,18 @@ export default function DuasTracker() {
               className={`transition-colors ${dark ? 'hover:text-stone-500' : 'hover:text-stone-600'}`}
             >
               Terms
+            </Link>
+            <Link
+              href="/tech"
+              className={`transition-colors ${dark ? 'hover:text-stone-500' : 'hover:text-stone-600'}`}
+            >
+              Tech & APIs
+            </Link>
+            <Link
+              href="/pro"
+              className={`transition-colors text-amber-600 dark:text-amber-400 font-bold hover:underline`}
+            >
+              Pro Pipeline
             </Link>
             <Link
               href="/contact"
