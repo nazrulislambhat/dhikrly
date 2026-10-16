@@ -1,7 +1,18 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { BellRing, Check, Moon, Sun, X } from 'lucide-react';
+import {
+  BellRing,
+  Check,
+  Copy,
+  ExternalLink,
+  Moon,
+  Sparkles,
+  Sun,
+  X,
+  AlertCircle,
+  HelpCircle,
+} from 'lucide-react';
 import { load, save, NOTIFICATION_KEY } from '@/lib/storage';
 import { usePushSubscription } from '@/hooks/usePushSubscription';
 import type { NotifSettings } from '@/types';
@@ -13,13 +24,50 @@ const DEFAULT_SETTINGS: NotifSettings = {
   eveningTime: '18:00',
 };
 
+const PUSH_MIGRATION_SQL = `-- ── Dhikrly Push Subscriptions Migration ──
+create extension if not exists "uuid-ossp";
+
+create table if not exists public.push_subscriptions (
+  id                uuid primary key default uuid_generate_v4(),
+  user_id           uuid references auth.users(id) on delete cascade,
+  device_id         text,
+  subscription      jsonb not null,
+  morning_enabled   boolean not null default false,
+  morning_time      text not null default '06:00',
+  evening_enabled   boolean not null default false,
+  evening_time      text not null default '18:00',
+  timezone          text not null default 'UTC',
+  last_sent_morning date,
+  last_sent_evening date,
+  created_at        timestamptz not null default now(),
+  updated_at        timestamptz not null default now()
+);
+
+create index if not exists push_subs_user_id_idx   on public.push_subscriptions(user_id);
+create index if not exists push_subs_device_id_idx on public.push_subscriptions(device_id);
+create index if not exists push_subs_morning_idx   on public.push_subscriptions(morning_enabled, morning_time);
+create index if not exists push_subs_evening_idx   on public.push_subscriptions(evening_enabled, evening_time);
+
+alter table public.push_subscriptions enable row level security;
+
+drop policy if exists "Service role manages push subs" on public.push_subscriptions;
+create policy "Service role manages push subs"
+  on public.push_subscriptions for all
+  using (true)
+  with check (true);
+`;
+
 /* ─────────────────────────────────────────────────────────────────────
    In-app fallback scheduler (fires when app is open)
    Used as a backup alongside server push.
 ───────────────────────────────────────────────────────────────────── */
 let notifInterval: ReturnType<typeof setInterval> | null = null;
 
-export async function fireNotification(title: string, options: NotificationOptions) {
+type ExtendedNotificationOptions = NotificationOptions & {
+  vibrate?: number[];
+};
+
+export async function fireNotification(title: string, options: ExtendedNotificationOptions) {
   if (typeof window === 'undefined' || !('Notification' in window)) return false;
   if (Notification.permission !== 'granted') return false;
 
@@ -62,12 +110,20 @@ export async function checkAndFireInApp(settings: NotifSettings) {
     const diff = nowMinutes - (h * 60 + m);
     // Fire if within 15 minutes of scheduled time
     if (diff >= 0 && diff < 15) {
-      const shown = await fireNotification('Daily Adhkār Reminder 🌙', {
-        body: `Time for your ${label.toLowerCase()} adhkār & duʿā`,
-        icon: '/icon-192.png',
-        badge: '/icon-192.png',
-        tag: `adhkar-${prop}`,
-      });
+      const shown = await fireNotification(
+        label === 'Morning' ? 'Morning Adhkār & Du’ā 🌅' : 'Evening Adhkār & Du’ā 🌙',
+        {
+          body:
+            label === 'Morning'
+              ? 'أَصْبَحْنَا وَأَصْبَحَ الْمُلْكُ لِلَّهِ · Time for your morning adhkār & duʿā'
+              : 'أَمْسَيْنَا وَأَمْسَى الْمُلْكُ لِلَّهِ · Time for your evening adhkār & duʿā',
+          icon: '/icon-192.png',
+          badge: '/icon-192.png',
+          tag: `dhikrly-${prop}`,
+          data: { url: label === 'Morning' ? '/?session=morning' : '/?session=evening' },
+          vibrate: [120, 80, 120, 80, 240],
+        },
+      );
       if (shown) {
         fired[prop] = true;
         save(firedKey, fired);
@@ -106,18 +162,23 @@ function Toggle({
 }) {
   return (
     <button
+      type="button"
       onClick={onToggle}
       className={`relative h-6 w-11 rounded-full transition-colors ${
         enabled
-          ? color === 'amber' ? 'bg-amber-500' : 'bg-violet-500'
-          : dark ? 'bg-stone-700' : 'bg-stone-200'
+          ? color === 'amber'
+            ? 'bg-amber-500'
+            : 'bg-emerald-600'
+          : dark
+            ? 'bg-stone-700'
+            : 'bg-stone-200'
       }`}
     >
       <span
-  className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${
-    enabled ? '' : '-translate-x-[20px]'
-  }`}
-/>
+        className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${
+          enabled ? 'left-[22px]' : 'left-0.5'
+        }`}
+      />
     </button>
   );
 }
@@ -137,11 +198,13 @@ export default function NotificationSettings({
   onClose,
 }: NotificationSettingsProps) {
   const [settings, setSettings] = useState<NotifSettings>(
-    () => load<NotifSettings>(NOTIFICATION_KEY, DEFAULT_SETTINGS)
+    () => load<NotifSettings>(NOTIFICATION_KEY, DEFAULT_SETTINGS),
   );
   const [permission, setPermission] = useState<NotificationPermission>('default');
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [errorMsg, setErrorMsg] = useState('');
+  const [showSqlHelp, setShowSqlHelp] = useState(false);
+  const [copiedSql, setCopiedSql] = useState(false);
   const [testSent, setTestSent] = useState(false);
   const { isSubscribed, isLoading, subscribe, unsubscribe } = usePushSubscription();
 
@@ -161,11 +224,13 @@ export default function NotificationSettings({
     if (permission !== 'granted') {
       await requestPermission();
     }
-    const sent = await fireNotification('Daily Adhkār Reminder 🌙', {
-      body: "Bismillah! This is a test reminder. Your notifications are working perfectly.",
+    const sent = await fireNotification('Dhikrly — Daily Remembrance 🌙', {
+      body: 'سُبْحَانَ اللَّهِ وَبِحَمْدِهِ · Bismillah! Your Dhikrly notifications are active, branded, and working smoothly.',
       icon: '/icon-192.png',
       badge: '/icon-192.png',
-      tag: 'adhkar-test',
+      tag: 'dhikrly-test',
+      data: { url: '/' },
+      vibrate: [120, 80, 120, 80, 240],
     });
     if (sent) {
       setTestSent(true);
@@ -175,9 +240,20 @@ export default function NotificationSettings({
     }
   };
 
+  const copySqlToClipboard = async () => {
+    try {
+      await navigator.clipboard.writeText(PUSH_MIGRATION_SQL);
+      setCopiedSql(true);
+      setTimeout(() => setCopiedSql(false), 2500);
+    } catch (e) {
+      console.warn('Clipboard write failed:', e);
+    }
+  };
+
   const handleSave = useCallback(async () => {
     setStatus('saving');
     setErrorMsg('');
+    setShowSqlHelp(false);
 
     // Always save locally and schedule in-browser
     save(NOTIFICATION_KEY, settings);
@@ -209,16 +285,19 @@ export default function NotificationSettings({
       if (!result.ok) {
         setStatus('saved');
         if (result.error?.includes('push_subscriptions')) {
-          setErrorMsg('Local reminders saved & active! (Background push requires running the SQL migration in Supabase).');
+          setShowSqlHelp(true);
+          setErrorMsg(
+            'In-app reminders saved & active! For background push when the app is closed, run the SQL migration below in Supabase.',
+          );
         } else {
-          setErrorMsg(result.error ?? 'Local reminders saved. Cloud push registration had an issue.');
+          setErrorMsg(result.error ?? 'In-app reminders active. Cloud push had an issue.');
         }
         return;
       }
     } catch (error) {
       console.warn('Push registration warning:', error);
       setStatus('saved');
-      setErrorMsg('Local reminders saved. Cloud push registration had an issue.');
+      setErrorMsg('In-app reminders active. Cloud push had an issue.');
       return;
     }
 
@@ -228,52 +307,86 @@ export default function NotificationSettings({
 
   /* ── Styles ── */
   const overlay = dark ? 'bg-black/65 backdrop-blur-md' : 'bg-stone-900/45 backdrop-blur-md';
-  const panel   = dark ? 'bg-[#14211e] border-white/10 text-stone-100' : 'bg-white border-stone-200';
-  const input   = dark
-    ? 'bg-white/5 border-white/10 text-stone-200 focus:border-amber-400/50'
-    : 'bg-stone-50 border-stone-200 text-stone-700 focus:border-amber-400';
+  const panel = dark ? 'bg-[#14211e] border-white/10 text-stone-100' : 'bg-white border-stone-200';
+  const input = dark
+    ? 'bg-white/5 border-white/10 text-stone-200 focus:border-emerald-400/50'
+    : 'bg-stone-50 border-stone-200 text-stone-700 focus:border-emerald-400';
 
   return (
     <div
       className={`fixed inset-0 z-[100] flex items-center justify-center p-4 ${overlay}`}
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div className={`max-h-[calc(100dvh-2rem)] w-full max-w-sm overflow-y-auto rounded-2xl border p-6 shadow-2xl ${panel}`}>
-
+      <div
+        className={`max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-y-auto rounded-3xl border p-6 shadow-2xl ${panel}`}
+      >
         {/* Header */}
         <div className="mb-5 flex items-center justify-between">
-          <div>
-            <h2 className={`inline-flex items-center gap-2 font-serif text-lg font-semibold ${dark ? 'text-stone-100' : 'text-stone-800'}`}>
-              <BellRing className="h-4 w-4 text-emerald-700 dark:text-emerald-200" aria-hidden="true" />
-              Notification Reminders
-            </h2>
-            <p className={`mt-0.5 text-[10px] ${dark ? 'text-stone-600' : 'text-stone-400'}`}>
-              {isSubscribed
-                ? 'Push notifications active — works when app is closed'
-                : 'Enable to receive reminders even when app is closed'}
-            </p>
+          <div className="flex items-center gap-3">
+            <span className="grid h-10 w-10 place-items-center rounded-2xl bg-emerald-800 text-white dark:bg-emerald-400 dark:text-emerald-950 shadow-md">
+              <BellRing className="h-5 w-5" />
+            </span>
+            <div>
+              <h2
+                className={`font-serif text-lg font-bold ${
+                  dark ? 'text-stone-100' : 'text-stone-800'
+                }`}
+              >
+                Notification Reminders
+              </h2>
+              <p className={`text-[11px] ${dark ? 'text-stone-400' : 'text-stone-500'}`}>
+                {isSubscribed
+                  ? 'Background Web Push active — works when closed'
+                  : 'Receive reminders even when Dhikrly is closed'}
+              </p>
+            </div>
           </div>
-          <button aria-label="Close notification settings" onClick={onClose} className={`rounded-full p-1.5 ${dark ? 'text-stone-500 hover:text-stone-300' : 'text-stone-400 hover:text-stone-600'}`}>
-            <X className="h-4 w-4" aria-hidden="true" />
+          <button
+            aria-label="Close notification settings"
+            onClick={onClose}
+            className={`rounded-full p-2 ${
+              dark
+                ? 'text-stone-400 hover:bg-white/10 hover:text-stone-200'
+                : 'text-stone-400 hover:bg-stone-100 hover:text-stone-600'
+            }`}
+          >
+            <X className="h-5 w-5" aria-hidden="true" />
           </button>
         </div>
 
         {/* Permission banner */}
-        <div className={`mb-5 rounded-xl border px-4 py-3 text-[12px] ${
-          permission === 'granted'
-            ? dark ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400' : 'border-emerald-300/50 bg-emerald-50 text-emerald-700'
-            : permission === 'denied'
-              ? dark ? 'border-red-500/30 bg-red-500/10 text-red-400' : 'border-red-200 bg-red-50 text-red-600'
-              : dark ? 'border-amber-500/30 bg-amber-500/10 text-amber-400' : 'border-amber-200 bg-amber-50 text-amber-700'
-        }`}>
-          {permission === 'granted' && <span className="inline-flex items-center gap-2"><Check className="h-4 w-4" aria-hidden="true" /> Notifications are enabled</span>}
-          {permission === 'denied' && <span className="inline-flex items-center gap-2"><X className="h-4 w-4" aria-hidden="true" /> Notifications blocked — enable in browser/system settings</span>}
+        <div
+          className={`mb-5 rounded-2xl border px-4 py-3 text-xs ${
+            permission === 'granted'
+              ? dark
+                ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400'
+                : 'border-emerald-300/50 bg-emerald-50 text-emerald-800'
+              : permission === 'denied'
+                ? dark
+                  ? 'border-red-500/30 bg-red-500/10 text-red-400'
+                  : 'border-red-200 bg-red-50 text-red-600'
+                : dark
+                  ? 'border-amber-500/30 bg-amber-500/10 text-amber-300'
+                  : 'border-amber-200 bg-amber-50 text-amber-800'
+          }`}
+        >
+          {permission === 'granted' && (
+            <span className="inline-flex items-center gap-2 font-medium">
+              <Check className="h-4 w-4" aria-hidden="true" /> Browser notification permission granted
+            </span>
+          )}
+          {permission === 'denied' && (
+            <span className="inline-flex items-center gap-2 font-medium">
+              <X className="h-4 w-4" aria-hidden="true" /> Notifications blocked — enable in browser/OS settings
+            </span>
+          )}
           {permission === 'default' && (
             <div className="flex items-center justify-between gap-3">
-              <span>Allow notifications to receive reminders</span>
+              <span>Allow notifications to receive daily reminders</span>
               <button
+                type="button"
                 onClick={requestPermission}
-                className={`rounded-full px-3 py-1 text-[10px] font-medium ${dark ? 'bg-amber-400/20 text-amber-300' : 'bg-amber-100 text-amber-700'}`}
+                className="rounded-xl bg-emerald-800 px-3.5 py-1.5 text-xs font-bold text-white shadow-xs hover:bg-emerald-700 dark:bg-emerald-400 dark:text-emerald-950"
               >
                 Allow
               </button>
@@ -282,109 +395,157 @@ export default function NotificationSettings({
         </div>
 
         {/* Morning */}
-        <div className="mb-4">
-          <div className="mb-2 flex items-center justify-between">
-            <div>
-              <p className={`inline-flex items-center gap-2 text-[13px] font-medium ${dark ? 'text-stone-200' : 'text-stone-700'}`}>
-                <Sun className="h-4 w-4 text-emerald-700 dark:text-emerald-200" aria-hidden="true" /> Morning Reminder
-              </p>
-              <p className={`text-[10px] ${dark ? 'text-stone-600' : 'text-stone-400'}`}>
-                Morning adhkār & du'ā
-              </p>
+        <div className="mb-4 rounded-2xl border border-[var(--app-line)] bg-black/5 dark:bg-white/5 p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <span className="grid h-8 w-8 place-items-center rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-300">
+                <Sun className="h-4 w-4" />
+              </span>
+              <div>
+                <p className="text-xs font-bold text-[var(--app-ink)]">Morning Reminder</p>
+                <p className="text-[10px] text-[var(--app-muted)]">
+                  Morning Adhkār & Du’ā at dawn
+                </p>
+              </div>
             </div>
             <Toggle
               enabled={settings.morningEnabled}
-              onToggle={() => setSettings((s) => ({ ...s, morningEnabled: !s.morningEnabled }))}
+              onToggle={() =>
+                setSettings((s) => ({ ...s, morningEnabled: !s.morningEnabled }))
+              }
               color="amber"
               dark={dark}
             />
           </div>
           {settings.morningEnabled && (
-            <input
-              type="time"
-              value={settings.morningTime}
-              onChange={(e) => setSettings((s) => ({ ...s, morningTime: e.target.value }))}
-              className={`w-full rounded-xl border px-3 py-2 text-sm outline-none transition-colors ${input}`}
-            />
+            <div className="mt-3 pt-3 border-t border-[var(--app-line)]">
+              <label className="text-[10px] font-bold uppercase tracking-wider text-[var(--app-muted)] block mb-1">
+                Scheduled Time
+              </label>
+              <input
+                type="time"
+                value={settings.morningTime}
+                onChange={(e) => setSettings((s) => ({ ...s, morningTime: e.target.value }))}
+                className={`w-full rounded-xl border px-3 py-2 text-xs font-semibold outline-none transition-colors ${input}`}
+              />
+            </div>
           )}
         </div>
 
         {/* Evening */}
-        <div className="mb-5">
-          <div className="mb-2 flex items-center justify-between">
-            <div>
-              <p className={`inline-flex items-center gap-2 text-[13px] font-medium ${dark ? 'text-stone-200' : 'text-stone-700'}`}>
-                <Moon className="h-4 w-4 text-emerald-700 dark:text-emerald-200" aria-hidden="true" /> Evening Reminder
-              </p>
-              <p className={`text-[10px] ${dark ? 'text-stone-600' : 'text-stone-400'}`}>
-                Evening adhkār & du'ā
-              </p>
+        <div className="mb-5 rounded-2xl border border-[var(--app-line)] bg-black/5 dark:bg-white/5 p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <span className="grid h-8 w-8 place-items-center rounded-xl bg-emerald-500/20 text-emerald-700 dark:text-emerald-300">
+                <Moon className="h-4 w-4" />
+              </span>
+              <div>
+                <p className="text-xs font-bold text-[var(--app-ink)]">Evening Reminder</p>
+                <p className="text-[10px] text-[var(--app-muted)]">
+                  Evening Adhkār & gratitude before night
+                </p>
+              </div>
             </div>
             <Toggle
               enabled={settings.eveningEnabled}
-              onToggle={() => setSettings((s) => ({ ...s, eveningEnabled: !s.eveningEnabled }))}
+              onToggle={() =>
+                setSettings((s) => ({ ...s, eveningEnabled: !s.eveningEnabled }))
+              }
               color="violet"
               dark={dark}
             />
           </div>
           {settings.eveningEnabled && (
-            <input
-              type="time"
-              value={settings.eveningTime}
-              onChange={(e) => setSettings((s) => ({ ...s, eveningTime: e.target.value }))}
-              className={`w-full rounded-xl border px-3 py-2 text-sm outline-none transition-colors ${input}`}
-            />
+            <div className="mt-3 pt-3 border-t border-[var(--app-line)]">
+              <label className="text-[10px] font-bold uppercase tracking-wider text-[var(--app-muted)] block mb-1">
+                Scheduled Time
+              </label>
+              <input
+                type="time"
+                value={settings.eveningTime}
+                onChange={(e) => setSettings((s) => ({ ...s, eveningTime: e.target.value }))}
+                className={`w-full rounded-xl border px-3 py-2 text-xs font-semibold outline-none transition-colors ${input}`}
+              />
+            </div>
           )}
         </div>
 
         {/* Notice/Warning/Error */}
         {errorMsg && (
           <div
-            className={`mb-4 rounded-xl border px-3 py-2 text-[11px] leading-relaxed ${
+            className={`mb-4 rounded-2xl border px-3.5 py-3 text-xs leading-relaxed ${
               status === 'error'
                 ? dark
-                  ? 'border-red-500/30 bg-red-500/10 text-red-400'
-                  : 'border-red-200 bg-red-50 text-red-600'
+                  ? 'border-red-500/30 bg-red-500/10 text-red-300'
+                  : 'border-red-200 bg-red-50 text-red-700'
                 : dark
                   ? 'border-amber-500/30 bg-amber-500/10 text-amber-300'
-                  : 'border-amber-200 bg-amber-50 text-amber-700'
+                  : 'border-amber-200 bg-amber-50 text-amber-800'
             }`}
           >
-            {errorMsg}
+            <div className="flex items-start gap-2">
+              <AlertCircle className="h-4 w-4 shrink-0 mt-0.5 text-amber-500" />
+              <span>{errorMsg}</span>
+            </div>
           </div>
         )}
 
-        {/* Info */}
-        <p className={`mb-4 text-[10px] leading-relaxed ${dark ? 'text-stone-500' : 'text-stone-400'}`}>
-          In-app reminders fire while using Dhikrly. Background push delivers reminders even when the app is closed.
-        </p>
+        {/* Supabase SQL Migration Helper Box */}
+        {showSqlHelp && (
+          <div className="mb-5 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-xs">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-emerald-600 dark:text-emerald-300" />
+                <strong className="text-[var(--app-ink)]">How to enable Background Push:</strong>
+              </div>
+              <button
+                type="button"
+                onClick={copySqlToClipboard}
+                className="inline-flex items-center gap-1 rounded-lg bg-emerald-800 px-2.5 py-1 text-[11px] font-bold text-white hover:bg-emerald-700 dark:bg-emerald-400 dark:text-emerald-950"
+              >
+                {copiedSql ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                <span>{copiedSql ? 'Copied SQL!' : 'Copy SQL'}</span>
+              </button>
+            </div>
+
+            <ol className="list-decimal list-inside space-y-1 text-[11px] text-[var(--app-muted)]">
+              <li>Open your Supabase Project Dashboard</li>
+              <li>Click <strong>SQL Editor</strong> in the left sidebar</li>
+              <li>Paste the SQL (or copy from button above) and click <strong>Run</strong></li>
+              <li>Come back here and click <strong>Save & Schedule</strong></li>
+            </ol>
+          </div>
+        )}
 
         {/* Action buttons */}
-        <div className="flex gap-2">
+        <div className="flex gap-2.5">
           <button
             type="button"
             onClick={handleTestNotification}
             disabled={status === 'saving'}
-            className={`flex-1 rounded-xl py-2.5 text-xs font-medium border transition-all active:scale-[0.98] ${
+            className={`flex-1 rounded-2xl py-3 text-xs font-bold border transition-all active:scale-[0.98] ${
               testSent
-                ? dark ? 'border-emerald-500/40 bg-emerald-500/20 text-emerald-300' : 'border-emerald-300 bg-emerald-50 text-emerald-700'
+                ? dark
+                  ? 'border-emerald-500/40 bg-emerald-500/20 text-emerald-300'
+                  : 'border-emerald-300 bg-emerald-50 text-emerald-700'
                 : dark
                   ? 'border-white/10 bg-white/5 text-stone-300 hover:bg-white/10'
                   : 'border-stone-200 bg-stone-50 text-stone-700 hover:bg-stone-100'
             }`}
           >
-            {testSent ? '✓ Sent!' : '🔔 Send Test'}
+            {testSent ? '✓ Sent Test!' : '🔔 Send Test'}
           </button>
 
           <button
+            type="button"
             onClick={handleSave}
             disabled={permission === 'denied' || status === 'saving' || isLoading}
-            className={`flex-[2] rounded-xl py-2.5 text-xs font-medium transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed ${
+            className={`flex-[2] rounded-2xl py-3 text-xs font-bold transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed ${
               status === 'saved'
-                ? dark ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-emerald-100 text-emerald-700'
-                : dark
-                  ? 'bg-amber-400/20 text-amber-300 hover:bg-amber-400/30 border border-amber-400/30'
-                  : 'bg-amber-500 text-white hover:bg-amber-600'
+                ? dark
+                  ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                  : 'bg-emerald-100 text-emerald-800'
+                : 'bg-emerald-800 text-white hover:bg-emerald-700 dark:bg-emerald-400 dark:text-emerald-950 dark:hover:bg-emerald-300 shadow-md'
             }`}
           >
             {status === 'saving' || isLoading
