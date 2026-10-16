@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { Moon, MoonStar, Sun } from 'lucide-react';
+import { Moon, MoonStar, ShieldCheck, Sun } from 'lucide-react';
 import { load, save, SETTINGS_KEY } from '@/lib/storage';
 
 interface LegalLayoutProps {
@@ -39,28 +39,29 @@ export default function LegalLayout({
     <div className="min-h-screen bg-[var(--app-bg)] text-[var(--app-ink)] transition-colors">
       {/* Nav */}
       <nav className="sticky top-0 z-10 border-b border-[var(--app-line)] bg-[var(--app-surface)]/90 backdrop-blur-md">
-        <div className="mx-auto flex max-w-3xl items-center justify-between px-6 py-4">
+        <div className="mx-auto flex w-[min(calc(100%-2rem),72rem)] items-center justify-between px-2 lg:px-4 py-3.5">
           <Link
             href="/"
-            className="flex items-center gap-2 text-emerald-800 transition-opacity hover:opacity-80 dark:text-emerald-300"
+            className="flex items-center gap-3 text-emerald-800 transition-opacity hover:opacity-80 dark:text-emerald-300"
           >
-            <MoonStar className="h-5 w-5" aria-hidden="true" />
-            <span className="font-serif text-[15px] font-semibold tracking-wide">
-              Dhikrly
+            <span className="grid h-10 w-10 place-items-center rounded-2xl bg-emerald-800 text-xl font-bold text-white shadow-sm dark:bg-emerald-400 dark:text-emerald-950" aria-hidden="true">ذ</span>
+            <span>
+              <span className="block text-xl font-extrabold tracking-tight text-[var(--app-ink)]">Dhikrly</span>
+              <span className="hidden sm:block -mt-0.5 text-[10px] text-[var(--app-muted)]">A little, every day</span>
             </span>
           </Link>
           <div className="flex items-center gap-3">
             <button
               type="button"
               onClick={() => setDark((v) => !v)}
-              className="grid h-8 w-8 place-items-center rounded-full border border-[var(--app-line)] text-stone-500 hover:text-stone-700 dark:text-stone-400 dark:hover:text-stone-200"
+              className="grid h-9 w-9 place-items-center rounded-xl border border-[var(--app-line)] text-stone-500 hover:text-stone-700 dark:text-stone-400 dark:hover:text-stone-200"
               aria-label={dark ? 'Use light mode' : 'Use dark mode'}
             >
               {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </button>
             <Link
               href="/"
-              className="rounded-full border border-[var(--app-line)] px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-[var(--app-muted)] transition-colors hover:text-[var(--app-ink)]"
+              className="rounded-xl border border-[var(--app-line)] px-3.5 py-2 text-xs font-semibold text-[var(--app-muted)] transition-colors hover:text-[var(--app-ink)] hover:bg-black/5 dark:hover:bg-white/5"
             >
               ← Back to App
             </Link>
@@ -69,31 +70,32 @@ export default function LegalLayout({
       </nav>
 
       {/* Header */}
-      <header className="border-b border-[var(--app-line)] bg-[var(--app-surface)] py-12">
-        <div className="mx-auto max-w-3xl px-6">
-          <p className="mb-2 text-[11px] uppercase tracking-[0.18em] text-emerald-700/70 dark:text-emerald-300/70">
-            Dhikrly · https://dhikrly.com
-          </p>
+      <header className="border-b border-[var(--app-line)] bg-[var(--app-surface)] py-10 sm:py-12">
+        <div className="mx-auto w-[min(calc(100%-2rem),72rem)] px-2 lg:px-4">
+          <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-300 mb-3">
+            <ShieldCheck className="h-3.5 w-3.5" />
+            <span>LEGAL, PRIVACY & COMPLIANCE</span>
+          </div>
           <h1 className="font-serif text-[clamp(28px,5vw,42px)] font-normal tracking-wide text-emerald-900 dark:text-emerald-200">
             {title}
           </h1>
-          <p className="mt-2 text-[13px] text-[var(--app-muted)]">{subtitle}</p>
-          <p className="mt-4 text-[11px] text-[var(--app-muted)]">
+          <p className="mt-2 text-sm text-[var(--app-muted)] max-w-2xl">{subtitle}</p>
+          <p className="mt-3 text-xs text-[var(--app-muted)]">
             Last updated: {lastUpdated}
           </p>
         </div>
       </header>
 
       {/* Content */}
-      <main className="mx-auto max-w-3xl px-6 py-12">
-        <div className="[&_h2]:mb-3 [&_h2]:mt-10 [&_h2]:border-b [&_h2]:border-[var(--app-line)] [&_h2]:pb-2 [&_h2]:font-serif [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:text-emerald-900 dark:[&_h2]:text-emerald-200 [&_h3]:mb-2 [&_h3]:mt-6 [&_h3]:font-serif [&_h3]:text-base [&_h3]:font-semibold [&_h3]:text-stone-800 dark:[&_h3]:text-stone-200 [&_p]:mb-4 [&_p]:text-sm [&_p]:leading-[1.8] [&_p]:text-stone-700 dark:[&_p]:text-stone-300 [&_ul]:mb-4 [&_ul]:list-disc [&_ul]:pl-6 [&_ul_li]:mb-1 [&_ul_li]:text-sm [&_ul_li]:leading-[1.8] [&_ul_li]:text-stone-700 dark:[&_ul_li]:text-stone-300 [&_a]:text-emerald-700 dark:[&_a]:text-emerald-400 [&_a]:underline [&_a]:underline-offset-2 [&_a:hover]:text-emerald-800 dark:[&_a:hover]:text-emerald-300">
+      <main className="mx-auto w-[min(calc(100%-2rem),72rem)] px-2 lg:px-4 py-10">
+        <div className="max-w-3xl [&_h2]:mb-3 [&_h2]:mt-10 [&_h2]:border-b [&_h2]:border-[var(--app-line)] [&_h2]:pb-2 [&_h2]:font-serif [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:text-emerald-900 dark:[&_h2]:text-emerald-200 [&_h3]:mb-2 [&_h3]:mt-6 [&_h3]:font-serif [&_h3]:text-base [&_h3]:font-semibold [&_h3]:text-stone-800 dark:[&_h3]:text-stone-200 [&_p]:mb-4 [&_p]:text-sm [&_p]:leading-[1.8] [&_p]:text-stone-700 dark:[&_p]:text-stone-300 [&_ul]:mb-4 [&_ul]:list-disc [&_ul]:pl-6 [&_ul_li]:mb-1 [&_ul_li]:text-sm [&_ul_li]:leading-[1.8] [&_ul_li]:text-stone-700 dark:[&_ul_li]:text-stone-300 [&_a]:text-emerald-700 dark:[&_a]:text-emerald-400 [&_a]:underline [&_a]:underline-offset-2 [&_a:hover]:text-emerald-800 dark:[&_a:hover]:text-emerald-300">
           {children}
         </div>
       </main>
 
       {/* Footer */}
       <footer className="border-t border-[var(--app-line)] bg-[var(--app-surface)] py-8">
-        <div className="mx-auto max-w-3xl px-6">
+        <div className="mx-auto w-[min(calc(100%-2rem),72rem)] px-2 lg:px-4">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <p className="font-arabic text-lg text-emerald-800/40 dark:text-emerald-200/40">
               بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ

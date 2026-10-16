@@ -132,68 +132,72 @@ export default function AppShell({
     <div className="min-h-dvh">
       <UpdateBanner dark={dark} />
       {/* Desktop Header */}
-      <header className={`hidden min-[1080px]:sticky min-[1080px]:top-0 min-[1080px]:z-40 min-[1080px]:flex min-[1080px]:h-[4.75rem] min-[1080px]:items-center min-[1080px]:gap-4 min-[1080px]:border-b min-[1080px]:px-[clamp(1rem,3vw,3rem)] min-[1080px]:py-2.5 min-[1080px]:backdrop-blur-xl ${surface}`}>
-        <Link href="/" className="mr-auto inline-flex items-center gap-3 no-underline shrink-0" aria-label="Dhikrly home">
-          <span className="grid h-10 w-10 place-items-center rounded-2xl bg-emerald-800 text-xl font-bold text-white shadow-sm dark:bg-emerald-400 dark:text-emerald-950" aria-hidden="true">ذ</span>
-          <span>
-            <span className="block text-xl font-extrabold tracking-tight text-[var(--app-ink)]">Dhikrly</span>
-            <span className={`-mt-0.5 block text-[10px] ${muted}`}>A little, every day</span>
-          </span>
-        </Link>
+      <header className={`hidden min-[1080px]:sticky min-[1080px]:top-0 min-[1080px]:z-40 min-[1080px]:flex min-[1080px]:h-[4.75rem] min-[1080px]:items-center min-[1080px]:border-b min-[1080px]:backdrop-blur-xl ${surface}`}>
+        <div className="mx-auto flex h-full w-[min(calc(100%-2rem),72rem)] items-center gap-4 px-2 lg:px-4">
+          <Link href="/" className="mr-auto inline-flex items-center gap-3 no-underline shrink-0" aria-label="Dhikrly home">
+            <span className="grid h-10 w-10 place-items-center rounded-2xl bg-emerald-800 text-xl font-bold text-white shadow-sm dark:bg-emerald-400 dark:text-emerald-950" aria-hidden="true">ذ</span>
+            <span>
+              <span className="block text-xl font-extrabold tracking-tight text-[var(--app-ink)]">Dhikrly</span>
+              <span className={`-mt-0.5 block text-[10px] ${muted}`}>A little, every day</span>
+            </span>
+          </Link>
 
-        <nav className="flex items-center gap-1 overflow-x-auto py-1" aria-label="Main navigation">
-          {desktopNavItems.map((item) => {
-            const isCurrent =
-              active === item.section ||
-              (item.section === 'ramadan' && active === 'ramadhan') ||
-              (item.section === 'adhkar' && active === 'adhkaar');
+          <nav className="flex items-center gap-1 overflow-x-auto py-1" aria-label="Main navigation">
+            {desktopNavItems.map((item) => {
+              const isCurrent =
+                active === item.section ||
+                (item.section === 'ramadan' && active === 'ramadhan') ||
+                (item.section === 'adhkar' && active === 'adhkaar');
 
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                aria-current={isCurrent ? 'page' : undefined}
-                className={`flex min-h-9 items-center gap-1.5 whitespace-nowrap rounded-xl px-2.5 text-xs font-semibold no-underline transition-colors hover:bg-emerald-500/10 hover:text-emerald-800 dark:hover:text-emerald-200 ${
-                  isCurrent
-                    ? 'bg-emerald-50 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-200 shadow-xs'
-                    : muted
-                }`}
-              >
-                <item.Icon className="h-3.5 w-3.5" aria-hidden="true" />
-                <span>{item.label}</span>
-              </Link>
-            );
-          })}
-        </nav>
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  aria-current={isCurrent ? 'page' : undefined}
+                  className={`flex min-h-9 items-center gap-1.5 whitespace-nowrap rounded-xl px-2.5 text-xs font-semibold no-underline transition-colors hover:bg-emerald-500/10 hover:text-emerald-800 dark:hover:text-emerald-200 ${
+                    isCurrent
+                      ? 'bg-emerald-50 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-200 shadow-xs'
+                      : muted
+                  }`}
+                >
+                  <item.Icon className="h-3.5 w-3.5" aria-hidden="true" />
+                  <span>{item.label}</span>
+                </Link>
+              );
+            })}
+          </nav>
 
-        <button
-          type="button"
-          className={`flex min-h-9 shrink-0 items-center gap-2 whitespace-nowrap rounded-xl border border-[var(--app-line)] px-3 text-xs font-semibold transition-colors hover:bg-emerald-500/10 ${muted}`}
-          onClick={onToggleDark}
-        >
-          {dark ? <Sun className="h-3.5 w-3.5" aria-hidden="true" /> : <Moon className="h-3.5 w-3.5" aria-hidden="true" />}
-          <span>{dark ? 'Light' : 'Dark'}</span>
-        </button>
+          <button
+            type="button"
+            className={`flex min-h-9 shrink-0 items-center gap-2 whitespace-nowrap rounded-xl border border-[var(--app-line)] px-3 text-xs font-semibold transition-colors hover:bg-emerald-500/10 ${muted}`}
+            onClick={onToggleDark}
+          >
+            {dark ? <Sun className="h-3.5 w-3.5" aria-hidden="true" /> : <Moon className="h-3.5 w-3.5" aria-hidden="true" />}
+            <span>{dark ? 'Light' : 'Dark'}</span>
+          </button>
+        </div>
       </header>
 
       {/* Main Content */}
       <main className="min-h-dvh min-w-0 pb-[calc(5.75rem+env(safe-area-inset-bottom))] min-[1080px]:pb-8">
         {/* Mobile / Tablet Header */}
         <div className="sticky top-0 z-30 flex min-h-[4.25rem] items-center border-b border-[var(--app-line)] bg-[var(--app-bg)]/90 px-4 pt-[max(0.5rem,env(safe-area-inset-top))] pb-2 backdrop-blur-xl min-[1080px]:hidden">
-          <Link href="/" className="mr-auto inline-flex items-center gap-3 no-underline" aria-label="Dhikrly home">
-            <span className="grid h-10 w-10 place-items-center rounded-2xl bg-emerald-800 text-xl font-bold text-white shadow-sm dark:bg-emerald-400 dark:text-emerald-950" aria-hidden="true">ذ</span>
-            <span className="text-lg font-extrabold tracking-tight text-[var(--app-ink)]">Dhikrly</span>
-          </Link>
-          <span className={`mr-3 text-xs hidden sm:inline ${muted}`}>A little, every day</span>
-          <button
-            type="button"
-            className="grid h-10 w-10 place-items-center rounded-full border border-[var(--app-line)] bg-[var(--app-surface)] text-lg text-emerald-800 dark:text-emerald-200 shadow-xs"
-            onClick={onToggleDark}
-            aria-label={dark ? 'Use light appearance' : 'Use dark appearance'}
-            title={dark ? 'Use light appearance' : 'Use dark appearance'}
-          >
-            {dark ? <Sun className="h-4 w-4" aria-hidden="true" /> : <Moon className="h-4 w-4" aria-hidden="true" />}
-          </button>
+          <div className="mx-auto flex h-full w-[min(calc(100%-2rem),72rem)] items-center px-2 lg:px-4">
+            <Link href="/" className="mr-auto inline-flex items-center gap-3 no-underline" aria-label="Dhikrly home">
+              <span className="grid h-10 w-10 place-items-center rounded-2xl bg-emerald-800 text-xl font-bold text-white shadow-sm dark:bg-emerald-400 dark:text-emerald-950" aria-hidden="true">ذ</span>
+              <span className="text-lg font-extrabold tracking-tight text-[var(--app-ink)]">Dhikrly</span>
+            </Link>
+            <span className={`mr-3 text-xs hidden sm:inline ${muted}`}>A little, every day</span>
+            <button
+              type="button"
+              className="grid h-10 w-10 place-items-center rounded-full border border-[var(--app-line)] bg-[var(--app-surface)] text-lg text-emerald-800 dark:text-emerald-200 shadow-xs"
+              onClick={onToggleDark}
+              aria-label={dark ? 'Use light appearance' : 'Use dark appearance'}
+              title={dark ? 'Use light appearance' : 'Use dark appearance'}
+            >
+              {dark ? <Sun className="h-4 w-4" aria-hidden="true" /> : <Moon className="h-4 w-4" aria-hidden="true" />}
+            </button>
+          </div>
         </div>
 
         {children}

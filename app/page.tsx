@@ -300,7 +300,7 @@ export default function DuasTracker() {
         />
       )}
 
-      <div className="mx-auto w-full max-w-[82rem] px-4 py-5 pb-10 sm:px-6 sm:py-8 lg:px-10">
+      <div className="mx-auto w-[min(calc(100%-2rem),72rem)] px-2 py-5 pb-10 sm:px-4 sm:py-8 lg:px-4">
         {/* Jumu'ah Mode */}
         <JumuahBanner dark={dark} />
 
@@ -342,6 +342,11 @@ export default function DuasTracker() {
                   ↑ Sync / Login
                 </button>
               )}
+            </div>
+
+            <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-300">
+              <Sparkles className="h-3.5 w-3.5" />
+              <span>DAILY ADHKĀR & SUPPLICATIONS</span>
             </div>
 
             <h1
