@@ -9,6 +9,7 @@ import {
   Clock3,
   Compass,
   Headphones,
+  HeartHandshake,
   Landmark,
   LineChart,
   Moon,
@@ -31,6 +32,7 @@ export type AppSection =
   | 'salah'
   | 'quran'
   | 'tasbeeh'
+  | 'sunnah'
   | 'qibla'
   | 'ramadan'
   | 'masjids'
@@ -58,6 +60,7 @@ const desktopNavItems = [
   { href: '/salah', label: 'Ṣalāh', section: 'salah', Icon: Clock3 },
   { href: '/quran', label: 'Qur’an', section: 'quran', Icon: BookOpen },
   { href: '/tasbeeh', label: 'Tasbīḥ', section: 'tasbeeh', Icon: CircleDot },
+  { href: '/sunnah', label: 'Sunnah', section: 'sunnah', Icon: HeartHandshake },
   { href: '/qibla', label: 'Qibla', section: 'qibla', Icon: Compass },
   { href: '/ramadan', label: 'Ramadan', section: 'ramadan', Icon: MoonStar },
   { href: '/masjids', label: 'Masjids', section: 'masjids', Icon: Landmark },
@@ -67,6 +70,7 @@ const desktopNavItems = [
 ];
 
 const moreDrawerItems = [
+  { href: '/sunnah', label: 'Daily Sunnah & Player', desc: 'Revive daily prophetic traditions & notification player', section: 'sunnah', Icon: HeartHandshake },
   { href: '/zakat', label: 'Zakāt & Nisāb', desc: 'Live gold/silver Nisāb & wealth assessment', section: 'zakat', Icon: Scale },
   { href: '/halal', label: 'Halal Food Scanner', desc: 'Scan barcodes & check E-number additives', section: 'halal', Icon: ShieldCheck },
   { href: '/qada', label: 'Qadā Tracker', desc: 'Track & repay missed prayers systematically', section: 'qada', Icon: CalendarCheck },

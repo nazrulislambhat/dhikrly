@@ -4,6 +4,11 @@
  * 100% offline, zero network assets required.
  */
 
+import {
+  startBackgroundAudioKeepAlive,
+  stopBackgroundAudioKeepAlive,
+} from './mediaSession';
+
 export type AmbientTrackId =
   | 'rain'
   | 'birds'
@@ -188,6 +193,7 @@ class ProceduralSoundEngine {
       await this.ctx.resume();
     }
     this.isRunning = true;
+    startBackgroundAudioKeepAlive();
   }
 
   public setMasterVolume(val: number) {
@@ -489,6 +495,7 @@ class ProceduralSoundEngine {
 
   public stopAll() {
     this.isRunning = false;
+    stopBackgroundAudioKeepAlive();
     if (this.chimesTimer) {
       clearInterval(this.chimesTimer);
       this.chimesTimer = null;

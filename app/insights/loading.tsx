@@ -1,0 +1,21 @@
+import { Skeleton, PageHeaderSkeleton, StatCardSkeleton } from '@/components/Skeleton';
+
+export default function InsightsLoading() {
+  return (
+    <div className="mx-auto w-[min(calc(100%-2rem),72rem)] px-2 py-6 sm:py-8 lg:px-4">
+      <PageHeaderSkeleton />
+
+      <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <StatCardSkeleton />
+        <StatCardSkeleton />
+        <StatCardSkeleton />
+        <StatCardSkeleton />
+      </div>
+
+      <div className="rounded-3xl border border-[var(--app-line)] bg-[var(--app-surface)] p-6 dark:bg-[#14211e]">
+        <Skeleton className="h-6 w-48 rounded-lg mb-4" />
+        <Skeleton className="h-64 w-full rounded-2xl" />
+      </div>
+    </div>
+  );
+}

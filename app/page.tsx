@@ -8,6 +8,7 @@ import {
   Clock3,
   Compass,
   Headphones,
+  HeartHandshake,
   Landmark,
   LineChart,
   MoonStar,
@@ -442,6 +443,7 @@ export default function DuasTracker() {
         <div className="mb-6 overflow-x-auto pb-1" aria-label="Explore Dhikrly tools">
           <div className="flex items-center gap-2 min-w-max">
             {[
+              { href: '/sunnah', label: 'Daily Sunnah & Player', Icon: HeartHandshake },
               { href: '/tasbeeh', label: 'Tasbīḥ Counter', Icon: CircleDot },
               { href: '/qibla', label: 'Qibla Compass', Icon: Compass },
               { href: '/ramadan', label: 'Ramadan Tracker', Icon: MoonStar },

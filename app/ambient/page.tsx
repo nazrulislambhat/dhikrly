@@ -25,6 +25,11 @@ import {
 import AppShell from '@/components/AppShell';
 import { load, save, SETTINGS_KEY } from '@/lib/storage';
 import {
+  updateMediaMetadata,
+  setMediaPlaybackState,
+  registerMediaActionHandlers,
+} from '@/lib/mediaSession';
+import {
   ambientEngine,
   AMBIENT_PRESETS,
   AMBIENT_TRACKS,
@@ -206,11 +211,33 @@ export default function AmbientPage() {
       });
     }
     setIsPlaying(true);
+
+    const presetName = activePreset
+      ? AMBIENT_PRESETS.find((p) => p.id === activePreset)?.name
+      : 'Islamic Soundscape';
+
+    updateMediaMetadata({
+      title: presetName || 'Ambient Focus',
+      artist: 'Dhikrly Islamic Soundscapes',
+      album: 'Meditation & Focus · 100% Offline',
+      artwork: [
+        { src: '/icon-192.png', sizes: '192x192', type: 'image/png' },
+        { src: '/icon-512.png', sizes: '512x512', type: 'image/png' },
+      ],
+    });
+    setMediaPlaybackState('playing');
+
+    registerMediaActionHandlers({
+      onPlay: () => handleStartAudio(),
+      onPause: () => handlePause(),
+      onStop: () => handlePause(),
+    });
   };
 
   const handlePause = () => {
     ambientEngine.stopAll();
     setIsPlaying(false);
+    setMediaPlaybackState('paused');
   };
 
   const togglePlay = () => {

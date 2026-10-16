@@ -141,6 +141,8 @@ self.addEventListener('notificationclick', (event) => {
     targetPath = '/salah';
   } else if (action === 'open_insights') {
     targetPath = '/insights';
+  } else if (action === 'open_sunnah') {
+    targetPath = '/sunnah';
   }
 
   const targetUrl = new URL(targetPath, self.location.origin).href;
