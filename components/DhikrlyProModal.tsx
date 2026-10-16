@@ -173,8 +173,8 @@ export default function DhikrlyProModal({
                       : 'border-stone-200 bg-stone-50/70 hover:border-stone-300'
                 }`}
               >
-                <span className="absolute -top-2.5 right-3 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 px-2 py-0.5 text-[9px] font-extrabold text-stone-950 uppercase tracking-wider shadow-sm">
-                  Most Popular · 7-Day Free Trial
+                <span className="absolute -top-2 right-3 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 px-2 py-0.5 text-[9px] font-extrabold text-stone-950 uppercase tracking-wider shadow-sm">
+                  7-Day Free Trial
                 </span>
 
                 <div>

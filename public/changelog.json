@@ -1,6 +1,25 @@
 {
-  "current": "2.2",
+  "current": "2.3",
   "releases": [
+    {
+      "version": "2.3",
+      "date": "2026-10-16",
+      "title": "Dhikrly Pro Architecture, Feature Pipeline (/pro), Makrooh Prayer Windows & Update Progress Bar",
+      "added": [
+        "Dhikrly Pro Architecture & Modal — type-safe pro tiers, preview modal, Halal Khidmah covenant, and offline test voucher engine (TESTPRO, DHIKRLY2026, STUDENT)",
+        "Dhikrly Pro Feature Pipeline Hub (/pro) — comprehensive roadmap showcasing AI Hifdh Memorization Coach, End-to-End Encrypted Cloud Sync, Studio Ambient Reciter Mixer, AAOIFI Zakat Screener, and 1-for-1 Student Waqf",
+        "Interactive Testing Voucher Playground — test preview access directly on /pro and in Settings",
+        "Makrooh (Prohibited) Prayer Clocks — Shurūq (sunrise), Zawāl (zenith), and Ghurūb (sunset) times with countdowns on the Salah tracker",
+        "Live Geolocation Nearby Masjid Finder (/masjids) — GPS-powered mosque locator with interactive search and instant Google Maps navigation",
+        "Dynamic In-App Update Progress Bar — real-time stepped progress animation and status feedback when upgrading Dhikrly"
+      ],
+      "improved": [
+        "Added /pro roadmap link to main navigation drawer and desktop dropdown",
+        "Fixed Next.js hydration error on Friday Jumu'ah banner with client mount safety guard",
+        "Updated Buy Me a Coffee support links across all headers, footers, drawers, and legal policies"
+      ],
+      "removed": []
+    },
     {
       "version": "2.2",
       "date": "2026-10-16",
