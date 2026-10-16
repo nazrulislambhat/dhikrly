@@ -6,6 +6,7 @@ import {
   BookOpen,
   CircleDot,
   Clock3,
+  Coffee,
   Compass,
   Headphones,
   HeartHandshake,
@@ -707,6 +708,24 @@ export default function DuasTracker() {
               ? `${syncStatus === 'synced' ? 'All changes synced' : syncStatus === 'syncing' ? 'Syncing changes…' : syncStatus === 'offline' ? 'Waiting for connection' : 'Sync failed; retrying'} · ${user.email}`
               : 'Progress saved locally'}
           </p>
+          {/* Buy Me A Coffee */}
+          <div className="mt-4 flex justify-center">
+            <a
+              href="https://buymeacoffee.com/nazrulislambhat"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Buy me a coffee - Support Dhikrly"
+              className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-bold no-underline transition-all hover:scale-105 active:scale-95 ${
+                dark
+                  ? 'border-amber-400/30 bg-amber-400/10 text-amber-200 hover:bg-amber-400/20 hover:border-amber-400/50'
+                  : 'border-amber-400/50 bg-[#FFDD00]/25 text-amber-950 hover:bg-[#FFDD00]/40 hover:border-amber-500/60 shadow-xs'
+              }`}
+            >
+              <Coffee className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+              <span>Buy me a coffee</span>
+            </a>
+          </div>
+
           <div
             className={`mt-4 flex flex-wrap items-center justify-center gap-4 text-[10px] uppercase tracking-widest ${dark ? 'text-stone-700' : 'text-stone-400'}`}
           >

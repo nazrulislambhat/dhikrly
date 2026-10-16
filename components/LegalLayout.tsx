@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { Moon, MoonStar, ShieldCheck, Sun } from 'lucide-react';
+import { Coffee, Moon, MoonStar, ShieldCheck, Sun } from 'lucide-react';
 import { load, save, SETTINGS_KEY } from '@/lib/storage';
 
 interface LegalLayoutProps {
@@ -125,6 +125,15 @@ export default function LegalLayout({
               >
                 Contact
               </Link>
+              <a
+                href="https://buymeacoffee.com/nazrulislambhat"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-amber-700 dark:text-amber-400 font-bold transition-colors hover:opacity-80"
+              >
+                <Coffee className="h-3.5 w-3.5 text-amber-500" />
+                <span>Buy Me A Coffee</span>
+              </a>
               <Link
                 href="/"
                 className="transition-colors hover:text-[var(--app-ink)]"

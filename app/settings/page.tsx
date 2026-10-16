@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import {
   AlertCircle,
+  ArrowRight,
   ArrowUpRight,
   BellRing,
   BookOpen,
@@ -14,6 +15,8 @@ import {
   Clock,
   Clock3,
   Compass,
+  Construction,
+  Crown,
   Download,
   Flame,
   Globe,
@@ -38,6 +41,8 @@ import { getSalahSettings, saveSalahSettings } from '@/lib/salahStorage';
 import { load, NOTIFICATION_KEY, save, SETTINGS_KEY } from '@/lib/storage';
 import { supabase } from '@/lib/supabase';
 import type { SalahSettings } from '@/types/salah';
+import DhikrlyProModal from '@/components/DhikrlyProModal';
+import { usePro } from '@/hooks/usePro';
 
 export interface UserProfileSettings {
   displayName: string;
@@ -119,6 +124,9 @@ export default function SettingsPage() {
   const [isClearingCache, setIsClearingCache] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showProModal, setShowProModal] = useState(false);
+
+  const { isPro, tier: proTier, status: proStatus } = usePro();
 
   const { user, loading, signOut } = useAuth();
 
@@ -435,6 +443,99 @@ export default function SettingsPage() {
                     Sign in to Sync
                   </button>
                 )}
+              </div>
+            </div>
+          </section>
+
+          {/* Dhikrly Pro Membership Card */}
+          <section
+            className={`relative overflow-hidden rounded-3xl border p-5 sm:p-6 transition-all ${
+              dark
+                ? 'border-amber-500/30 bg-gradient-to-br from-[#1b2b23] via-[#15241e] to-[#121c17]'
+                : 'border-amber-400/40 bg-gradient-to-br from-amber-50/70 via-emerald-50/40 to-white'
+            }`}
+            aria-labelledby="pro-section-title"
+          >
+            <div className="absolute -top-12 -right-12 h-36 w-36 rounded-full bg-amber-400/10 blur-2xl pointer-events-none" />
+
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5 relative z-10">
+              <div className="space-y-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/40 bg-amber-500/15 px-3 py-0.5 text-xs font-black uppercase tracking-wider text-amber-800 dark:text-amber-300">
+                    <Crown className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
+                    <span>{isPro ? `Dhikrly Pro · ${proTier.toUpperCase()}` : 'Dhikrly Pro Membership'}</span>
+                  </span>
+                  <span className="inline-flex items-center gap-1 rounded-full border border-amber-500/30 bg-amber-500/20 px-2.5 py-0.5 text-[10px] font-bold text-amber-800 dark:text-amber-300">
+                    <Construction className="h-3 w-3" />
+                    Under Active Development
+                  </span>
+                  {isPro && proStatus.expiresAt && (
+                    <span className="text-xs text-[var(--app-muted)]">
+                      Renews / Valid until {new Date(proStatus.expiresAt).toLocaleDateString()}
+                    </span>
+                  )}
+                  {isPro && proTier === 'lifetime' && (
+                    <span className="text-xs font-semibold text-emerald-800 dark:text-emerald-400">
+                      · Lifetime Benefactor Pass
+                    </span>
+                  )}
+                </div>
+
+                <div>
+                  <h2 id="pro-section-title" className="text-xl sm:text-2xl font-black tracking-tight">
+                    {isPro ? 'You are a Dhikrly Pro Patron' : 'Support Ad-Free Khidmah with Dhikrly Pro'}
+                  </h2>
+                  <p className="mt-1 text-xs sm:text-sm text-[var(--app-muted)] max-w-xl leading-relaxed">
+                    {isPro
+                      ? 'Jazakallahu Khayran! Your support keeps core Quran, Salah, and Adhkar 100% free for millions of Muslims, and funds a 1-for-1 waqf membership for students of knowledge.'
+                      : 'Features are currently in our development pipeline. You can explore the planned roadmap on /pro or test preview access using our testing vouchers.'}
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap gap-x-4 gap-y-1.5 pt-1 text-xs text-[var(--app-muted)]">
+                  <span className="inline-flex items-center gap-1.5">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                    AI Hifdh & Voice Memorization
+                  </span>
+                  <span className="inline-flex items-center gap-1.5">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                    Encrypted Multi-Device Sync
+                  </span>
+                  <span className="inline-flex items-center gap-1.5">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                    Studio Ambient Mixer
+                  </span>
+                  <span className="inline-flex items-center gap-1.5">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                    1-for-1 Student Waqf
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2.5 shrink-0">
+                <Link
+                  href="/pro"
+                  className="inline-flex items-center justify-center gap-1.5 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-xs font-bold text-emerald-800 dark:text-emerald-300 hover:bg-emerald-500/20 transition-colors no-underline"
+                >
+                  <span>Explore /pro Roadmap</span>
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => setShowProModal(true)}
+                  className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-amber-600 via-amber-500 to-emerald-700 px-5 py-3 text-xs font-black text-white shadow-lg shadow-amber-900/10 hover:brightness-110 active:scale-95 transition-all"
+                >
+                  <Crown className="h-4 w-4" />
+                  <span>{isPro ? 'Manage Membership' : 'Test Preview'}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowProModal(true)}
+                  className="inline-flex items-center justify-center gap-1.5 rounded-2xl border border-[var(--app-line)] px-4 py-3 text-xs font-semibold text-[var(--app-ink)] hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+                >
+                  <Sparkles className="h-3.5 w-3.5 text-amber-500" />
+                  <span>Redeem Voucher</span>
+                </button>
               </div>
             </div>
           </section>
@@ -961,6 +1062,9 @@ export default function SettingsPage() {
           userId={user?.id ?? null}
           onClose={() => setShowNotifications(false)}
         />
+      )}
+      {showProModal && (
+        <DhikrlyProModal dark={dark} onClose={() => setShowProModal(false)} />
       )}
     </div>
   );
