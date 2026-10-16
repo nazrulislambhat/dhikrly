@@ -11,6 +11,8 @@ interface PrayerCardProps {
   prayer: PrayerName;
   status: PrayerStatus;
   time: Date | null;
+  endTime?: Date | null;
+  endLabel?: string;
   timezone: string;
   isCurrent: boolean;
   isNext: boolean;
@@ -37,7 +39,16 @@ const NEXT_OPTIONS: { status: PrayerStatus; label: string; Icon: LucideIcon }[] 
 ];
 
 export default function PrayerCard({
-  prayer, status, time, timezone, isCurrent, isNext, dark, onStatusChange
+  prayer,
+  status,
+  time,
+  endTime,
+  endLabel,
+  timezone,
+  isCurrent,
+  isNext,
+  dark,
+  onStatusChange,
 }: PrayerCardProps) {
   const cfg = status ? STATUS_CONFIG[status] : null;
   const label = PRAYER_LABELS[prayer];
@@ -60,7 +71,7 @@ export default function PrayerCard({
       {(isCurrent || isNext) && (
         <span className={`absolute -top-2.5 left-4 rounded-full px-2.5 py-0.5 text-[9px] font-semibold uppercase tracking-widest ${
           isCurrent
-            ?             dark ? 'bg-emerald-400/20 text-emerald-200' : 'bg-emerald-100 text-emerald-800'
+            ? dark ? 'bg-emerald-400/20 text-emerald-200' : 'bg-emerald-100 text-emerald-800'
             : dark ? 'bg-white/10 text-stone-400' : 'bg-stone-100 text-stone-500'
         }`}>
           {isCurrent ? '● Now' : 'Next'}
@@ -78,9 +89,18 @@ export default function PrayerCard({
               {label.ar}
             </span>
           </div>
-          <p className={`mt-0.5 text-[12px] font-medium ${dark ? 'text-emerald-200/80' : 'text-emerald-800'}`}>
-            {time ? formatTime(time, timezone) : '—'}
-          </p>
+
+          <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+            <span className={`font-bold ${dark ? 'text-emerald-300' : 'text-emerald-800'}`}>
+              Start: {time ? formatTime(time, timezone) : '—'}
+            </span>
+            {endTime && (
+              <span className={`font-medium ${dark ? 'text-stone-400' : 'text-stone-500'}`}>
+                End: {formatTime(endTime, timezone)}
+                {endLabel && <span className="opacity-75"> ({endLabel})</span>}
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Status badge */}

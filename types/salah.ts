@@ -12,6 +12,7 @@ export interface PrayerTimesResult {
   maghrib: Date;
   isha: Date;
   lastThirdOfNight: Date;
+  midnight?: Date;
 }
 
 export interface SunnahLog {

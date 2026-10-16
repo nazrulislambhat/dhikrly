@@ -50,6 +50,7 @@ export async function calculatePrayerTimes(
   nightEnd.setDate(nightEnd.getDate() + 1); // next day fajr
   const nightDuration = nightEnd.getTime() - nightStart.getTime();
   const lastThirdStart = new Date(nightStart.getTime() + (nightDuration * 2) / 3);
+  const midnight = new Date(nightStart.getTime() + nightDuration / 2);
 
   return {
     fajr: times.fajr,
@@ -59,6 +60,7 @@ export async function calculatePrayerTimes(
     maghrib: times.maghrib,
     isha: times.isha,
     lastThirdOfNight: lastThirdStart,
+    midnight,
   };
 }
 
