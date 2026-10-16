@@ -487,7 +487,7 @@ export default function HalalScannerPage() {
 
           {/* Active Camera Viewport */}
           {isScanning && (
-            <div className="mb-6 relative rounded-3xl overflow-hidden border border-emerald-500/40 bg-black aspect-video max-h-96 mx-auto flex items-center justify-center shadow-xl">
+            <div className="mb-6 relative w-full aspect-video max-h-96 rounded-3xl overflow-hidden border border-emerald-500/40 bg-neutral-950 mx-auto shadow-xl">
               <video
                 ref={(node) => {
                   videoRef.current = node;
@@ -498,25 +498,63 @@ export default function HalalScannerPage() {
                 autoPlay
                 playsInline
                 muted
-                className="w-full h-full object-cover"
+                className="absolute inset-0 w-full h-full object-cover"
               />
+
+              {/* Tap to Play / Activate Overlay if browser delayed autoplay */}
+              {!videoPlaying && !cameraLoading && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (videoRef.current) {
+                      videoRef.current
+                        .play()
+                        .then(() => setVideoPlaying(true))
+                        .catch(console.warn);
+                    }
+                  }}
+                  className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/75 backdrop-blur-xs text-white p-4 text-center cursor-pointer"
+                >
+                  <div className="h-12 w-12 rounded-full bg-emerald-500/30 flex items-center justify-center mb-3 animate-pulse border border-emerald-400/40">
+                    <Play className="h-6 w-6 text-emerald-400 fill-emerald-400 ml-0.5" />
+                  </div>
+                  <span className="text-sm font-bold text-white">Tap to start camera feed</span>
+                  <span className="text-xs text-white/70 mt-1">Browser requires direct touch to activate stream</span>
+                </button>
+              )}
 
               {/* Camera Loading Overlay */}
               {cameraLoading && (
-                <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/70 text-white">
+                <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/75 text-white">
                   <RefreshCw className="h-7 w-7 animate-spin text-emerald-400 mb-2" />
                   <span className="text-xs font-bold">Warming up camera…</span>
                 </div>
               )}
 
               {/* Top Controls Overlay */}
-              <div className="absolute top-3 inset-x-3 z-10 flex items-center justify-between">
+              <div className="absolute top-3 inset-x-3 z-10 flex items-center justify-between pointer-events-auto">
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-black/60 backdrop-blur-md px-3 py-1 text-[11px] font-bold text-emerald-300 border border-emerald-500/30">
                   <span className="h-2 w-2 rounded-full bg-emerald-400 animate-ping" />
                   Live Scanner
                 </span>
 
                 <div className="flex items-center gap-2">
+                  {torchSupported && (
+                    <button
+                      type="button"
+                      onClick={toggleTorch}
+                      title={torchOn ? 'Turn off flashlight' : 'Turn on flashlight'}
+                      className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-[11px] font-bold border transition-all ${
+                        torchOn
+                          ? 'bg-amber-400 text-amber-950 border-amber-300 shadow-md'
+                          : 'bg-black/60 backdrop-blur-md text-white border-white/20 hover:bg-black/80'
+                      }`}
+                    >
+                      <Flashlight className="h-3.5 w-3.5" />
+                      <span>{torchOn ? 'Torch On' : 'Torch'}</span>
+                    </button>
+                  )}
+
                   <button
                     type="button"
                     onClick={toggleCameraFacing}
