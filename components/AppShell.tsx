@@ -10,6 +10,7 @@ import {
   Clock3,
   Coffee,
   Compass,
+  Crown,
   Headphones,
   HeartHandshake,
   Landmark,
@@ -28,6 +29,8 @@ import {
 import { useServiceWorker } from '@/hooks/useServiceWorker';
 import { scheduleNotifications } from '@/components/NotificationSettings';
 import UpdateBanner from '@/components/UpdateBanner';
+import DhikrlyProModal from '@/components/DhikrlyProModal';
+import { usePro } from '@/hooks/usePro';
 
 export type AppSection =
   | 'adhkar'
@@ -80,6 +83,8 @@ export default function AppShell({
   children,
 }: AppShellProps) {
   useServiceWorker();
+  const { isPro } = usePro();
+  const [showProModal, setShowProModal] = useState(false);
 
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const muted = dark ? 'text-stone-400' : 'text-stone-500';
@@ -252,6 +257,19 @@ export default function AppShell({
           </nav>
 
           <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setShowProModal(true)}
+              className={`flex min-h-9 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-xl px-3 text-xs font-bold transition-all hover:scale-105 active:scale-95 ${
+                isPro
+                  ? 'border border-amber-400/50 bg-gradient-to-r from-amber-400/20 to-amber-500/20 text-amber-700 dark:text-amber-300'
+                  : 'border border-amber-500/30 bg-amber-500/10 text-amber-800 dark:text-amber-200 hover:bg-amber-500/20'
+              }`}
+            >
+              <Crown className="h-3.5 w-3.5 text-amber-500" />
+              <span>{isPro ? 'Pro Active' : 'Get Pro'}</span>
+            </button>
+
             <Link
               href="/settings"
               aria-label="Settings and Profile"
@@ -288,6 +306,18 @@ export default function AppShell({
               <span className="text-lg font-extrabold tracking-tight text-[var(--app-ink)]">Dhikrly</span>
             </Link>
             <span className={`mr-3 text-xs hidden sm:inline ${muted}`}>A little, every day</span>
+            <button
+              type="button"
+              onClick={() => setShowProModal(true)}
+              className={`mr-2 inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-extrabold shadow-xs transition-transform active:scale-95 ${
+                isPro
+                  ? 'border-amber-400/50 bg-amber-400/20 text-amber-700 dark:text-amber-300'
+                  : 'border-amber-500/40 bg-amber-500/10 text-amber-800 dark:text-amber-300'
+              }`}
+            >
+              <Crown className="h-3 w-3 text-amber-500" />
+              <span>PRO</span>
+            </button>
             <button
               type="button"
               className="grid h-10 w-10 place-items-center rounded-full border border-[var(--app-line)] bg-[var(--app-surface)] text-lg text-emerald-800 dark:text-emerald-200 shadow-xs"
@@ -410,6 +440,10 @@ export default function AppShell({
             </div>
           </div>
         </div>
+      )}
+
+      {showProModal && (
+        <DhikrlyProModal dark={dark} onClose={() => setShowProModal(false)} />
       )}
     </div>
   );
