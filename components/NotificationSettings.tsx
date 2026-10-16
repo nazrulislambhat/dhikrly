@@ -114,10 +114,10 @@ function Toggle({
       }`}
     >
       <span
-        className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${
-          enabled ? '' : 'translate-x-[5]'
-        }`}
-      />
+  className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${
+    enabled ? '' : '-translate-x-[20px]'
+  }`}
+/>
     </button>
   );
 }
