@@ -47,11 +47,22 @@ export default function UpdateBanner({ dark }: UpdateBannerProps) {
             onClick={() => setShowModal(true)}
             className={`rounded-full px-3 py-1 text-[11px] font-medium transition-all active:scale-95 ${
               dark
-                ? 'bg-emerald-400/20 text-emerald-300 hover:bg-emerald-400/30'
-                : 'bg-amber-500 text-white hover:bg-amber-600'
+                ? 'bg-white/10 text-stone-200 hover:bg-white/15'
+                : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
             }`}
           >
             What&apos;s new
+          </button>
+
+          <button
+            onClick={applyUpdate}
+            className={`rounded-full px-3 py-1 text-[11px] font-bold transition-all active:scale-95 ${
+              dark
+                ? 'bg-emerald-400 text-emerald-950 hover:bg-emerald-300'
+                : 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-xs'
+            }`}
+          >
+            Update now
           </button>
 
           <button

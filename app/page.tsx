@@ -50,7 +50,6 @@ import AddDuaModal from '@/components/AddDuaModal';
 import AuthModal from '@/components/AuthModal';
 import UserMenu from '@/components/UserMenu';
 import PWAProvider from '@/components/PWAProvider';
-import UpdateBanner from '@/components/UpdateBanner';
 import TasbihCounter from '@/components/TasbihCounter';
 import TiltCard from '@/components/TiltCard';
 import { useChecked } from '@/hooks/useChecked';
@@ -273,7 +272,6 @@ export default function DuasTracker() {
     <div className={bg}>
       <AppShell active="adhkar" dark={dark} onToggleDark={() => setDark((value) => !value)}>
         <PWAProvider dark={dark} />
-        <UpdateBanner dark={dark} />
 
       {/* Toast */}
       {toast !== null && (

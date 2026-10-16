@@ -21,6 +21,7 @@ import {
 
 import { useServiceWorker } from '@/hooks/useServiceWorker';
 import { scheduleNotifications } from '@/components/NotificationSettings';
+import UpdateBanner from '@/components/UpdateBanner';
 
 export type AppSection =
   | 'adhkar'
@@ -123,6 +124,7 @@ export default function AppShell({
 
   return (
     <div className="min-h-dvh">
+      <UpdateBanner dark={dark} />
       {/* Desktop Header */}
       <header className={`hidden min-[1080px]:sticky min-[1080px]:top-0 min-[1080px]:z-40 min-[1080px]:flex min-[1080px]:h-[4.75rem] min-[1080px]:items-center min-[1080px]:gap-4 min-[1080px]:border-b min-[1080px]:px-[clamp(1rem,3vw,3rem)] min-[1080px]:py-2.5 min-[1080px]:backdrop-blur-xl ${surface}`}>
         <Link href="/" className="mr-auto inline-flex items-center gap-3 no-underline shrink-0" aria-label="Dhikrly home">
