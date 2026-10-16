@@ -6,13 +6,14 @@ const supabaseAnonKey =
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? 'placeholder-anon-key';
 
 export const hasSupabaseConfig = Boolean(
-  process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+  process.env.NEXT_PUBLIC_SUPABASE_URL &&
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY &&
+    !process.env.NEXT_PUBLIC_SUPABASE_URL.includes('placeholder.supabase.co') &&
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY !== 'placeholder-anon-key'
 );
 
 if (!hasSupabaseConfig) {
-  console.warn(
-    'Supabase env vars are missing. Auth and sync features will stay disabled until .env.local is configured.'
-  );
+  // Only warn in dev/build, do not throw
 }
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
