@@ -272,85 +272,85 @@ export default function DhikrlyProPage() {
   });
 
   return (
-    <div className="min-h-dvh text-[var(--app-ink)]">
+    <div className="min-h-dvh text-[var(--app-ink)] overflow-x-hidden">
       <AppShell active="pro" dark={dark} onToggleDark={() => setDark((v) => !v)}>
-        <div className="mx-auto w-[min(calc(100%-2rem),72rem)] px-2 py-6 sm:py-8 lg:px-4 space-y-10">
+        <div className="mx-auto w-full max-w-6xl px-3 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-8 sm:space-y-10 min-w-0">
           {/* Header */}
-          <header className="relative overflow-hidden rounded-3xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 via-emerald-950/20 to-transparent p-6 sm:p-10 text-center sm:text-left">
+          <header className="relative overflow-hidden rounded-3xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 via-emerald-950/20 to-transparent p-4 sm:p-10 text-center sm:text-left min-w-0">
             <div className="absolute -top-20 -right-20 h-64 w-64 rounded-full bg-amber-400/10 blur-3xl pointer-events-none" />
             <div className="absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-emerald-400/10 blur-3xl pointer-events-none" />
 
-            <div className="relative z-10 flex flex-col sm:flex-row items-center sm:items-start justify-between gap-6">
-              <div className="space-y-3 max-w-2xl">
+            <div className="relative z-10 flex flex-col sm:flex-row items-center sm:items-start justify-between gap-6 min-w-0">
+              <div className="space-y-3 max-w-2xl min-w-0">
                 <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/40 bg-amber-500/20 px-3.5 py-1 text-xs font-black uppercase tracking-wider text-amber-800 dark:text-amber-300">
-                  <Crown className="h-4 w-4" />
-                  <span>DHIKRLY PRO · MEMBERSHIP & FEATURE PLANS</span>
+                  <Crown className="h-4 w-4 shrink-0" />
+                  <span className="truncate">DHIKRLY PRO · PLANS</span>
                 </div>
 
-                <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-[var(--app-ink)] font-serif">
+                <h1 className="text-2xl sm:text-5xl font-black tracking-tight text-[var(--app-ink)] font-serif break-words">
                   Elevate Your <span className="text-amber-600 dark:text-amber-400 font-sans">Spiritual Journey</span>
                 </h1>
 
-                <p className="text-sm sm:text-base text-[var(--app-muted)] leading-relaxed">
+                <p className="text-xs sm:text-base text-[var(--app-muted)] leading-relaxed break-words">
                   Support sustainable, ad-free Islamic software. Unlock AI Quran memorization coaching, encrypted multi-device sync, studio soundscapes, and sponsor a student of knowledge.
                 </p>
 
-                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 pt-2">
+                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5 sm:gap-3 pt-2 w-full">
                   <button
                     type="button"
                     onClick={() => setShowModal(true)}
-                    className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-amber-600 via-amber-500 to-emerald-700 px-5 py-3 text-xs font-black text-white shadow-lg shadow-amber-900/15 hover:brightness-110 active:scale-95 transition-all"
+                    className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-amber-600 via-amber-500 to-emerald-700 px-4 py-3 text-xs font-black text-white shadow-lg shadow-amber-900/15 hover:brightness-110 active:scale-95 transition-all text-center"
                   >
-                    <Crown className="h-4 w-4" />
-                    <span>{isPro ? `Pro Preview Active (${tier.toUpperCase()})` : 'Open Pro Modal & Plans'}</span>
+                    <Crown className="h-4 w-4 shrink-0" />
+                    <span>{isPro ? `Pro Preview (${tier.toUpperCase()})` : 'Open Pro Modal & Plans'}</span>
                   </button>
 
                   <Link
                     href="/pipeline"
-                    className="inline-flex items-center gap-2 rounded-2xl border border-[var(--app-line)] bg-[var(--app-surface)] px-5 py-3 text-xs font-bold text-[var(--app-ink)] hover:border-amber-500/40 transition-colors no-underline"
+                    className="inline-flex items-center justify-center gap-2 rounded-2xl border border-[var(--app-line)] bg-[var(--app-surface)] px-4 py-3 text-xs font-bold text-[var(--app-ink)] hover:border-amber-500/40 transition-colors no-underline text-center"
                   >
-                    <Layers className="h-4 w-4 text-amber-500" />
-                    <span>Engineering Pipeline (Native Apps & Backend)</span>
-                    <ArrowRight className="h-3 w-3" />
+                    <Layers className="h-4 w-4 text-amber-500 shrink-0" />
+                    <span>Engineering Pipeline</span>
+                    <ArrowRight className="h-3 w-3 shrink-0" />
                   </Link>
 
                   <a
                     href="https://buymeacoffee.com/nazrulislambhat"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 rounded-2xl border border-amber-500/40 bg-[#FFDD00]/25 px-5 py-3 text-xs font-bold text-amber-950 dark:bg-amber-400/20 dark:text-amber-200 hover:bg-[#FFDD00]/40 transition-colors shadow-xs no-underline"
+                    className="inline-flex items-center justify-center gap-2 rounded-2xl border border-amber-500/40 bg-[#FFDD00]/25 px-4 py-3 text-xs font-bold text-amber-950 dark:bg-amber-400/20 dark:text-amber-200 hover:bg-[#FFDD00]/40 transition-colors shadow-xs no-underline text-center"
                   >
-                    <Coffee className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                    <Coffee className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0" />
                     <span>Buy me a coffee</span>
                   </a>
                 </div>
               </div>
 
               {/* Status Badge Box */}
-              <div className="rounded-2xl border border-[var(--app-line)] bg-[var(--app-surface)] p-5 shadow-sm text-center sm:text-right shrink-0 min-w-[240px] space-y-2">
+              <div className="rounded-2xl border border-[var(--app-line)] bg-[var(--app-surface)] p-4 sm:p-5 shadow-sm text-center sm:text-right shrink-0 w-full sm:w-auto sm:min-w-[220px] space-y-2">
                 <div className="flex items-center justify-center sm:justify-end gap-2 text-xs font-bold text-amber-700 dark:text-amber-300">
-                  <Construction className="h-4 w-4" />
+                  <Construction className="h-4 w-4 shrink-0" />
                   <span>Pro Feature Preview</span>
                 </div>
-                <p className="text-2xl font-black text-emerald-800 dark:text-emerald-300">
+                <p className="text-xl sm:text-2xl font-black text-emerald-800 dark:text-emerald-300">
                   {isPro ? `${tier.toUpperCase()} Active` : 'Preview Phase'}
                 </p>
-                <p className="text-xs text-[var(--app-muted)]">Checkouts are simulated for beta testing</p>
+                <p className="text-xs text-[var(--app-muted)]">Checkouts are simulated for testing</p>
                 <div className="pt-2 border-t border-[var(--app-line)] text-[11px] text-[var(--app-muted)]">
-                  Active Testers Code: <span className="font-mono font-bold text-amber-600 dark:text-amber-400">TESTPRO</span>
+                  Testers Code: <span className="font-mono font-bold text-amber-600 dark:text-amber-400">TESTPRO</span>
                 </div>
               </div>
             </div>
           </header>
 
           {/* Halal Khidmah Covenant */}
-          <section className="rounded-3xl border border-emerald-500/30 bg-emerald-500/5 p-6 sm:p-7 relative overflow-hidden">
-            <div className="flex flex-col sm:flex-row items-start gap-4">
-              <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-emerald-600 text-white shadow-md">
-                <ShieldCheck className="h-6 w-6" />
+          <section className="rounded-3xl border border-emerald-500/30 bg-emerald-500/5 p-4 sm:p-7 relative overflow-hidden min-w-0">
+            <div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-4 min-w-0">
+              <span className="grid h-11 w-11 sm:h-12 sm:w-12 shrink-0 place-items-center rounded-2xl bg-emerald-600 text-white shadow-md">
+                <ShieldCheck className="h-5 w-5 sm:h-6 sm:w-6" />
               </span>
-              <div className="space-y-1.5 flex-1">
-                <div className="flex items-center gap-2">
+              <div className="space-y-1.5 flex-1 min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
                   <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-800 dark:text-emerald-300">
                     The Dhikrly Khidmah Covenant
                   </span>
@@ -358,10 +358,10 @@ export default function DhikrlyProPage() {
                     Unbreakable Promise
                   </span>
                 </div>
-                <h2 className="text-lg sm:text-xl font-bold text-[var(--app-ink)]">
+                <h2 className="text-base sm:text-xl font-bold text-[var(--app-ink)] break-words">
                   Obligatory Worship is 100% Free Forever. Zero Ads. Zero Tracking.
                 </h2>
-                <p className="text-xs sm:text-sm text-[var(--app-muted)] leading-relaxed">
+                <p className="text-xs sm:text-sm text-[var(--app-muted)] leading-relaxed break-words">
                   We believe no Muslim should ever have their fard salah, Qibla compass, complete Holy Quran text, or basic Hisn al-Muslim adhkār interrupted by an advertisement, paywall, or data tracking. Dhikrly Pro is strictly reserved for high-compute infrastructure (voice AI model inference, multi-device cloud replication) and funds a 1-for-1 waqf scholarship for students of knowledge worldwide.
                 </p>
               </div>
@@ -369,9 +369,9 @@ export default function DhikrlyProPage() {
           </section>
 
           {/* Pro Subscription Tiers Preview */}
-          <section className="space-y-4" aria-labelledby="pricing-title">
+          <section className="space-y-4 min-w-0" aria-labelledby="pricing-title">
             <div className="text-center sm:text-left">
-              <h2 id="pricing-title" className="text-2xl font-black tracking-tight">
+              <h2 id="pricing-title" className="text-xl sm:text-2xl font-black tracking-tight">
                 Dhikrly Pro Membership Plans
               </h2>
               <p className="text-xs text-[var(--app-muted)] mt-0.5">
@@ -379,27 +379,27 @@ export default function DhikrlyProPage() {
               </p>
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-3">
+            <div className="grid gap-3 sm:gap-4 sm:grid-cols-3 min-w-0">
               {PRO_TIERS.map((t) => (
                 <div
                   key={t.id}
-                  className={`relative flex flex-col justify-between rounded-3xl border p-6 transition-all ${
+                  className={`relative flex flex-col justify-between rounded-3xl border p-4 sm:p-6 transition-all min-w-0 ${
                     t.highlight
                       ? 'border-amber-500/50 bg-amber-500/10 ring-2 ring-amber-400/30'
                       : 'border-[var(--app-line)] bg-[var(--app-surface)]'
                   }`}
                 >
-                  <div className="space-y-3">
+                  <div className="space-y-3 min-w-0">
                     <span className="inline-block rounded-full bg-amber-500/20 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-amber-800 dark:text-amber-300">
                       {t.badge}
                     </span>
-                    <h3 className="text-lg font-bold text-[var(--app-ink)]">{t.title}</h3>
+                    <h3 className="text-base sm:text-lg font-bold text-[var(--app-ink)] break-words">{t.title}</h3>
                     <div className="flex items-baseline gap-1">
-                      <span className="text-3xl font-extrabold text-emerald-800 dark:text-emerald-300">{t.price}</span>
+                      <span className="text-2xl sm:text-3xl font-extrabold text-emerald-800 dark:text-emerald-300">{t.price}</span>
                       <span className="text-xs text-[var(--app-muted)]">{t.period}</span>
                     </div>
                     <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-400">{t.subtext}</p>
-                    <p className="text-xs text-[var(--app-muted)] leading-relaxed pt-1 border-t border-[var(--app-line)]">
+                    <p className="text-xs text-[var(--app-muted)] leading-relaxed pt-1 border-t border-[var(--app-line)] break-words">
                       {t.description}
                     </p>
                   </div>
@@ -408,7 +408,7 @@ export default function DhikrlyProPage() {
                     <button
                       type="button"
                       onClick={() => setShowModal(true)}
-                      className="w-full rounded-2xl bg-gradient-to-r from-amber-600 to-amber-700 px-4 py-2.5 text-xs font-bold text-white shadow-xs hover:brightness-110 active:scale-95 transition-all"
+                      className="w-full rounded-2xl bg-gradient-to-r from-amber-600 to-amber-700 px-4 py-2.5 text-xs font-bold text-white shadow-xs hover:brightness-110 active:scale-95 transition-all text-center"
                     >
                       <span>Preview {t.title}</span>
                     </button>
@@ -419,10 +419,10 @@ export default function DhikrlyProPage() {
           </section>
 
           {/* Pro Features Grid */}
-          <section className="space-y-5" aria-labelledby="pro-features-title">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div>
-                <h2 id="pro-features-title" className="text-2xl font-black tracking-tight">
+          <section className="space-y-5 min-w-0" aria-labelledby="pro-features-title">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 min-w-0">
+              <div className="min-w-0">
+                <h2 id="pro-features-title" className="text-xl sm:text-2xl font-black tracking-tight">
                   Planned Dhikrly Pro Features
                 </h2>
                 <p className="text-xs text-[var(--app-muted)] mt-0.5">
@@ -431,7 +431,7 @@ export default function DhikrlyProPage() {
               </div>
 
               {/* Category Filter Tabs */}
-              <div className="flex flex-wrap gap-1.5 p-1 rounded-2xl border border-[var(--app-line)] bg-[var(--app-surface)] text-xs font-bold">
+              <div className="flex items-center gap-1.5 p-1 rounded-2xl border border-[var(--app-line)] bg-[var(--app-surface)] text-xs font-bold overflow-x-auto max-w-full pb-1.5 sm:pb-1">
                 {[
                   { id: 'all', label: 'All Pro Features (7)' },
                   { id: 'ai', label: 'AI & Hifdh' },
@@ -443,7 +443,7 @@ export default function DhikrlyProPage() {
                     key={tab.id}
                     type="button"
                     onClick={() => setActiveCategory(tab.id)}
-                    className={`rounded-xl px-3 py-1.5 transition-colors ${
+                    className={`rounded-xl px-3 py-1.5 whitespace-nowrap shrink-0 transition-colors ${
                       activeCategory === tab.id
                         ? 'bg-emerald-800 text-white dark:bg-emerald-400 dark:text-emerald-950 shadow-xs'
                         : 'text-[var(--app-muted)] hover:text-[var(--app-ink)]'
@@ -455,63 +455,63 @@ export default function DhikrlyProPage() {
               </div>
             </div>
 
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className="grid gap-4 sm:gap-6 md:grid-cols-2 min-w-0">
               {filteredFeatures.map((feature) => {
                 const Icon = feature.icon;
                 return (
                   <article
                     key={feature.id}
-                    className="flex flex-col justify-between rounded-3xl border border-[var(--app-line)] bg-[var(--app-surface)] p-6 shadow-sm hover:border-amber-500/40 transition-all group"
+                    className="flex flex-col justify-between rounded-3xl border border-[var(--app-line)] bg-[var(--app-surface)] p-4 sm:p-6 shadow-sm hover:border-amber-500/40 transition-all group min-w-0 overflow-hidden"
                   >
-                    <div className="space-y-4">
+                    <div className="space-y-4 min-w-0">
                       {/* Card Header */}
-                      <div className="flex items-start justify-between gap-3">
-                        <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-amber-500/10 text-amber-700 dark:text-amber-400 group-hover:bg-amber-500/20 transition-colors">
-                          <Icon className="h-6 w-6" />
+                      <div className="flex flex-wrap sm:flex-nowrap items-start justify-between gap-2.5 min-w-0">
+                        <span className="grid h-11 w-11 sm:h-12 sm:w-12 shrink-0 place-items-center rounded-2xl bg-amber-500/10 text-amber-700 dark:text-amber-400 group-hover:bg-amber-500/20 transition-colors">
+                          <Icon className="h-5 w-5 sm:h-6 sm:w-6" />
                         </span>
-                        <div className="text-right">
-                          <span className="inline-flex items-center gap-1 rounded-full border border-amber-500/30 bg-amber-500/10 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-amber-800 dark:text-amber-300">
-                            <Clock3 className="h-3 w-3" />
-                            {feature.stage}
+                        <div className="text-left sm:text-right max-w-full">
+                          <span className="inline-flex items-center gap-1 rounded-full border border-amber-500/30 bg-amber-500/10 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-amber-800 dark:text-amber-300 max-w-full">
+                            <Clock3 className="h-3 w-3 shrink-0" />
+                            <span className="break-words">{feature.stage}</span>
                           </span>
                         </div>
                       </div>
 
-                      <div>
-                        <h3 className="text-lg font-bold text-[var(--app-ink)] leading-snug">
+                      <div className="min-w-0">
+                        <h3 className="text-base sm:text-lg font-bold text-[var(--app-ink)] leading-snug break-words">
                           {feature.title}
                         </h3>
-                        <p className="mt-1 text-xs font-semibold text-amber-700 dark:text-amber-400">
+                        <p className="mt-1 text-xs font-semibold text-amber-700 dark:text-amber-400 break-words">
                           {feature.tagline}
                         </p>
                       </div>
 
-                      <p className="text-xs text-[var(--app-muted)] leading-relaxed">
+                      <p className="text-xs text-[var(--app-muted)] leading-relaxed break-words">
                         {feature.description}
                       </p>
 
                       {/* Feature Highlights */}
-                      <div className="space-y-2 pt-2 border-t border-[var(--app-line)]">
+                      <div className="space-y-2 pt-2 border-t border-[var(--app-line)] min-w-0">
                         <p className="text-[10px] font-extrabold uppercase tracking-wider text-stone-400">
                           Planned Capabilities
                         </p>
                         <ul className="space-y-1.5 text-xs text-[var(--app-ink)]">
                           {feature.highlights.map((h, i) => (
-                            <li key={i} className="flex items-start gap-2">
+                            <li key={i} className="flex items-start gap-2 min-w-0">
                               <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-600 dark:text-emerald-400 mt-0.5" />
-                              <span className="text-[11px] leading-tight">{h}</span>
+                              <span className="text-[11px] leading-tight break-words min-w-0 flex-1">{h}</span>
                             </li>
                           ))}
                         </ul>
                       </div>
                     </div>
 
-                    <div className="mt-5 pt-3 border-t border-[var(--app-line)] flex items-center justify-between text-[10px] text-[var(--app-muted)]">
-                      <span className="truncate">{feature.specs}</span>
+                    <div className="mt-5 pt-3 border-t border-[var(--app-line)] flex items-center justify-between text-[10px] text-[var(--app-muted)] min-w-0 gap-2">
+                      <span className="truncate min-w-0 flex-1">{feature.specs}</span>
                       <button
                         type="button"
                         onClick={() => setShowModal(true)}
-                        className="font-bold text-emerald-800 dark:text-emerald-300 hover:underline shrink-0 ml-2"
+                        className="font-bold text-emerald-800 dark:text-emerald-300 hover:underline shrink-0"
                       >
                         Preview &rarr;
                       </button>
@@ -523,16 +523,16 @@ export default function DhikrlyProPage() {
           </section>
 
           {/* Interactive Testing Voucher Playground */}
-          <section className="rounded-3xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 via-emerald-500/5 to-transparent p-6 sm:p-8 space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div className="space-y-1">
+          <section className="rounded-3xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 via-emerald-500/5 to-transparent p-4 sm:p-8 space-y-4 min-w-0">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 min-w-0">
+              <div className="space-y-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="grid h-7 w-7 place-items-center rounded-lg bg-amber-500/20 text-amber-700 dark:text-amber-300">
+                  <span className="grid h-7 w-7 place-items-center rounded-lg bg-amber-500/20 text-amber-700 dark:text-amber-300 shrink-0">
                     <Sparkles className="h-4 w-4" />
                   </span>
-                  <h2 className="text-lg font-bold">Beta Voucher & Tester Playground</h2>
+                  <h2 className="text-base sm:text-lg font-bold break-words">Beta Voucher & Tester Playground</h2>
                 </div>
-                <p className="text-xs text-[var(--app-muted)]">
+                <p className="text-xs text-[var(--app-muted)] break-words">
                   Want to test preview mode? Enter any of our beta testing vouchers: <code className="font-mono font-bold text-emerald-800 dark:text-emerald-300">TESTPRO</code>, <code className="font-mono font-bold text-emerald-800 dark:text-emerald-300">DHIKRLY2026</code>, or <code className="font-mono font-bold text-emerald-800 dark:text-emerald-300">STUDENT</code>.
                 </p>
               </div>
@@ -541,24 +541,24 @@ export default function DhikrlyProPage() {
                 <button
                   type="button"
                   onClick={deactivatePro}
-                  className="rounded-xl border border-red-500/30 px-3 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-500/10 shrink-0"
+                  className="rounded-xl border border-red-500/30 px-3 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-500/10 shrink-0 w-full sm:w-auto"
                 >
                   Reset Status to Free
                 </button>
               )}
             </div>
 
-            <form onSubmit={handleTestVoucher} className="flex flex-col sm:flex-row gap-2 max-w-md">
+            <form onSubmit={handleTestVoucher} className="flex flex-col sm:flex-row gap-2 max-w-md w-full">
               <input
                 type="text"
                 value={promoCodeInput}
                 onChange={(e) => setPromoCodeInput(e.target.value)}
                 placeholder="Enter voucher code (e.g. TESTPRO)"
-                className="flex-1 rounded-xl border border-[var(--app-line)] bg-[var(--app-surface)] px-4 py-2.5 text-xs text-[var(--app-ink)] font-mono uppercase outline-none focus:border-emerald-500"
+                className="flex-1 min-w-0 rounded-xl border border-[var(--app-line)] bg-[var(--app-surface)] px-4 py-2.5 text-xs text-[var(--app-ink)] font-mono uppercase outline-none focus:border-emerald-500"
               />
               <button
                 type="submit"
-                className="rounded-xl bg-emerald-800 px-5 py-2.5 text-xs font-bold text-white shadow-xs hover:bg-emerald-700 dark:bg-emerald-400 dark:text-emerald-950 dark:hover:bg-emerald-300"
+                className="rounded-xl bg-emerald-800 px-5 py-2.5 text-xs font-bold text-white shadow-xs hover:bg-emerald-700 dark:bg-emerald-400 dark:text-emerald-950 dark:hover:bg-emerald-300 shrink-0 text-center"
               >
                 Apply Voucher
               </button>
@@ -575,34 +575,34 @@ export default function DhikrlyProPage() {
             )}
 
             {isPro && (
-              <div className="flex items-center gap-2 rounded-xl bg-emerald-500/15 border border-emerald-500/30 p-3 text-xs font-bold text-emerald-800 dark:text-emerald-200">
+              <div className="flex items-center gap-2 rounded-xl bg-emerald-500/15 border border-emerald-500/30 p-3 text-xs font-bold text-emerald-800 dark:text-emerald-200 min-w-0">
                 <CheckCircle2 className="h-4 w-4 shrink-0" />
-                <span>You are currently in Pro Preview Mode ({tier.toUpperCase()}). All preview flags unlocked locally.</span>
+                <span className="break-words">You are currently in Pro Preview Mode ({tier.toUpperCase()}). All preview flags unlocked locally.</span>
               </div>
             )}
           </section>
 
           {/* Architecture Redirect Banner */}
-          <section className="rounded-3xl border border-[var(--app-line)] bg-[var(--app-surface)] p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="space-y-1">
+          <section className="rounded-3xl border border-[var(--app-line)] bg-[var(--app-surface)] p-4 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 min-w-0">
+            <div className="space-y-1 min-w-0">
               <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-300">
-                <Layers className="h-4 w-4" />
+                <Layers className="h-4 w-4 shrink-0" />
                 <span>Engineering & Mobile Pipeline</span>
               </div>
-              <h2 className="text-lg font-bold text-[var(--app-ink)]">
+              <h2 className="text-base sm:text-lg font-bold text-[var(--app-ink)] break-words">
                 Looking for our Native Apps (iOS, Android, Mac) & Backend Architecture?
               </h2>
-              <p className="text-xs text-[var(--app-muted)]">
+              <p className="text-xs text-[var(--app-muted)] break-words">
                 We maintain a dedicated technical roadmap for native mobile engineering, Go/Rust microservices, and Whisper speech clusters.
               </p>
             </div>
 
             <Link
               href="/pipeline"
-              className="inline-flex items-center gap-2 rounded-2xl bg-emerald-800 text-white dark:bg-emerald-400 dark:text-emerald-950 px-5 py-3 text-xs font-bold hover:brightness-110 shrink-0 no-underline"
+              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-800 text-white dark:bg-emerald-400 dark:text-emerald-950 px-5 py-3 text-xs font-bold hover:brightness-110 shrink-0 no-underline w-full sm:w-auto text-center"
             >
               <span>Explore /pipeline</span>
-              <ArrowRight className="h-3.5 w-3.5" />
+              <ArrowRight className="h-3.5 w-3.5 shrink-0" />
             </Link>
           </section>
 
