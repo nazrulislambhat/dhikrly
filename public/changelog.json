@@ -1,6 +1,23 @@
 {
-  "current": "1.4.3",
+  "current": "2.0",
   "releases": [
+    {
+      "version": "2.0",
+      "date": "2026-10-16",
+      "title": "Cloud Sync, Offline Qur’an & Mobile Qibla Physics",
+      "added": [
+        "Offline Qur’an catalog — all 114 Surahs pre-bundled locally with instant search",
+        "Resilient multi-provider fallbacks for Qur’an ayat, Saheeh International translation, and audio recitation",
+        "Manual 'Sync Now' button in the user profile menu with real-time status and timestamps",
+        "Continuous 360° heading calculation with liquid EMA damping on Qibla compass"
+      ],
+      "improved": [
+        "Rewrote cloud sync to Supabase with zero data loss across devices",
+        "Eliminated mobile compass jitter and rapid spinning when crossing North",
+        "Fixed notification setting toggle alignment on mobile devices"
+      ],
+      "removed": []
+    },
     {
       "version": "1.4.2",
       "date": "2026-07-13",
