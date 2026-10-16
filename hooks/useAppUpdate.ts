@@ -120,9 +120,10 @@ export function useAppUpdate() {
 
   // Get only releases newer than what user has
   const newReleases = useCallback((): Release[] => {
-    if (!changelog) return [];
+    if (!changelog || changelog.releases.length === 0) return [];
     const known = localStorage.getItem(VERSION_KEY) ?? '0.0.0';
-    return changelog.releases.filter((r) => r.version > known);
+    const newer = changelog.releases.filter((r) => r.version > known);
+    return newer.length > 0 ? newer : [changelog.releases[0]];
   }, [changelog]);
 
   return {
