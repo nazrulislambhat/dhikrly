@@ -73,6 +73,7 @@ const moreDrawerItems = [
   { href: '/ambient', label: 'Ambient Focus', desc: 'Islamic soundscapes & dhikr breathing', section: 'ambient', Icon: Headphones },
   { href: '/insights', label: 'Spiritual Insights', desc: 'Daily prayer trends & spiritual habits', section: 'insights', Icon: LineChart },
   { href: '/adhkar', label: 'Adhkār Library', desc: 'Fortress of the Muslim authentic collection', section: 'adhkar', Icon: Sparkles },
+  { href: '/pro', label: 'Dhikrly Pro Roadmap', desc: 'Upcoming AI features, cloud sync & waqf pipeline', section: 'pro', Icon: Crown },
   { href: '/settings', label: 'Settings & Profile', desc: 'Account sync, calculation methods & sound', section: 'settings', Icon: UserRound },
 ];
 
@@ -211,7 +212,7 @@ export default function AppShell({
                     <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
                       Explore Dhikrly
                     </span>
-                    <span className="text-[10px] text-stone-400 font-medium">13 Features</span>
+                    <span className="text-[10px] text-stone-400 font-medium">14 Hubs & Pro</span>
                   </div>
 
                   <div className="grid grid-cols-2 gap-1 max-h-[24rem] overflow-y-auto p-0.5">
