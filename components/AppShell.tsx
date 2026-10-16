@@ -1,10 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import {
   BookOpen,
   CalendarCheck,
+  ChevronDown,
   CircleDot,
   Clock3,
   Compass,
@@ -52,19 +53,6 @@ const mainNavItems = [
   { href: '/salah', label: 'Ṣalāh', section: 'salah', Icon: Clock3 },
   { href: '/quran', label: 'Qur’an', section: 'quran', Icon: BookOpen },
   { href: '/tasbeeh', label: 'Tasbīḥ', section: 'tasbeeh', Icon: CircleDot },
-];
-
-const desktopNavItems = [
-  { href: '/', label: 'Adhkār', section: 'adhkar', Icon: Sparkles },
-  { href: '/salah', label: 'Ṣalāh', section: 'salah', Icon: Clock3 },
-  { href: '/quran', label: 'Qur’an', section: 'quran', Icon: BookOpen },
-  { href: '/tasbeeh', label: 'Tasbīḥ', section: 'tasbeeh', Icon: CircleDot },
-  { href: '/qibla', label: 'Qibla', section: 'qibla', Icon: Compass },
-  { href: '/ramadan', label: 'Ramadan', section: 'ramadan', Icon: MoonStar },
-  { href: '/masjids', label: 'Masjids', section: 'masjids', Icon: Landmark },
-  { href: '/ambient', label: 'Ambient', section: 'ambient', Icon: Headphones },
-  { href: '/insights', label: 'Insights', section: 'insights', Icon: LineChart },
-  { href: '/settings', label: 'Profile', section: 'settings', Icon: UserRound },
 ];
 
 const moreDrawerItems = [
@@ -115,23 +103,43 @@ export default function AppShell({
       ?.setAttribute('content', dark ? '#0d1715' : '#f5f8f7');
   }, [dark]);
 
-  // Close more menu when pressing escape
+  const [desktopDropdownOpen, setDesktopDropdownOpen] = useState(false);
+  const desktopDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close desktop dropdown on outside click
+  useEffect(() => {
+    const handleOutsideClick = (event: MouseEvent) => {
+      if (
+        desktopDropdownRef.current &&
+        !desktopDropdownRef.current.contains(event.target as Node)
+      ) {
+        setDesktopDropdownOpen(false);
+      }
+    };
+    if (desktopDropdownOpen) {
+      document.addEventListener('mousedown', handleOutsideClick);
+    }
+    return () => document.removeEventListener('mousedown', handleOutsideClick);
+  }, [desktopDropdownOpen]);
+
+  // Close menus when pressing escape
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setShowMoreMenu(false);
+      if (e.key === 'Escape') {
+        setShowMoreMenu(false);
+        setDesktopDropdownOpen(false);
+      }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  const isMoreActive = [
-    'qibla',
-    'ramadan',
-    'masjids',
-    'ambient',
-    'insights',
-    'settings',
-  ].includes(active);
+  const activeDropdownItem = moreDrawerItems.find(
+    (item) => item.section === active || (item.section === 'ramadan' && active === 'ramadhan'),
+  );
+  const isDropdownActive = Boolean(activeDropdownItem);
+
+  const isMoreActive = isDropdownActive;
 
   return (
     <div className="min-h-dvh">
@@ -147,11 +155,10 @@ export default function AppShell({
             </span>
           </Link>
 
-          <nav className="flex items-center gap-1 overflow-x-auto py-1" aria-label="Main navigation">
-            {desktopNavItems.map((item) => {
+          <nav className="flex items-center gap-1.5 py-1" aria-label="Main navigation">
+            {mainNavItems.map((item) => {
               const isCurrent =
                 active === item.section ||
-                (item.section === 'ramadan' && active === 'ramadhan') ||
                 (item.section === 'adhkar' && active === 'adhkaar');
 
               return (
@@ -159,7 +166,7 @@ export default function AppShell({
                   key={item.href}
                   href={item.href}
                   aria-current={isCurrent ? 'page' : undefined}
-                  className={`flex min-h-9 items-center gap-1.5 whitespace-nowrap rounded-xl px-2.5 text-xs font-semibold no-underline transition-colors hover:bg-emerald-500/10 hover:text-emerald-800 dark:hover:text-emerald-200 ${
+                  className={`flex min-h-9 items-center gap-1.5 whitespace-nowrap rounded-xl px-3 text-xs font-semibold no-underline transition-colors hover:bg-emerald-500/10 hover:text-emerald-800 dark:hover:text-emerald-200 ${
                     isCurrent
                       ? 'bg-emerald-50 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-200 shadow-xs'
                       : muted
@@ -170,16 +177,91 @@ export default function AppShell({
                 </Link>
               );
             })}
+
+            {/* Desktop More Features Dropdown */}
+            <div className="relative" ref={desktopDropdownRef}>
+              <button
+                type="button"
+                onClick={() => setDesktopDropdownOpen((v) => !v)}
+                aria-expanded={desktopDropdownOpen}
+                className={`flex min-h-9 items-center gap-1.5 whitespace-nowrap rounded-xl px-3 text-xs font-semibold transition-colors hover:bg-emerald-500/10 hover:text-emerald-800 dark:hover:text-emerald-200 ${
+                  isDropdownActive
+                    ? 'bg-emerald-50 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-200 shadow-xs'
+                    : muted
+                }`}
+              >
+                <MoreHorizontal className="h-3.5 w-3.5" aria-hidden="true" />
+                <span>{activeDropdownItem ? activeDropdownItem.label : 'More Features'}</span>
+                <ChevronDown className={`h-3 w-3 transition-transform duration-200 ${desktopDropdownOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
+              </button>
+
+              {desktopDropdownOpen && (
+                <div
+                  className={`absolute right-0 top-full mt-2 w-88 rounded-2xl border p-2 shadow-2xl backdrop-blur-2xl z-50 animate-in fade-in zoom-in-95 duration-150 ${
+                    dark ? 'border-white/[0.12] bg-[#14211e]/98 text-stone-200' : 'border-stone-200/90 bg-white/98 text-stone-800'
+                  }`}
+                >
+                  <div className="px-3 py-1.5 mb-1 border-b border-[var(--app-line)] flex items-center justify-between">
+                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
+                      Explore Dhikrly
+                    </span>
+                    <span className="text-[10px] text-stone-400 font-medium">13 Features</span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-1 max-h-[24rem] overflow-y-auto p-0.5">
+                    {moreDrawerItems.map((item) => {
+                      const isCurrent =
+                        active === item.section ||
+                        (item.section === 'ramadan' && active === 'ramadhan');
+                      return (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          onClick={() => setDesktopDropdownOpen(false)}
+                          className={`flex items-start gap-2 rounded-xl p-2 text-xs no-underline transition-colors ${
+                            isCurrent
+                              ? 'bg-emerald-500/15 text-emerald-800 dark:text-emerald-200 font-bold'
+                              : 'hover:bg-emerald-500/10 text-stone-700 dark:text-stone-300'
+                          }`}
+                        >
+                          <item.Icon className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400 mt-0.5" />
+                          <div className="min-w-0">
+                            <p className="font-semibold leading-tight truncate">{item.label}</p>
+                            <p className="text-[10px] text-stone-400 leading-tight truncate mt-0.5">{item.desc}</p>
+                          </div>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
           </nav>
 
-          <button
-            type="button"
-            className={`flex min-h-9 shrink-0 items-center gap-2 whitespace-nowrap rounded-xl border border-[var(--app-line)] px-3 text-xs font-semibold transition-colors hover:bg-emerald-500/10 ${muted}`}
-            onClick={onToggleDark}
-          >
-            {dark ? <Sun className="h-3.5 w-3.5" aria-hidden="true" /> : <Moon className="h-3.5 w-3.5" aria-hidden="true" />}
-            <span>{dark ? 'Light' : 'Dark'}</span>
-          </button>
+          <div className="flex items-center gap-2">
+            <Link
+              href="/settings"
+              aria-label="Settings and Profile"
+              title="Settings & Profile"
+              className={`flex min-h-9 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-xl border border-[var(--app-line)] px-2.5 text-xs font-semibold transition-colors hover:bg-emerald-500/10 ${
+                active === 'settings'
+                  ? 'bg-emerald-50 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-200'
+                  : muted
+              }`}
+            >
+              <UserRound className="h-3.5 w-3.5" aria-hidden="true" />
+              <span className="hidden xl:inline">Profile</span>
+            </Link>
+
+            <button
+              type="button"
+              className={`flex min-h-9 shrink-0 items-center gap-2 whitespace-nowrap rounded-xl border border-[var(--app-line)] px-3 text-xs font-semibold transition-colors hover:bg-emerald-500/10 ${muted}`}
+              onClick={onToggleDark}
+            >
+              {dark ? <Sun className="h-3.5 w-3.5" aria-hidden="true" /> : <Moon className="h-3.5 w-3.5" aria-hidden="true" />}
+              <span>{dark ? 'Light' : 'Dark'}</span>
+            </button>
+          </div>
         </div>
       </header>
 
