@@ -39,6 +39,8 @@ import type {
 import { PRAYERS, PRAYER_LABELS } from '@/types/salah';
 import AppShell from '@/components/AppShell';
 import JumuahBanner from '@/components/JumuahBanner';
+import MakroohTimesCard from '@/components/salah/MakroohTimesCard';
+import { getPrayerWindows } from '@/lib/makroohTimes';
 
 type Tab = 'today' | 'insights' | 'masjid';
 
@@ -370,6 +372,15 @@ export default function SalahPage() {
         {activeTab === 'today' && (
           <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1.25fr)_minmax(17rem,0.75fr)]">
             <section className="space-y-3" aria-label="Prayer times and log">
+              {times && (
+                <MakroohTimesCard
+                  times={times}
+                  timezone={settings.location!.timezone}
+                  dark={dark}
+                  now={now}
+                />
+              )}
+
               {timesLoading ? (
                 <div className="space-y-3">
                   {[1, 2, 3, 4, 5].map((i) => (
@@ -392,19 +403,24 @@ export default function SalahPage() {
                   ))}
                 </div>
               ) : (
-                PRAYERS.map((prayer) => (
-                  <PrayerCard
-                    key={prayer}
-                    prayer={prayer}
-                    status={log.prayers[prayer]}
-                    time={prayerTimeMap[prayer]}
-                    timezone={settings.location!.timezone}
-                    isCurrent={current === prayer}
-                    isNext={next === prayer && current !== prayer}
-                    dark={dark}
-                    onStatusChange={(s: PrayerStatus) => updatePrayer(prayer, s)}
-                  />
-                ))
+                PRAYERS.map((prayer) => {
+                  const window = times ? getPrayerWindows(times)[prayer] : null;
+                  return (
+                    <PrayerCard
+                      key={prayer}
+                      prayer={prayer}
+                      status={log.prayers[prayer]}
+                      time={window?.start ?? prayerTimeMap[prayer]}
+                      endTime={window?.end}
+                      endLabel={window?.endLabel}
+                      timezone={settings.location!.timezone}
+                      isCurrent={current === prayer}
+                      isNext={next === prayer && current !== prayer}
+                      dark={dark}
+                      onStatusChange={(s: PrayerStatus) => updatePrayer(prayer, s)}
+                    />
+                  );
+                })
               )}
             </section>
 
