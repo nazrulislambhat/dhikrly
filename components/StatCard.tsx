@@ -28,6 +28,7 @@ export default function StatCard({ label, value, dark, accent }: StatCardProps) 
       }`}
     >
       <div
+        suppressHydrationWarning
         className={`text-2xl font-light leading-none ${
           dark ? cls.dark : cls.light
         }`}

@@ -13,6 +13,7 @@ export default function ProgressBar({ pct, dark }: ProgressBarProps) {
       }`}
     >
       <div
+        suppressHydrationWarning
         className={`h-full rounded-full transition-all duration-500 ${
           pct === 100
             ? 'bg-gradient-to-r from-emerald-400 to-emerald-500'
