@@ -19,6 +19,21 @@ const nextConfig = {
     ],
   },
 
+  async redirects() {
+    return [
+      {
+        source: '/adhkaar',
+        destination: '/adhkar',
+        permanent: true,
+      },
+      {
+        source: '/ramadhan',
+        destination: '/ramadan',
+        permanent: true,
+      },
+    ];
+  },
+
   // Required for PWA: serve sw.js at root without caching headers
   async headers() {
     return [

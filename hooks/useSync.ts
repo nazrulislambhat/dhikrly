@@ -2,8 +2,17 @@
 
 import { useEffect, useRef, useCallback, useState } from 'react';
 import type { User } from '@supabase/supabase-js';
-import { supabase } from '@/lib/supabase';
+import { supabase, hasSupabaseConfig } from '@/lib/supabase';
 import { load, save, STORAGE_KEY, CUSTOM_DUAS_KEY, STREAK_KEY } from '@/lib/storage';
+
+function isTableMissingError(err: unknown): boolean {
+  if (!err || typeof err !== 'object') return false;
+  const e = err as { code?: string; message?: string };
+  return (
+    e.code === '42P01' ||
+    Boolean(e.message && (e.message.includes('does not exist') || e.message.includes('relation')))
+  );
+}
 import {
   clearLocalEdit,
   getLocalEditTime,
@@ -207,8 +216,16 @@ export async function pullFromSupabase(userId: string): Promise<{
     supabase.from('user_data').select('streak').eq('user_id', userId).maybeSingle(),
   ]);
 
-  const error = entriesRes.error ?? legacyProgressRes.error ?? customRes.error ?? userRes.error;
-  if (error) throw error;
+  const hasEntries = !entriesRes.error;
+  const hasLegacy = !legacyProgressRes.error;
+
+  if (entriesRes.error && !isTableMissingError(entriesRes.error)) throw entriesRes.error;
+  if (legacyProgressRes.error && !isTableMissingError(legacyProgressRes.error)) throw legacyProgressRes.error;
+  if (!hasEntries && !hasLegacy) {
+    throw entriesRes.error ?? legacyProgressRes.error;
+  }
+  if (customRes.error && !isTableMissingError(customRes.error)) throw customRes.error;
+  if (userRes.error && !isTableMissingError(userRes.error)) throw userRes.error;
 
   const legacyEntries: PracticeEntry[] = (legacyProgressRes.data ?? []).flatMap((row) =>
     Object.entries((row.checked ?? {}) as Record<string, boolean>).map(([item_key, value]) => ({
@@ -228,17 +245,20 @@ export async function pullFromSupabase(userId: string): Promise<{
     const normalized = normalizedByKey.get(`${entry.date}:${entry.item_key}`);
     return !normalized || Date.parse(entry.updated_at) > Date.parse(normalized.updated_at);
   });
-  if (entriesToMigrate.length > 0) {
-    const { error: migrationError } = await supabase
-      .from('practice_entries')
-      .upsert(
-        entriesToMigrate.map((entry): PracticeEntryWrite => ({
-          user_id: userId,
-          ...entry,
-        })),
-        { onConflict: 'user_id,date,area,item_key' },
-      );
-    if (migrationError) throw migrationError;
+  if (entriesToMigrate.length > 0 && hasEntries) {
+    try {
+      await supabase
+        .from('practice_entries')
+        .upsert(
+          entriesToMigrate.map((entry): PracticeEntryWrite => ({
+            user_id: userId,
+            ...entry,
+          })),
+          { onConflict: 'user_id,date,area,item_key' },
+        );
+    } catch {
+      // Don't fail the pull if migration upsert fails
+    }
   }
 
   const checkedByDate: Record<string, Record<string, boolean>> = {};
@@ -304,8 +324,14 @@ export function useSync({
     }
   }, []);
 
+  const retryCount = useRef(0);
+
   const flushQueue = useCallback(async (userId: string) => {
     if (isSyncing.current) return;
+    if (!hasSupabaseConfig) {
+      setStatus('synced');
+      return;
+    }
     if (!navigator.onLine) {
       setStatus('offline');
       return;
@@ -365,7 +391,7 @@ export function useSync({
   }, [today]);
 
   useEffect(() => {
-    if (!user) {
+    if (!user || !hasSupabaseConfig) {
       setReadyUserId(null);
       setStatus('synced');
       return;
@@ -561,13 +587,36 @@ export function useSync({
           }
         }
         if (cancelled) return;
+        retryCount.current = 0;
         setReadyUserId(user.id);
         await flushQueue(user.id);
-      } catch (error) {
+      } catch (error: unknown) {
         console.error('Could not pull adhkār data:', error);
+        const err = error as { status?: number; code?: string; message?: string } | undefined;
+        if (
+          err?.status === 401 ||
+          err?.code === 'PGRST301' ||
+          Boolean(err?.message && (err.message.includes('JWT') || err.message.includes('token') || err.message.includes('session')))
+        ) {
+          try {
+            const { error: refreshErr } = await supabase.auth.refreshSession();
+            if (refreshErr) {
+              console.warn('Session expired, signing out to prevent endless sync retries');
+              await supabase.auth.signOut();
+              setStatus('synced');
+              return;
+            }
+          } catch {
+            await supabase.auth.signOut();
+            setStatus('synced');
+            return;
+          }
+        }
         if (!cancelled) {
           setStatus(navigator.onLine ? 'error' : 'offline');
-          retryTimer = setTimeout(initialize, 15_000);
+          retryCount.current += 1;
+          const delay = Math.min(120_000, 15_000 * Math.pow(1.5, Math.min(retryCount.current, 5)));
+          retryTimer = setTimeout(initialize, delay);
         }
       }
     };
@@ -582,7 +631,7 @@ export function useSync({
   }, [user?.id, today]);
 
   useEffect(() => {
-    if (!user || readyUserId !== user.id) return;
+    if (!user || !hasSupabaseConfig || readyUserId !== user.id) return;
 
     const poll = async () => {
       if (
@@ -634,7 +683,7 @@ export function useSync({
   }, [user?.id, today, readyUserId]);
 
   useEffect(() => {
-    if (!user || readyUserId !== user.id) return;
+    if (!user || !hasSupabaseConfig || readyUserId !== user.id) return;
     const snapshot = JSON.stringify(checked);
     const changes = diffChecked(checked, checkedBaseline.current);
     checkedBaseline.current = checked;

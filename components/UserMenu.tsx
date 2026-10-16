@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import type { User } from '@supabase/supabase-js';
 import type { SyncStatus } from '@/hooks/useSync';
+import { hasSupabaseConfig } from '@/lib/supabase';
 
 interface UserMenuProps {
   user: User;
@@ -34,17 +35,19 @@ export default function UserMenu({
   const initials = user.email ? user.email.slice(0, 2).toUpperCase() : '??';
 
   const avatarUrl = user.user_metadata?.avatar_url as string | undefined;
-  const isSynced = syncStatus === 'synced';
-  const syncLabel =
-    syncStatus === 'synced'
+  const isSynced = !hasSupabaseConfig || syncStatus === 'synced';
+  const syncLabel = !hasSupabaseConfig
+    ? 'Local'
+    : syncStatus === 'synced'
       ? 'Synced'
       : syncStatus === 'syncing'
         ? 'Syncing…'
         : syncStatus === 'offline'
           ? 'Offline'
           : 'Sync failed';
-  const syncColor =
-    syncStatus === 'synced'
+  const syncColor = !hasSupabaseConfig
+    ? 'bg-sky-400'
+    : syncStatus === 'synced'
       ? 'bg-emerald-500'
       : syncStatus === 'error'
         ? 'bg-red-500'
@@ -154,50 +157,92 @@ export default function UserMenu({
           </div>
 
           {/* Sync status */}
-          <div
-            className={`mb-2 flex items-center gap-2 rounded-xl px-3 py-2 ${
-              isSynced
-                ? dark
-                  ? 'bg-emerald-500/10'
-                  : 'bg-emerald-50'
-                : syncStatus === 'error'
-                  ? dark
-                    ? 'bg-red-500/10'
-                    : 'bg-red-50'
-                  : dark
-                    ? 'bg-amber-400/10'
-                    : 'bg-amber-50'
-            }`}
-          >
-            <span
-              className={`h-1.5 w-1.5 rounded-full ${
-                syncColor
-              }`}
-            />
-            <span
-              className={`text-[10px] ${
-                isSynced
-                  ? dark
-                    ? 'text-emerald-400'
-                    : 'text-emerald-700'
-                  : syncStatus === 'error'
-                    ? dark
-                      ? 'text-red-400'
-                      : 'text-red-700'
-                    : dark
-                      ? 'text-amber-400'
-                      : 'text-amber-700'
+          {!hasSupabaseConfig ? (
+            <div
+              className={`mb-2 rounded-xl px-3 py-2 text-[10px] ${
+                dark ? 'bg-sky-500/10 text-sky-300' : 'bg-sky-50 text-sky-700'
               }`}
             >
-              {syncStatus === 'synced'
-                ? 'All changes synced'
-                : syncStatus === 'syncing'
-                  ? 'Syncing changes…'
-                  : syncStatus === 'offline'
-                    ? 'Waiting for connection'
-                    : 'Sync failed; retrying'}
-            </span>
-          </div>
+              <div className="flex items-center gap-1.5 font-medium mb-0.5">
+                <span className="h-1.5 w-1.5 rounded-full bg-sky-400" />
+                Local Mode
+              </div>
+              <p className={`text-[9px] ${dark ? 'text-sky-400/80' : 'text-sky-600'}`}>
+                Cloud sync disabled (Supabase not configured in .env.local).
+              </p>
+            </div>
+          ) : (
+            <div className="mb-2">
+              <div
+                className={`flex items-center gap-2 rounded-xl px-3 py-2 ${
+                  isSynced
+                    ? dark
+                      ? 'bg-emerald-500/10'
+                      : 'bg-emerald-50'
+                    : syncStatus === 'error'
+                      ? dark
+                        ? 'bg-red-500/10'
+                        : 'bg-red-50'
+                      : dark
+                        ? 'bg-amber-400/10'
+                        : 'bg-amber-50'
+                }`}
+              >
+                <span
+                  className={`h-1.5 w-1.5 rounded-full ${
+                    syncColor
+                  }`}
+                />
+                <span
+                  className={`text-[10px] ${
+                    isSynced
+                      ? dark
+                        ? 'text-emerald-400'
+                        : 'text-emerald-700'
+                      : syncStatus === 'error'
+                        ? dark
+                          ? 'text-red-400'
+                          : 'text-red-700'
+                        : dark
+                          ? 'text-amber-400'
+                          : 'text-amber-700'
+                  }`}
+                >
+                  {syncStatus === 'synced'
+                    ? 'All changes synced'
+                    : syncStatus === 'syncing'
+                      ? 'Syncing changes…'
+                      : syncStatus === 'offline'
+                        ? 'Waiting for connection'
+                        : 'Sync failed; retrying'}
+                </span>
+              </div>
+              {syncStatus === 'error' && (
+                <button
+                  onClick={() => {
+                    try {
+                      const keys = Object.keys(localStorage);
+                      for (const k of keys) {
+                        if (k.startsWith('adhkar_sync_queue') || k.startsWith('salah_sync_queue')) {
+                          localStorage.removeItem(k);
+                        }
+                      }
+                      window.location.reload();
+                    } catch (e) {
+                      console.error(e);
+                    }
+                  }}
+                  className={`mt-1.5 w-full cursor-pointer rounded-lg px-2.5 py-1.5 text-center text-[10px] font-medium transition-colors ${
+                    dark
+                      ? 'bg-red-500/15 text-red-300 hover:bg-red-500/25'
+                      : 'bg-red-50 text-red-700 hover:bg-red-100'
+                  }`}
+                >
+                  Clear Sync Queue & Reload
+                </button>
+              )}
+            </div>
+          )}
 
           {/* Sign out */}
           <button
