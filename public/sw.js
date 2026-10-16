@@ -97,32 +97,67 @@ self.addEventListener('fetch', (event) => {
 /* ── Push Notifications ── */
 self.addEventListener('push', (event) => {
   let data = {};
-  try { data = event.data?.json() ?? {}; } catch { data = {}; }
+  try {
+    data = event.data?.json() ?? {};
+  } catch {
+    data = { body: event.data?.text() || "Time for your daily adhkār & du'ā" };
+  }
 
-  const title = data.title || "Daily Adhkār Reminder 🌙";
+  const title = data.title || 'Dhikrly — Adhkār & Qur’an 🌙';
   const options = {
-    body: data.body || "Time for your daily adhkār & du'ā",
-    icon: '/icon-192.png',
-    badge: '/icon-192.png',
-    tag: data.tag || 'adhkar-reminder',
+    body: data.body || "Begin your session with remembrance and du'ā for peace of heart.",
+    icon: data.icon || '/icon-192.png',
+    badge: data.badge || '/icon-192.png',
+    image: data.image,
+    tag: data.tag || 'dhikrly-reminder',
     renotify: true,
     requireInteraction: false,
-    data: { url: data.url || '/' },
-    vibrate: [200, 100, 200],
+    data: {
+      url: data.url || '/',
+      timestamp: Date.now(),
+      ...data.data,
+    },
+    // Islamic gentle rhythm: short vibration, pause, short vibration, pause, long vibration
+    vibrate: [120, 80, 120, 80, 240],
+    actions: data.actions || [
+      { action: 'open_app', title: 'Open Dhikrly 🤲' },
+      { action: 'open_quran', title: 'Read Qur’an 📖' },
+    ],
   };
+
   event.waitUntil(self.registration.showNotification(title, options));
 });
 
-/* ── Notification click ── */
+/* ── Notification click & action routing ── */
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
+
+  const action = event.action;
+  let targetPath = event.notification.data?.url || '/';
+
+  if (action === 'open_quran') {
+    targetPath = '/quran';
+  } else if (action === 'open_salah') {
+    targetPath = '/salah';
+  } else if (action === 'open_insights') {
+    targetPath = '/insights';
+  }
+
+  const targetUrl = new URL(targetPath, self.location.origin).href;
+
   event.waitUntil(
     clients
       .matchAll({ type: 'window', includeUncontrolled: true })
       .then((clientList) => {
-        const existing = clientList.find((c) => c.url === '/' && 'focus' in c);
-        if (existing) return existing.focus();
-        if (clients.openWindow) return clients.openWindow('/');
+        for (const client of clientList) {
+          if ('focus' in client) {
+            if ('navigate' in client && client.url !== targetUrl) {
+              client.navigate(targetUrl);
+            }
+            return client.focus();
+          }
+        }
+        if (clients.openWindow) return clients.openWindow(targetUrl);
       })
   );
 });

@@ -113,16 +113,20 @@ export async function GET(request: Request) {
         enabled: row.morning_enabled,
         time: row.morning_time,
         lastSent: row.last_sent_morning,
-        title: 'Morning Adhkār',
-        body: 'Begin your day with remembrance and duʿā.',
+        title: 'Morning Adhkār & Du’ā 🌅',
+        body: 'أَصْبَحْنَا وَأَصْبَحَ الْمُلْكُ لِلَّهِ · Begin your day in the protective light of Allah’s remembrance.',
+        tag: 'dhikrly-morning',
+        url: '/?session=morning',
       },
       {
         period: 'evening' as const,
         enabled: row.evening_enabled,
         time: row.evening_time,
         lastSent: row.last_sent_evening,
-        title: 'Evening Adhkār',
-        body: 'Take a moment for your evening remembrance and duʿā.',
+        title: 'Evening Adhkār & Du’ā 🌙',
+        body: 'أَمْسَيْنَا وَأَمْسَى الْمُلْكُ لِلَّهِ · Bring peace to your evening with sincere adhkār and gratitude.',
+        tag: 'dhikrly-evening',
+        url: '/?session=evening',
       },
     ].filter(
       (schedule) =>
@@ -148,8 +152,14 @@ export async function GET(request: Request) {
           JSON.stringify({
             title: schedule.title,
             body: schedule.body,
-            tag: `adhkar-${schedule.period}`,
-            url: '/',
+            icon: '/icon-192.png',
+            badge: '/icon-192.png',
+            tag: schedule.tag,
+            url: schedule.url,
+            actions: [
+              { action: 'open_app', title: 'Open Adhkār 🤲' },
+              { action: 'open_quran', title: 'Read Qur’an 📖' },
+            ],
           }),
         );
 
