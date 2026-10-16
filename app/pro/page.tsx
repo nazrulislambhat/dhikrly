@@ -272,72 +272,72 @@ export default function DhikrlyProPage() {
   });
 
   return (
-    <div className="min-h-dvh text-[var(--app-ink)]">
+    <div className="min-h-dvh text-[var(--app-ink)] overflow-x-hidden">
       <AppShell active="pro" dark={dark} onToggleDark={() => setDark((v) => !v)}>
-        <div className="mx-auto w-[min(calc(100%-2rem),72rem)] px-2 py-6 sm:py-8 lg:px-4 space-y-10">
+        <div className="mx-auto w-full max-w-6xl px-3 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-8 sm:space-y-10 min-w-0">
           {/* Header */}
-          <header className="relative overflow-hidden rounded-3xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 via-emerald-950/20 to-transparent p-6 sm:p-10 text-center sm:text-left">
+          <header className="relative overflow-hidden rounded-3xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 via-emerald-950/20 to-transparent p-4 sm:p-10 text-center sm:text-left min-w-0">
             <div className="absolute -top-20 -right-20 h-64 w-64 rounded-full bg-amber-400/10 blur-3xl pointer-events-none" />
             <div className="absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-emerald-400/10 blur-3xl pointer-events-none" />
 
-            <div className="relative z-10 flex flex-col sm:flex-row items-center sm:items-start justify-between gap-6">
-              <div className="space-y-3 max-w-2xl">
+            <div className="relative z-10 flex flex-col sm:flex-row items-center sm:items-start justify-between gap-6 min-w-0">
+              <div className="space-y-3 max-w-2xl min-w-0">
                 <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/40 bg-amber-500/20 px-3.5 py-1 text-xs font-black uppercase tracking-wider text-amber-800 dark:text-amber-300">
-                  <Crown className="h-4 w-4" />
-                  <span>DHIKRLY PRO · MEMBERSHIP & FEATURE PLANS</span>
+                  <Crown className="h-4 w-4 shrink-0" />
+                  <span className="truncate">DHIKRLY PRO · PLANS</span>
                 </div>
 
-                <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-[var(--app-ink)] font-serif">
+                <h1 className="text-2xl sm:text-5xl font-black tracking-tight text-[var(--app-ink)] font-serif break-words">
                   Elevate Your <span className="text-amber-600 dark:text-amber-400 font-sans">Spiritual Journey</span>
                 </h1>
 
-                <p className="text-sm sm:text-base text-[var(--app-muted)] leading-relaxed">
+                <p className="text-xs sm:text-base text-[var(--app-muted)] leading-relaxed break-words">
                   Support sustainable, ad-free Islamic software. Unlock AI Quran memorization coaching, encrypted multi-device sync, studio soundscapes, and sponsor a student of knowledge.
                 </p>
 
-                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 pt-2">
+                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5 sm:gap-3 pt-2 w-full">
                   <button
                     type="button"
                     onClick={() => setShowModal(true)}
-                    className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-amber-600 via-amber-500 to-emerald-700 px-5 py-3 text-xs font-black text-white shadow-lg shadow-amber-900/15 hover:brightness-110 active:scale-95 transition-all"
+                    className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-amber-600 via-amber-500 to-emerald-700 px-4 py-3 text-xs font-black text-white shadow-lg shadow-amber-900/15 hover:brightness-110 active:scale-95 transition-all text-center"
                   >
-                    <Crown className="h-4 w-4" />
-                    <span>{isPro ? `Pro Preview Active (${tier.toUpperCase()})` : 'Open Pro Modal & Plans'}</span>
+                    <Crown className="h-4 w-4 shrink-0" />
+                    <span>{isPro ? `Pro Preview (${tier.toUpperCase()})` : 'Open Pro Modal & Plans'}</span>
                   </button>
 
                   <Link
                     href="/pipeline"
-                    className="inline-flex items-center gap-2 rounded-2xl border border-[var(--app-line)] bg-[var(--app-surface)] px-5 py-3 text-xs font-bold text-[var(--app-ink)] hover:border-amber-500/40 transition-colors no-underline"
+                    className="inline-flex items-center justify-center gap-2 rounded-2xl border border-[var(--app-line)] bg-[var(--app-surface)] px-4 py-3 text-xs font-bold text-[var(--app-ink)] hover:border-amber-500/40 transition-colors no-underline text-center"
                   >
-                    <Layers className="h-4 w-4 text-amber-500" />
-                    <span>Engineering Pipeline (Native Apps & Backend)</span>
-                    <ArrowRight className="h-3 w-3" />
+                    <Layers className="h-4 w-4 text-amber-500 shrink-0" />
+                    <span>Engineering Pipeline</span>
+                    <ArrowRight className="h-3 w-3 shrink-0" />
                   </Link>
 
                   <a
                     href="https://buymeacoffee.com/nazrulislambhat"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 rounded-2xl border border-amber-500/40 bg-[#FFDD00]/25 px-5 py-3 text-xs font-bold text-amber-950 dark:bg-amber-400/20 dark:text-amber-200 hover:bg-[#FFDD00]/40 transition-colors shadow-xs no-underline"
+                    className="inline-flex items-center justify-center gap-2 rounded-2xl border border-amber-500/40 bg-[#FFDD00]/25 px-4 py-3 text-xs font-bold text-amber-950 dark:bg-amber-400/20 dark:text-amber-200 hover:bg-[#FFDD00]/40 transition-colors shadow-xs no-underline text-center"
                   >
-                    <Coffee className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                    <Coffee className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0" />
                     <span>Buy me a coffee</span>
                   </a>
                 </div>
               </div>
 
               {/* Status Badge Box */}
-              <div className="rounded-2xl border border-[var(--app-line)] bg-[var(--app-surface)] p-5 shadow-sm text-center sm:text-right shrink-0 min-w-[240px] space-y-2">
+              <div className="rounded-2xl border border-[var(--app-line)] bg-[var(--app-surface)] p-4 sm:p-5 shadow-sm text-center sm:text-right shrink-0 w-full sm:w-auto sm:min-w-[220px] space-y-2">
                 <div className="flex items-center justify-center sm:justify-end gap-2 text-xs font-bold text-amber-700 dark:text-amber-300">
-                  <Construction className="h-4 w-4" />
+                  <Construction className="h-4 w-4 shrink-0" />
                   <span>Pro Feature Preview</span>
                 </div>
-                <p className="text-2xl font-black text-emerald-800 dark:text-emerald-300">
+                <p className="text-xl sm:text-2xl font-black text-emerald-800 dark:text-emerald-300">
                   {isPro ? `${tier.toUpperCase()} Active` : 'Preview Phase'}
                 </p>
-                <p className="text-xs text-[var(--app-muted)]">Checkouts are simulated for beta testing</p>
+                <p className="text-xs text-[var(--app-muted)]">Checkouts are simulated for testing</p>
                 <div className="pt-2 border-t border-[var(--app-line)] text-[11px] text-[var(--app-muted)]">
-                  Active Testers Code: <span className="font-mono font-bold text-amber-600 dark:text-amber-400">TESTPRO</span>
+                  Testers Code: <span className="font-mono font-bold text-amber-600 dark:text-amber-400">TESTPRO</span>
                 </div>
               </div>
             </div>

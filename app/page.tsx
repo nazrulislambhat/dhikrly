@@ -442,7 +442,7 @@ export default function DuasTracker() {
 
         {/* Explore Features Strip */}
         <div className="mb-6 overflow-x-auto pb-1" aria-label="Explore Dhikrly tools">
-          <div className="flex items-center gap-2 min-w-max">
+          <div className="flex items-center gap-2 min-w-max my-2">
             {[
               { href: '/names', label: '99 Names of Allah', Icon: Sparkles },
               { href: '/tadabbur', label: 'Situational Du‘ā', Icon: BookOpen },
