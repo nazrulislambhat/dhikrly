@@ -190,8 +190,8 @@ export default function AppShell({
                     : muted
                 }`}
               >
-                <MoreHorizontal className="h-3.5 w-3.5" aria-hidden="true" />
-                <span>{activeDropdownItem ? activeDropdownItem.label : 'More Features'}</span>
+      
+                <span className='cursor-pointer'>{activeDropdownItem ? activeDropdownItem.label : 'More'}</span>
                 <ChevronDown className={`h-3 w-3 transition-transform duration-200 ${desktopDropdownOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
               </button>
 
