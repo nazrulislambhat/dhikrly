@@ -87,9 +87,25 @@ export async function POST(request: Request) {
     .eq('device_id', deviceId)
     .limit(1)
     .maybeSingle();
+
   if (lookupError) {
     console.error('Could not find existing push subscription:', lookupError.message);
-    return NextResponse.json({ error: 'Could not save notification settings.' }, { status: 500 });
+    const isMissing =
+      lookupError.code === 'PGRST205' ||
+      lookupError.code === '42P01' ||
+      lookupError.message?.includes('schema cache') ||
+      lookupError.message?.includes('does not exist');
+
+    return NextResponse.json(
+      {
+        ok: false,
+        isTableMissing: isMissing,
+        error: isMissing
+          ? "Database table 'push_subscriptions' is missing in Supabase. Please run the SQL migration in supabase-migrations/20261016_push_subscriptions.sql in your Supabase SQL Editor."
+          : `Could not check push subscription: ${lookupError.message}`,
+      },
+      { status: isMissing ? 400 : 500 },
+    );
   }
 
   const subscription = {
@@ -111,7 +127,22 @@ export async function POST(request: Request) {
 
   if (result.error) {
     console.error('Could not save push subscription:', result.error.message);
-    return NextResponse.json({ error: 'Could not save notification settings.' }, { status: 500 });
+    const isMissing =
+      result.error.code === 'PGRST205' ||
+      result.error.code === '42P01' ||
+      result.error.message?.includes('schema cache') ||
+      result.error.message?.includes('does not exist');
+
+    return NextResponse.json(
+      {
+        ok: false,
+        isTableMissing: isMissing,
+        error: isMissing
+          ? "Database table 'push_subscriptions' is missing in Supabase. Please run the SQL migration in supabase-migrations/20261016_push_subscriptions.sql in your Supabase SQL Editor."
+          : `Could not save notification settings: ${result.error.message}`,
+      },
+      { status: isMissing ? 400 : 500 },
+    );
   }
   return NextResponse.json({ ok: true });
 }
