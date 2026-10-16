@@ -36,7 +36,7 @@ export default function QuranWordModal({
 
   return (
     <div
-      className={`fixed inset-0 z-[80] flex items-center justify-center p-4 ${overlay} animate-fade-in`}
+      className={`fixed inset-0 z-[80] flex items-center justify-center p-4 ${overlay}`}
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <div className={`w-full max-w-sm rounded-3xl border p-6 ${panel} relative text-center`}>
