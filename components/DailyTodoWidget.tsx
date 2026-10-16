@@ -244,9 +244,9 @@ export default function DailyTodoWidget() {
               Daily Spiritual Checklist
             </h2>
             <div className="flex items-center gap-1.5 text-[10px] text-[var(--app-muted)]">
-              <span>{user ? 'Synced with Account' : 'Saved Locally'}</span>
+              <span suppressHydrationWarning>{user ? 'Synced with Account' : 'Saved Locally'}</span>
               <span>·</span>
-              <span>{today}</span>
+              <span suppressHydrationWarning>{today}</span>
             </div>
           </div>
         </div>
@@ -267,12 +267,13 @@ export default function DailyTodoWidget() {
           <span className="font-semibold text-[11px] text-[var(--app-muted)]">
             Today&apos;s Progress
           </span>
-          <span className="font-mono font-bold text-emerald-700 dark:text-emerald-300">
+          <span suppressHydrationWarning className="font-mono font-bold text-emerald-700 dark:text-emerald-300">
             {completedCount} / {totalCount} ({progressPct}%)
           </span>
         </div>
         <div className="h-2 w-full overflow-hidden rounded-full bg-black/10 dark:bg-white/10 p-0.5">
           <div
+            suppressHydrationWarning
             className={`h-full rounded-full transition-all duration-300 ease-out ${
               allCompleted
                 ? 'bg-gradient-to-r from-emerald-500 to-amber-400'

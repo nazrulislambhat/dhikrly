@@ -500,10 +500,12 @@ export default function DuasTracker() {
             className="relative z-10 grid h-[5.6rem] w-[5.6rem] shrink-0 place-items-center sm:h-[6.25rem] sm:w-[6.25rem]"
             role="img"
             aria-label={`${pct}% complete`}
+            suppressHydrationWarning
           >
             <svg className="absolute inset-0 -rotate-90" viewBox="0 0 100 100" aria-hidden="true">
               <circle className="fill-none stroke-white/20 stroke-[7px]" cx="50" cy="50" r="43" />
               <circle
+                suppressHydrationWarning
                 className="fill-none stroke-white stroke-[7px] [stroke-linecap:round]"
                 cx="50"
                 cy="50"
@@ -511,7 +513,7 @@ export default function DuasTracker() {
                 style={{ strokeDasharray: `${pct * 2.7} 270` }}
               />
             </svg>
-            <span className="grid justify-items-center"><strong className="text-base leading-tight">{pct}%</strong><small className="text-[9px] text-white/70">complete</small></span>
+            <span className="grid justify-items-center"><strong suppressHydrationWarning className="text-base leading-tight">{pct}%</strong><small className="text-[9px] text-white/70">complete</small></span>
           </div>
         </section>
         </TiltCard>
@@ -551,7 +553,7 @@ export default function DuasTracker() {
                 <p className="text-[10px] font-extrabold tracking-[0.14em] text-[var(--app-muted)]">YOUR COLLECTION</p>
                 <h2 className="mt-1 text-xl font-bold tracking-tight sm:text-2xl">Daily remembrances</h2>
               </div>
-              <span className="shrink-0 pb-1 text-xs font-semibold text-[var(--app-muted)]">{done} of {total} complete</span>
+              <span suppressHydrationWarning className="shrink-0 pb-1 text-xs font-semibold text-[var(--app-muted)]">{done} of {total} complete</span>
             </div>
             <div className="mb-4 flex flex-wrap items-center gap-2">
               <label className="relative min-w-[12rem] flex-1">
@@ -662,10 +664,10 @@ export default function DuasTracker() {
             <section className="grid gap-3 rounded-2xl border border-[var(--app-line)] bg-[var(--app-surface)] p-4 dark:bg-[#14211e]">
               <div className="flex items-center justify-between text-sm font-bold">
                 <h2>Today&apos;s progress</h2>
-                <span className="text-emerald-800 dark:text-emerald-200">{pct}%</span>
+                <span suppressHydrationWarning className="text-emerald-800 dark:text-emerald-200">{pct}%</span>
               </div>
               <ProgressBar pct={pct} dark={dark} />
-              <p className="text-[11px] text-[var(--app-muted)]">{done} of {total} remembrances finished</p>
+              <p suppressHydrationWarning className="text-[11px] text-[var(--app-muted)]">{done} of {total} remembrances finished</p>
             </section>
 
             <div className="overflow-hidden rounded-2xl border border-[var(--app-line)] bg-[var(--app-surface)] p-1 dark:bg-[#14211e]">
