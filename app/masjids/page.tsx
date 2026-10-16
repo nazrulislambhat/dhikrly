@@ -91,7 +91,7 @@ export default function MasjidsPage() {
 
   // Request browser GPS
   const detectLocation = () => {
-    if (!navigator.geolocation) {
+    if (typeof window === 'undefined' || !navigator.geolocation) {
       setError('Geolocation is not supported by your browser.');
       return;
     }
@@ -99,24 +99,54 @@ export default function MasjidsPage() {
     setError('');
 
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
+      async (pos) => {
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        let detectedCity = 'Current Location';
+
+        // Attempt reverse geocoding for city name
+        try {
+          const revRes = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=12`,
+            { headers: { 'User-Agent': 'DhikrlyApp/2.2' } },
+          );
+          if (revRes.ok) {
+            const revData = await revRes.json();
+            detectedCity =
+              revData.address?.suburb ||
+              revData.address?.city ||
+              revData.address?.town ||
+              revData.address?.village ||
+              'Current Location';
+          }
+        } catch {
+          // Ignore reverse geocode failures
+        }
+
         const newLoc: SalahLocation = {
-          lat: pos.coords.latitude,
-          lng: pos.coords.longitude,
-          city: 'Current Location',
+          lat,
+          lng,
+          city: detectedCity,
           country: '',
           timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
         };
+
         setLocation(newLoc);
         const s = getSalahSettings();
         saveSalahSettings({ ...s, location: newLoc });
         fetchNearbyMasjids(newLoc, radiusKm);
       },
-      () => {
+      (err) => {
         setLoading(false);
-        setError('Location access was denied. Please allow GPS or select a city.');
+        if (err.code === 1) {
+          setError('Location permission was denied. Please allow GPS access in your browser settings to find masjids near you.');
+        } else if (err.code === 2) {
+          setError('Position unavailable. Please check your network or GPS connection.');
+        } else {
+          setError('GPS location timed out. Tap "Find Masjids (GPS)" to try again.');
+        }
       },
-      { timeout: 10000, enableHighAccuracy: true },
+      { timeout: 15000, enableHighAccuracy: true, maximumAge: 60000 },
     );
   };
 
@@ -125,116 +155,30 @@ export default function MasjidsPage() {
     setError('');
 
     try {
-      const radiusMeters = radius * 1000;
-      const query = `
-        [out:json][timeout:20];
-        (
-          node["amenity"="place_of_worship"]["religion"="muslim"](around:${radiusMeters},${loc.lat},${loc.lng});
-          way["amenity"="place_of_worship"]["religion"="muslim"](around:${radiusMeters},${loc.lat},${loc.lng});
-        );
-        out body center 25;
-      `;
-
-      const res = await fetch('https://overpass-api.de/api/interpreter', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: query,
-      });
-
-      if (!res.ok) throw new Error('Overpass API error');
+      const res = await fetch(`/api/masjids?lat=${loc.lat}&lng=${loc.lng}&radius=${radius}`);
+      if (!res.ok) {
+        throw new Error('Failed to fetch masjids');
+      }
 
       const data = await res.json();
-      const results: Masjid[] = (data.elements ?? [])
-        .map(
-          (el: {
-            type: string;
-            lat?: number;
-            lon?: number;
-            center?: { lat: number; lon: number };
-            tags?: {
-              name?: string;
-              'name:en'?: string;
-              'name:ar'?: string;
-              'addr:street'?: string;
-              wheelchair?: string;
-              female?: string;
-            };
-            id: number;
-          }) => {
-            const lat = el.lat ?? el.center?.lat ?? 0;
-            const lng = el.lon ?? el.center?.lon ?? 0;
-            const dist = haversineDistance(loc.lat, loc.lng, lat, lng);
-            const brng = calculateBearing(loc.lat, loc.lng, lat, lng);
-
-            const facilities: string[] = ['Jummah Prayers', 'Wudu Area'];
-            if (el.tags?.female === 'yes') facilities.push("Women's Section");
-            if (el.tags?.wheelchair === 'yes') facilities.push('Wheelchair Accessible');
-
-            return {
-              id: String(el.id),
-              name: el.tags?.['name:en'] || el.tags?.name || 'Local Masjid',
-              nameAr: el.tags?.['name:ar'],
-              address: el.tags?.['addr:street'] ?? 'Mosque Premises',
-              lat,
-              lng,
-              distance: Math.round(dist * 100) / 100,
-              bearing: Math.round(brng),
-              facilities,
-            };
-          },
-        )
-        .filter((m: Masjid) => m.lat && m.lng)
-        .sort((a: Masjid, b: Masjid) => a.distance - b.distance);
+      const results: Masjid[] = data.masjids ?? [];
 
       setMasjids(results);
       if (results.length === 0) {
-        setError(`No registered masjids found within ${radius}km. Try increasing search radius.`);
+        setError(`No registered masjids found within ${radius}km of your location. Try expanding the search radius to 10km or 25km.`);
       }
-    } catch {
-      // Fallback demo masjids around location so user experience is smooth
-      const fallbackList: Masjid[] = [
-        {
-          id: 'demo-1',
-          name: 'Central Jamia Mosque',
-          nameAr: 'المسجد الجامع المركزي',
-          address: 'Main Boulevard, Central District',
-          lat: loc.lat + 0.007,
-          lng: loc.lng + 0.005,
-          distance: 0.95,
-          bearing: 42,
-          facilities: ['Jummah Prayers', "Women's Section", 'Wudu Area', 'Parking'],
-        },
-        {
-          id: 'demo-2',
-          name: 'Al-Noor Islamic Centre & Mosque',
-          nameAr: 'مركز ومسجد النور الإسلامي',
-          address: 'Civic Center Crescent',
-          lat: loc.lat - 0.012,
-          lng: loc.lng + 0.008,
-          distance: 1.6,
-          bearing: 152,
-          facilities: ['Jummah Prayers', 'Wudu Area', 'Wheelchair Accessible'],
-        },
-        {
-          id: 'demo-3',
-          name: 'Masjid al-Tawheed',
-          nameAr: 'مسجد التوحيد',
-          address: 'Market Road East',
-          lat: loc.lat + 0.018,
-          lng: loc.lng - 0.015,
-          distance: 2.8,
-          bearing: 310,
-          facilities: ['Jummah Prayers', 'Wudu Area', 'Parking'],
-        },
-      ];
-      setMasjids(fallbackList);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Error fetching masjids';
+      setError(`Could not retrieve nearby masjids (${msg}). Tap "Find Nearby Masjids" to retry.`);
+      setMasjids([]);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    if (location) {
+    // If we have a saved location, fetch nearby masjids. Otherwise auto-detect.
+    if (location && location.lat && location.lng) {
       fetchNearbyMasjids(location, radiusKm);
     } else {
       detectLocation();
@@ -312,14 +256,23 @@ export default function MasjidsPage() {
             </p>
           </div>
 
-          <button
-            type="button"
-            onClick={detectLocation}
-            className="inline-flex items-center gap-2 rounded-2xl border border-[var(--app-line)] bg-[var(--app-surface)] px-4 py-3 text-xs font-bold text-[var(--app-ink)] shadow-xs hover:bg-emerald-500/10 transition-colors self-start md:self-auto"
-          >
-            <LocateFixed className="h-4 w-4 text-emerald-700 dark:text-emerald-300" />
-            <span>Update My GPS Location</span>
-          </button>
+          <div className="flex flex-wrap items-center gap-2.5 self-start md:self-auto">
+            <button
+              type="button"
+              onClick={detectLocation}
+              disabled={loading}
+              className="inline-flex items-center gap-2 rounded-2xl bg-emerald-800 text-white dark:bg-emerald-500 dark:text-emerald-950 px-5 py-3 text-xs font-extrabold shadow-sm hover:opacity-90 active:scale-95 transition-all disabled:opacity-60"
+            >
+              <LocateFixed className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+              <span>{loading ? 'Locating Nearby Masjids…' : 'Find Nearby Masjids (GPS)'}</span>
+            </button>
+            {location && (
+              <span className="inline-flex items-center gap-1.5 rounded-2xl border border-[var(--app-line)] bg-[var(--app-surface)] px-3 py-2.5 text-xs font-semibold text-[var(--app-ink)]">
+                <MapPin className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                {location.city || `${location.lat.toFixed(3)}°, ${location.lng.toFixed(3)}°`}
+              </span>
+            )}
+          </div>
         </header>
 
         {loggedStatus && (
@@ -463,8 +416,44 @@ export default function MasjidsPage() {
         )}
 
         {/* Masjids Cards Grid */}
-        <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-          {filteredMasjids.map((masjid) => {
+        {filteredMasjids.length === 0 && !loading ? (
+          <div className={`${cardClass} mb-8 p-8 text-center`}>
+            <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-emerald-50 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 mb-3">
+              <Landmark className="h-7 w-7" />
+            </div>
+            <h3 className="text-base font-bold text-[var(--app-ink)]">
+              No masjids found within {radiusKm}km
+            </h3>
+            <p className="mt-1 text-xs text-[var(--app-muted)] max-w-md mx-auto">
+              Try expanding your search radius to 10km or 25km, or use GPS to refresh your precise location coordinates.
+            </p>
+            <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+              <button
+                type="button"
+                onClick={() => setRadiusKm(10)}
+                className="rounded-xl border border-emerald-500/30 bg-emerald-50 dark:bg-emerald-950/40 px-3.5 py-2 text-xs font-bold text-emerald-800 dark:text-emerald-200"
+              >
+                Expand to 10 km
+              </button>
+              <button
+                type="button"
+                onClick={() => setRadiusKm(25)}
+                className="rounded-xl border border-emerald-500/30 bg-emerald-50 dark:bg-emerald-950/40 px-3.5 py-2 text-xs font-bold text-emerald-800 dark:text-emerald-200"
+              >
+                Expand to 25 km
+              </button>
+              <button
+                type="button"
+                onClick={detectLocation}
+                className="rounded-xl bg-emerald-800 text-white dark:bg-emerald-400 dark:text-emerald-950 px-3.5 py-2 text-xs font-bold"
+              >
+                Refresh Location
+              </button>
+            </div>
+          </div>
+        ) : (
+          <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+            {filteredMasjids.map((masjid) => {
             const isFav = favorites.includes(masjid.id);
             const walkMins = Math.round((masjid.distance / 4.5) * 60);
             const driveMins = Math.max(2, Math.round((masjid.distance / 30) * 60));
@@ -545,7 +534,8 @@ export default function MasjidsPage() {
             );
           })}
         </section>
-      </div>
+      )}
+    </div>
     </AppShell>
   );
 }
