@@ -443,6 +443,9 @@ export default function DuasTracker() {
         <div className="mb-6 overflow-x-auto pb-1" aria-label="Explore Dhikrly tools">
           <div className="flex items-center gap-2 min-w-max">
             {[
+              { href: '/names', label: '99 Names of Allah', Icon: Sparkles },
+              { href: '/tadabbur', label: 'Situational Du‘ā', Icon: BookOpen },
+              { href: '/umrah', label: 'Hajj & ‘Umrah', Icon: Compass },
               { href: '/sunnah', label: 'Daily Sunnah & Player', Icon: HeartHandshake },
               { href: '/tasbeeh', label: 'Tasbīḥ Counter', Icon: CircleDot },
               { href: '/qibla', label: 'Qibla Compass', Icon: Compass },
