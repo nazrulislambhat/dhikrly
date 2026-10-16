@@ -32,7 +32,6 @@ export type AppSection =
   | 'salah'
   | 'quran'
   | 'tasbeeh'
-  | 'sunnah'
   | 'qibla'
   | 'ramadan'
   | 'masjids'
@@ -60,7 +59,6 @@ const desktopNavItems = [
   { href: '/salah', label: 'Ṣalāh', section: 'salah', Icon: Clock3 },
   { href: '/quran', label: 'Qur’an', section: 'quran', Icon: BookOpen },
   { href: '/tasbeeh', label: 'Tasbīḥ', section: 'tasbeeh', Icon: CircleDot },
-  { href: '/sunnah', label: 'Sunnah', section: 'sunnah', Icon: HeartHandshake },
   { href: '/qibla', label: 'Qibla', section: 'qibla', Icon: Compass },
   { href: '/ramadan', label: 'Ramadan', section: 'ramadan', Icon: MoonStar },
   { href: '/masjids', label: 'Masjids', section: 'masjids', Icon: Landmark },
