@@ -22,6 +22,8 @@ fi
 
 mkdir -p backups
 
+export PGSSLMODE=require
+
 TIMESTAMP=$(date +'%Y-%m-%d_%H%M%S')
 BACKUP_FILE="backups/dhikrly_backup_${TIMESTAMP}.sql"
 
