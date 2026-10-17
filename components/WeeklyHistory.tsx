@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { load, STORAGE_KEY } from '@/lib/storage';
 import { getTodayKey } from '@/lib/dates';
 import type { HistoryDay } from '@/types';
@@ -16,13 +16,17 @@ export default function WeeklyHistory({
   total,
   streakBest,
 }: WeeklyHistoryProps) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const today = getTodayKey();
 
   const history: HistoryDay[] = useMemo(() => {
-    const allData = load<Record<string, Record<string, boolean>>>(
-      STORAGE_KEY,
-      {}
-    );
+    const allData = mounted
+      ? load<Record<string, Record<string, boolean>>>(STORAGE_KEY, {})
+      : {};
     return Array.from({ length: 7 }).map((_, i) => {
       const d = new Date(Date.now() - (6 - i) * 86_400_000);
       const key = d.toISOString().slice(0, 10);
@@ -34,20 +38,21 @@ export default function WeeklyHistory({
         isToday: key === today,
       };
     });
-  }, [today, total]);
+  }, [mounted, today, total]);
 
   const card = dark
     ? 'bg-white/[0.04] border-white/[0.07]'
     : 'bg-white border-black/[0.07] shadow-sm';
 
   return (
-    <div className={`rounded-2xl border p-4 ${card}`}>
+    <div className={`rounded-2xl border p-4 ${card}`} suppressHydrationWarning>
       <p
+        suppressHydrationWarning
         className={`mb-3 text-[10px] uppercase tracking-widest ${
           dark ? 'text-stone-600' : 'text-stone-400'
         }`}
       >
-        7-day history · best streak {streakBest}d
+        {`7-day history · best streak ${mounted ? streakBest : 0}d`}
       </p>
       <div className="flex h-12 items-end gap-1.5">
         {history.map((h: HistoryDay) => (

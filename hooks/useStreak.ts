@@ -5,12 +5,16 @@ import { load, save, STREAK_KEY } from '@/lib/storage';
 import { getTodayKey } from '@/lib/dates';
 import type { Streak } from '@/types';
 
+const DEFAULT_STREAK: Streak = { current: 0, best: 0, lastComplete: '' };
+
 export function useStreak(done: number, total: number) {
   const today = getTodayKey();
-  const [streak, setStreak] = useState<Streak>(() =>
-    load<Streak>(STREAK_KEY, { current: 0, best: 0, lastComplete: '' })
-  );
+  const [streak, setStreak] = useState<Streak>(DEFAULT_STREAK);
   const prevDone = useRef(done);
+
+  useEffect(() => {
+    setStreak(load<Streak>(STREAK_KEY, DEFAULT_STREAK));
+  }, []);
 
   useEffect(() => {
     if (done === total && total > 0 && prevDone.current < total) {

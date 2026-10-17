@@ -167,30 +167,18 @@ export default function QuranPage() {
   const [translationsLanguage, setTranslationsLanguage] = useState<string | null>(null);
   const [catalogLoading, setCatalogLoading] = useState(true);
   const [catalogError, setCatalogError] = useState('');
-  const [chapter, setChapter] = useState<ChapterCache | null>(() =>
-    load<ChapterCache | null>(QURAN_CACHE_KEY, null),
-  );
+  const [chapter, setChapter] = useState<ChapterCache | null>(null);
+  const [mounted, setMounted] = useState(false);
   const [chapterLoading, setChapterLoading] = useState(false);
   const [chapterError, setChapterError] = useState('');
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [trackerOpen, setTrackerOpen] = useState(false);
-  const [bookmarks, setBookmarks] = useState<QuranBookmark[]>(() => {
-    const savedBookmarks = load<QuranBookmark[]>(QURAN_BOOKMARKS_KEY, []);
-    if (savedBookmarks.length > 0) return savedBookmarks;
-    const legacyBookmark = load<QuranBookmark | null>(QURAN_BOOKMARK_KEY, null);
-    return legacyBookmark
-      ? [{ ...legacyBookmark, createdAt: new Date().toISOString() }]
-      : [];
+  const [bookmarks, setBookmarks] = useState<QuranBookmark[]>([]);
+  const [progress, setProgress] = useState<QuranReadingProgress>({
+    lastRead: null,
+    dailyVerses: {},
   });
-  const [progress, setProgress] = useState<QuranReadingProgress>(() =>
-    load<QuranReadingProgress>(QURAN_PROGRESS_KEY, { lastRead: null, dailyVerses: {} }),
-  );
-  const [dailyGoal, setDailyGoal] = useState(() =>
-    Math.min(
-      500,
-      Math.max(1, load<number>(QURAN_DAILY_GOAL_KEY, DEFAULT_QURAN_DAILY_GOAL)),
-    ),
-  );
+  const [dailyGoal, setDailyGoal] = useState(DEFAULT_QURAN_DAILY_GOAL);
   const [activeAudio, setActiveAudio] = useState('');
   const [activeAyah, setActiveAyah] = useState<number | null>(null);
   const [activeSurah, setActiveSurah] = useState<number | null>(null);
@@ -263,21 +251,47 @@ export default function QuranPage() {
   }, [dark]);
 
   useEffect(() => {
-    save(QURAN_SETTINGS_KEY, settings);
-  }, [settings]);
+    setMounted(true);
+    const cached = load<ChapterCache | null>(QURAN_CACHE_KEY, null);
+    if (cached) setChapter(cached);
+    const savedBookmarks = load<QuranBookmark[]>(QURAN_BOOKMARKS_KEY, []);
+    if (savedBookmarks.length > 0) {
+      setBookmarks(savedBookmarks);
+    } else {
+      const legacyBookmark = load<QuranBookmark | null>(QURAN_BOOKMARK_KEY, null);
+      if (legacyBookmark) {
+        setBookmarks([{ ...legacyBookmark, createdAt: new Date().toISOString() }]);
+      }
+    }
+    const savedProgress = load<QuranReadingProgress>(QURAN_PROGRESS_KEY, {
+      lastRead: null,
+      dailyVerses: {},
+    });
+    setProgress(savedProgress);
+    const savedGoal = load<number>(QURAN_DAILY_GOAL_KEY, DEFAULT_QURAN_DAILY_GOAL);
+    setDailyGoal(Math.min(500, Math.max(1, savedGoal)));
+  }, []);
 
   useEffect(() => {
+    if (!mounted) return;
+    save(QURAN_SETTINGS_KEY, settings);
+  }, [mounted, settings]);
+
+  useEffect(() => {
+    if (!mounted) return;
     save(QURAN_BOOKMARKS_KEY, bookmarks);
     save(QURAN_BOOKMARK_KEY, null);
-  }, [bookmarks]);
+  }, [bookmarks, mounted]);
 
   useEffect(() => {
+    if (!mounted) return;
     save(QURAN_PROGRESS_KEY, progress);
-  }, [progress]);
+  }, [mounted, progress]);
 
   useEffect(() => {
+    if (!mounted) return;
     save(QURAN_DAILY_GOAL_KEY, dailyGoal);
-  }, [dailyGoal]);
+  }, [dailyGoal, mounted]);
 
   useEffect(() => {
     let cancelled = false;
@@ -1254,7 +1268,10 @@ export default function QuranPage() {
   }`;
 
   return (
-    <div className={`min-h-screen ${dark ? 'bg-[#0d1715] text-stone-200' : 'bg-stone-50 text-stone-800'}`}>
+    <div
+      suppressHydrationWarning
+      className={`min-h-screen ${dark ? 'bg-[#0d1715] text-stone-200' : 'bg-stone-50 text-stone-800'}`}
+    >
       <AppShell
         active="quran"
         dark={dark}
@@ -1270,8 +1287,8 @@ export default function QuranPage() {
               <h1 className={`mt-0.5 truncate font-ui text-2xl font-bold tracking-[-0.045em] sm:text-3xl ${dark ? 'text-stone-900 dark:text-stone-100' : 'text-stone-900'}`}>
                 {currentSurah?.englishName ?? 'Read & listen'}
               </h1>
-              <p className={`mt-0.5 text-xs ${muted}`}>
-                {progress.lastRead && lastReadSurah
+              <p className={`mt-0.5 text-xs ${muted}`} suppressHydrationWarning>
+                {mounted && progress.lastRead && lastReadSurah
                   ? `Last read: ${lastReadSurah.englishName} · Verse ${progress.lastRead.ayah}`
                   : 'Read, listen, and reflect with word-by-word pronunciation and memorization tools'}
               </p>
@@ -1285,7 +1302,7 @@ export default function QuranPage() {
                 <Plus className="h-4 w-4" />
                 <span>Track Reading</span>
               </button>
-              {progress.lastRead && (
+              {mounted && progress.lastRead && (
                 <button
                   type="button"
                   onClick={() => {
@@ -1313,8 +1330,10 @@ export default function QuranPage() {
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <h2 className="text-xs font-semibold">Today’s reading & Khatm Tracker</h2>
-                <p className={`mt-0.5 text-[11px] ${muted}`}>
-                  {todayVerseCount} of {dailyGoal} verses · {goalProgress}% of daily goal
+                <p className={`mt-0.5 text-[11px] ${muted}`} suppressHydrationWarning>
+                  {mounted
+                    ? `${todayVerseCount} of ${dailyGoal} verses · ${goalProgress}% of daily goal`
+                    : `0 of ${dailyGoal} verses · 0% of daily goal`}
                 </p>
               </div>
               <div className="flex items-center gap-2">
@@ -1334,16 +1353,18 @@ export default function QuranPage() {
               </div>
             </div>
             <div
+              suppressHydrationWarning
               className={`mt-3 h-2 overflow-hidden rounded-full ${dark ? 'bg-white/10' : 'bg-stone-100'}`}
               role="progressbar"
               aria-label="Daily verse goal progress"
               aria-valuemin={0}
               aria-valuemax={dailyGoal}
-              aria-valuenow={Math.min(todayVerseCount, dailyGoal)}
+              aria-valuenow={mounted ? Math.min(todayVerseCount, dailyGoal) : 0}
             >
               <div
+                suppressHydrationWarning
                 className="h-full rounded-full bg-emerald-700 transition-[width] dark:bg-emerald-300"
-                style={{ width: `${goalProgress}%` }}
+                style={{ width: `${mounted ? goalProgress : 0}%` }}
               />
             </div>
           </section>
