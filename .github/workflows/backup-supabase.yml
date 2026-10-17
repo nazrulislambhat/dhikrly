@@ -32,6 +32,8 @@ jobs:
           TIMESTAMP=$(date +'%Y-%m-%d_%H%M%S')
           BACKUP_FILE="backups/dhikrly_supabase_${TIMESTAMP}.sql"
 
+          export PGSSLMODE=require
+
           echo "⏳ Running pg_dump for public schema and auth users..."
           pg_dump "$SUPABASE_DB_URL" \
             --schema=public \
