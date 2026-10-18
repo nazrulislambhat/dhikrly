@@ -96,7 +96,10 @@ export default function MasjidsPage() {
     () => load<{ dark: boolean }>(SETTINGS_KEY, { dark: false }).dark,
   );
 
-  const [location, setLocation] = useState<SalahLocation | null>(() => getSalahSettings().location);
+  const [location, setLocation] = useState<SalahLocation | null>(null);
+  const [isLiveGPS, setIsLiveGPS] = useState(false);
+  const [gpsAccuracy, setGpsAccuracy] = useState<number | null>(null);
+  const [locatingGps, setLocatingGps] = useState(false);
   const [radiusKm, setRadiusKm] = useState<number>(3);
   const [masjids, setMasjids] = useState<Masjid[]>([]);
   const [loading, setLoading] = useState(false);
@@ -130,65 +133,117 @@ export default function MasjidsPage() {
     }
   }, [dark]);
 
-  // Request browser GPS
-  const detectLocation = () => {
+  // Fallback to city preset or saved Salah city when live GPS is not granted
+  const fallbackToCityPreset = (geoError?: GeolocationPositionError) => {
+    const saved = getSalahSettings().location;
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const matchingPreset = PRESET_CITIES.find((c) => c.timezone === tz) || PRESET_CITIES[0];
+    const fallbackLoc = saved || matchingPreset;
+
+    setLocation(fallbackLoc);
+    setIsLiveGPS(false);
+    fetchNearbyMasjids(fallbackLoc, radiusKm);
+
+    if (geoError?.code === 1) {
+      setError(
+        `Location permission was not granted. Showing approximate mosques near ${fallbackLoc.city} city center. For exact walking distances from where you are standing right now, tap "Use My Exact Location (GPS)" and allow location access.`,
+      );
+    } else if (geoError?.code === 2) {
+      setError(
+        `Device GPS position unavailable. Showing mosques near ${fallbackLoc.city} city center. Tap "Use My Exact Location (GPS)" to retry.`,
+      );
+    } else {
+      setError(
+        `GPS request timed out. Showing mosques near ${fallbackLoc.city} city center. Tap "Use My Exact Location (GPS)" to get exact walking distances.`,
+      );
+    }
+  };
+
+  // Request browser GPS with highest accuracy and zero cache
+  const detectExactLocation = () => {
     if (typeof window === 'undefined' || !navigator.geolocation) {
       setError('Geolocation is not supported by your browser.');
+      fallbackToCityPreset();
       return;
     }
+
     setLoading(true);
+    setLocatingGps(true);
     setError('');
 
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
         const lat = pos.coords.latitude;
         const lng = pos.coords.longitude;
-        let detectedCity = 'Current Location';
-        let detectedCountry = '';
+        const accuracy = Math.round(pos.coords.accuracy || 0);
 
+        setGpsAccuracy(accuracy);
+        setIsLiveGPS(true);
+        setLocatingGps(false);
+
+        const initialLoc: SalahLocation = {
+          lat,
+          lng,
+          city: 'Your Current Spot',
+          country: '',
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
+        };
+
+        setLocation(initialLoc);
+
+        // Fetch masjids immediately with the exact live GPS coordinates!
+        fetchNearbyMasjids(initialLoc, radiusKm);
+
+        // Reverse-geocode in the background to get exact local neighborhood (zoom=16)
         try {
           const revRes = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=12`,
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=16&addressdetails=1`,
             { headers: { 'User-Agent': 'DhikrlyApp/2.3' } },
           );
           if (revRes.ok) {
             const revData = await revRes.json();
-            detectedCity =
+            const neighborhood =
+              revData.address?.neighbourhood ||
               revData.address?.suburb ||
+              revData.address?.quarter ||
+              revData.address?.road;
+            const city =
               revData.address?.city ||
               revData.address?.town ||
               revData.address?.village ||
-              'Current Location';
-            detectedCountry = revData.address?.country || '';
+              revData.address?.county;
+            const country = revData.address?.country || '';
+
+            const friendlyName = neighborhood
+              ? (city && city !== neighborhood ? `${neighborhood}, ${city}` : neighborhood)
+              : (city || 'Current Location');
+
+            const refinedLoc: SalahLocation = {
+              lat,
+              lng,
+              city: friendlyName,
+              country,
+              timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
+            };
+            setLocation(refinedLoc);
+            const s = getSalahSettings();
+            saveSalahSettings({ ...s, location: refinedLoc });
           }
         } catch {
           // Ignore reverse geocode failures
         }
-
-        const newLoc: SalahLocation = {
-          lat,
-          lng,
-          city: detectedCity,
-          country: detectedCountry,
-          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
-        };
-
-        setLocation(newLoc);
-        const s = getSalahSettings();
-        saveSalahSettings({ ...s, location: newLoc });
-        fetchNearbyMasjids(newLoc, radiusKm);
       },
       (err) => {
         setLoading(false);
-        if (err.code === 1) {
-          setError('Location permission was denied. Please allow GPS access in your browser or select a city below.');
-        } else if (err.code === 2) {
-          setError('Position unavailable. Please check your network or GPS connection.');
-        } else {
-          setError('GPS location timed out. Tap "Find Nearby Masjids (GPS)" or select a city below.');
-        }
+        setLocatingGps(false);
+        setIsLiveGPS(false);
+        fallbackToCityPreset(err);
       },
-      { timeout: 15000, enableHighAccuracy: true, maximumAge: 60000 },
+      {
+        enableHighAccuracy: true,
+        timeout: 12000,
+        maximumAge: 0, // Force fresh live GPS fix from device hardware
+      },
     );
   };
 
@@ -205,24 +260,51 @@ export default function MasjidsPage() {
       const data = await res.json();
       const results: Masjid[] = data.masjids ?? [];
 
+      // If 0 found and radius was small, auto-expand to 10km
+      if (results.length === 0 && radius < 10) {
+        try {
+          const expRes = await fetch(`/api/masjids?lat=${loc.lat}&lng=${loc.lng}&radius=10`);
+          if (expRes.ok) {
+            const expData = await expRes.json();
+            if (Array.isArray(expData.masjids) && expData.masjids.length > 0) {
+              setRadiusKm(10);
+              setMasjids(expData.masjids);
+              return;
+            }
+          }
+        } catch {
+          // Fall back to original results
+        }
+      }
+
       setMasjids(results);
       if (results.length === 0) {
-        setError(`No registered masjids found within ${radius}km of your location. Try expanding the search radius to 10km or 25km.`);
+        setError(`No registered masjids found within ${radius}km of ${loc.city || 'your area'}. Try expanding the search radius to 10km or 25km.`);
       }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Error fetching masjids';
-      setError(`Could not retrieve nearby masjids (${msg}). Tap "Find Nearby Masjids" to retry.`);
+      setError(`Could not retrieve nearby masjids (${msg}). Tap "Use My Exact Location (GPS)" to retry.`);
       setMasjids([]);
     } finally {
       setLoading(false);
     }
   };
 
+  // Mount: ALWAYS acquire user's live device GPS on mount
   useEffect(() => {
+    detectExactLocation();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // When radius changes, re-fetch with current location
+  const isFirstMount = useRef(true);
+  useEffect(() => {
+    if (isFirstMount.current) {
+      isFirstMount.current = false;
+      return;
+    }
     if (location && location.lat && location.lng) {
       fetchNearbyMasjids(location, radiusKm);
-    } else {
-      detectLocation();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [radiusKm]);
@@ -280,22 +362,28 @@ export default function MasjidsPage() {
 
   const openNavigation = (m: Masjid) => {
     const isIOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const originParam = location ? `&origin=${location.lat},${location.lng}` : '';
     if (isIOS) {
-      window.open(m.appleMapsUrl || `maps://maps.apple.com/?q=${encodeURIComponent(m.name)}&ll=${m.lat},${m.lng}`, '_blank');
+      const appleUrl = location
+        ? `maps://maps.apple.com/?saddr=${location.lat},${location.lng}&daddr=${m.lat},${m.lng}&q=${encodeURIComponent(m.name)}&dirflg=w`
+        : (m.appleMapsUrl || `maps://maps.apple.com/?q=${encodeURIComponent(m.name)}&ll=${m.lat},${m.lng}`);
+      window.open(appleUrl, '_blank');
     } else {
-      window.open(m.googleMapsUrl || `https://www.google.com/maps/dir/?api=1&destination=${m.lat},${m.lng}`, '_blank');
+      const googleUrl = `https://www.google.com/maps/dir/?api=1${originParam}&destination=${m.lat},${m.lng}&travelmode=walking`;
+      window.open(googleUrl, '_blank');
     }
   };
 
   const handleShareMasjid = async (m: Masjid) => {
-    const shareText = `🕌 ${m.name}\n📍 ${m.address}\n🗺️ Directions: https://www.google.com/maps/dir/?api=1&destination=${m.lat},${m.lng}`;
+    const originParam = location ? `&origin=${location.lat},${location.lng}` : '';
+    const shareText = `🕌 ${m.name}\n📍 ${m.address}\n🗺️ Directions: https://www.google.com/maps/dir/?api=1${originParam}&destination=${m.lat},${m.lng}&travelmode=walking`;
 
     if (navigator.share) {
       try {
         await navigator.share({
           title: m.name,
           text: shareText,
-          url: `https://www.google.com/maps/dir/?api=1&destination=${m.lat},${m.lng}`,
+          url: `https://www.google.com/maps/dir/?api=1${originParam}&destination=${m.lat},${m.lng}&travelmode=walking`,
         });
         return;
       } catch {
@@ -343,8 +431,7 @@ export default function MasjidsPage() {
 
   const handleSelectCityPreset = (cityLoc: SalahLocation) => {
     setLocation(cityLoc);
-    const s = getSalahSettings();
-    saveSalahSettings({ ...s, location: cityLoc });
+    setIsLiveGPS(false);
     setCityPickerOpen(false);
     setCitySearchResults([]);
     setCitySearchQuery('');
@@ -414,12 +501,22 @@ export default function MasjidsPage() {
           <div className="flex flex-wrap items-center gap-2.5 self-start md:self-auto">
             <button
               type="button"
-              onClick={detectLocation}
-              disabled={loading}
-              className="inline-flex items-center gap-2 rounded-2xl bg-emerald-800 text-white dark:bg-emerald-500 dark:text-emerald-950 px-4 py-2.5 text-xs font-extrabold shadow-sm hover:opacity-90 active:scale-95 transition-all disabled:opacity-60"
+              onClick={detectExactLocation}
+              disabled={loading || locatingGps}
+              className={`inline-flex items-center gap-2 rounded-2xl px-4 py-2.5 text-xs font-extrabold shadow-sm transition-all disabled:opacity-60 ${
+                isLiveGPS
+                  ? 'bg-emerald-700 text-white dark:bg-emerald-500 dark:text-emerald-950 shadow-emerald-500/20'
+                  : 'bg-emerald-800 text-white dark:bg-emerald-500 dark:text-emerald-950 hover:opacity-90 active:scale-95'
+              }`}
             >
-              <LocateFixed className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-              <span>{loading ? 'Locating Nearby Masjids…' : 'Find Nearby Masjids (GPS)'}</span>
+              <LocateFixed className={`h-4 w-4 ${locatingGps ? 'animate-spin' : ''}`} />
+              <span>
+                {locatingGps
+                  ? 'Acquiring Exact GPS…'
+                  : isLiveGPS
+                  ? 'Live GPS Active'
+                  : 'Use My Exact Location (GPS)'}
+              </span>
             </button>
 
             <button
@@ -432,6 +529,86 @@ export default function MasjidsPage() {
             </button>
           </div>
         </header>
+
+        {/* Quick City Presets Strip */}
+        <div className="mb-6 flex items-center gap-1.5 overflow-x-auto pb-1.5 max-w-full text-xs">
+          <button
+            type="button"
+            onClick={detectExactLocation}
+            className={`rounded-xl px-2.5 py-1 text-[11px] font-bold whitespace-nowrap shrink-0 transition-all flex items-center gap-1 ${
+              isLiveGPS
+                ? 'bg-emerald-800 text-white dark:bg-emerald-400 dark:text-emerald-950 shadow-xs'
+                : 'bg-[var(--app-surface)] border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/40'
+            }`}
+          >
+            <LocateFixed className="h-3 w-3" />
+            <span>My Live GPS</span>
+          </button>
+
+          <span className="text-[11px] font-bold text-[var(--app-muted)] shrink-0 mx-1 flex items-center gap-1">
+            <Compass className="h-3 w-3" /> Cities:
+          </span>
+          {[
+            PRESET_CITIES[0], // Makkah
+            PRESET_CITIES[1], // Madinah
+            PRESET_CITIES[9], // Delhi
+            PRESET_CITIES[11], // Srinagar
+            PRESET_CITIES[10], // Mumbai
+            PRESET_CITIES[6], // London
+            PRESET_CITIES[7], // New York
+            PRESET_CITIES[3], // Istanbul
+            PRESET_CITIES[5], // Dubai
+          ].map((c) => {
+            const isCurrent = !isLiveGPS && location?.city === c.city;
+            return (
+              <button
+                key={c.city}
+                type="button"
+                onClick={() => handleSelectCityPreset(c)}
+                className={`rounded-xl px-2.5 py-1 text-[11px] font-bold whitespace-nowrap shrink-0 transition-all ${
+                  isCurrent
+                    ? 'bg-emerald-800 text-white dark:bg-emerald-400 dark:text-emerald-950 shadow-xs'
+                    : 'bg-[var(--app-surface)] border border-[var(--app-line)] text-[var(--app-muted)] hover:text-[var(--app-ink)] hover:border-emerald-500/40'
+                }`}
+              >
+                {c.city}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Live GPS Status / Approximate Fallback Notice */}
+        {locatingGps && (
+          <div className="mb-6 flex items-center gap-3 rounded-2xl border border-emerald-500/40 bg-emerald-500/10 p-4 text-xs font-bold text-emerald-900 dark:text-emerald-200 animate-pulse shadow-xs">
+            <RefreshCw className="h-4 w-4 animate-spin text-emerald-600 dark:text-emerald-400 shrink-0" />
+            <span>Acquiring high-accuracy live GPS coordinates from your device to find nearby mosques...</span>
+          </div>
+        )}
+
+        {!isLiveGPS && !locatingGps && location && (
+          <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl border border-amber-500/40 bg-amber-500/10 p-4 text-xs shadow-xs">
+            <div className="flex items-start gap-2.5">
+              <LocateFixed className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+              <div>
+                <p className="font-extrabold text-amber-950 dark:text-amber-200">
+                  Showing mosques near approximate city center ({location.city})
+                </p>
+                <p className="text-amber-800/80 dark:text-amber-300/80 mt-0.5 text-[11px]">
+                  For genuine walking &amp; driving distances directly from where you are standing right now, enable live device GPS.
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={detectExactLocation}
+              disabled={loading}
+              className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-amber-600 dark:bg-amber-500 text-white dark:text-amber-950 px-3.5 py-2 font-bold text-xs shrink-0 shadow-xs hover:opacity-90 active:scale-95 transition-all"
+            >
+              <LocateFixed className="h-3.5 w-3.5" />
+              <span>Use My Exact Location (GPS)</span>
+            </button>
+          </div>
+        )}
 
         {/* Jamā'ah Logged Toast Banner */}
         {loggedStatusToast && (
@@ -698,15 +875,30 @@ export default function MasjidsPage() {
         )}
 
         {/* Results Count Bar */}
-        <div className="mb-4 flex items-center justify-between text-xs text-[var(--app-muted)] font-semibold">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-2 text-xs text-[var(--app-muted)] font-semibold">
           <span>
             Showing <strong className="text-[var(--app-ink)]">{filteredMasjids.length}</strong> of{' '}
             {masjids.length} masjids within {radiusKm}km
           </span>
           {location && (
-            <span className="text-[11px]">
-              Location: <strong>{location.city || `${location.lat.toFixed(2)}°, ${location.lng.toFixed(2)}°`}</strong>
-            </span>
+            <div className="flex items-center gap-2">
+              {isLiveGPS ? (
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 px-3 py-1 text-[11px] font-bold text-emerald-800 dark:text-emerald-300 shadow-2xs">
+                  <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <span>Exact Live Spot: <strong>{location.city}</strong></span>
+                  {gpsAccuracy ? <span className="opacity-75 font-normal">(±{gpsAccuracy}m)</span> : null}
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  onClick={detectExactLocation}
+                  className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/15 border border-amber-500/40 px-3 py-1 text-[11px] font-bold text-amber-900 dark:text-amber-200 hover:bg-amber-500/25 transition-colors"
+                >
+                  <Compass className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
+                  <span>Approximate: <strong>{location.city}</strong> · Tap for Exact Live GPS</span>
+                </button>
+              )}
+            </div>
           )}
         </div>
 
@@ -1112,7 +1304,10 @@ export default function MasjidsPage() {
             <div className="pt-2 border-t border-[var(--app-line)] flex items-center justify-between">
               <button
                 type="button"
-                onClick={detectLocation}
+                onClick={() => {
+                  setCityPickerOpen(false);
+                  detectExactLocation();
+                }}
                 className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-800 dark:text-emerald-300 hover:underline"
               >
                 <LocateFixed className="h-3.5 w-3.5" /> Use My Exact GPS Coordinates
