@@ -21,6 +21,7 @@ import {
   X,
 } from 'lucide-react';
 import { usePro } from '@/hooks/usePro';
+import { usePricing } from '@/hooks/usePricing';
 import type { ProTier } from '@/lib/proStorage';
 
 interface DhikrlyProModalProps {
@@ -35,6 +36,7 @@ export default function DhikrlyProModal({
   defaultPlan = 'annual',
 }: DhikrlyProModalProps) {
   const { isPro, tier: activeTier, activateTier, deactivatePro, redeemCode } = usePro();
+  const { region, isIndia, getPlan, setRegion } = usePricing();
   const [selectedPlan, setSelectedPlan] = useState<'annual' | 'monthly' | 'lifetime'>(defaultPlan);
   const [promoInput, setPromoInput] = useState('');
   const [promoMessage, setPromoMessage] = useState<{ text: string; isError: boolean } | null>(null);
@@ -165,9 +167,39 @@ export default function DhikrlyProModal({
 
           {/* Plan Selector Cards */}
           <div className="min-w-0">
-            <p className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400 mb-3">
-              Select Your Membership Plan
-            </p>
+            <div className="flex items-center justify-between mb-3 min-w-0">
+              <p className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400">
+                Select Your Membership Plan
+              </p>
+              <div className="inline-flex items-center gap-1 rounded-xl border border-[var(--app-line)] bg-stone-100 dark:bg-white/5 p-0.5 text-[11px] font-bold shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setRegion('IN')}
+                  aria-pressed={region === 'IN'}
+                  className={`rounded-lg px-2 py-0.5 transition-colors ${
+                    region === 'IN'
+                      ? 'bg-amber-500/20 text-amber-900 dark:text-amber-300 font-extrabold shadow-xs'
+                      : 'text-stone-500 hover:text-stone-800 dark:hover:text-stone-200'
+                  }`}
+                  title="Switch to Indian Rupee (₹) pricing"
+                >
+                  🇮🇳 INR (₹)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setRegion('GLOBAL')}
+                  aria-pressed={region === 'GLOBAL'}
+                  className={`rounded-lg px-2 py-0.5 transition-colors ${
+                    region === 'GLOBAL'
+                      ? 'bg-amber-500/20 text-amber-900 dark:text-amber-300 font-extrabold shadow-xs'
+                      : 'text-stone-500 hover:text-stone-800 dark:hover:text-stone-200'
+                  }`}
+                  title="Switch to US Dollar ($) pricing"
+                >
+                  🌐 USD ($)
+                </button>
+              </div>
+            </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3 min-w-0">
               {/* Annual Plan (Most Popular) */}
@@ -193,11 +225,15 @@ export default function DhikrlyProModal({
 
                 <div className="mt-3 min-w-0">
                   <div className="flex items-baseline gap-1">
-                    <span className="text-2xl font-extrabold text-emerald-800 dark:text-emerald-300">$24.99</span>
-                    <span className="text-xs text-stone-500 dark:text-stone-400">/year</span>
+                    <span className="text-2xl font-extrabold text-emerald-800 dark:text-emerald-300">
+                      {getPlan('annual').price}
+                    </span>
+                    <span className="text-xs text-stone-500 dark:text-stone-400">
+                      {getPlan('annual').period}
+                    </span>
                   </div>
                   <p className="text-[10px] text-emerald-700 dark:text-emerald-400 font-bold mt-0.5">
-                    Only $2.08 / month
+                    {getPlan('annual').subtext}
                   </p>
                 </div>
               </button>
@@ -221,10 +257,16 @@ export default function DhikrlyProModal({
 
                 <div className="mt-3 min-w-0">
                   <div className="flex items-baseline gap-1">
-                    <span className="text-2xl font-extrabold text-emerald-800 dark:text-emerald-300">$2.99</span>
-                    <span className="text-xs text-stone-500 dark:text-stone-400">/month</span>
+                    <span className="text-2xl font-extrabold text-emerald-800 dark:text-emerald-300">
+                      {getPlan('monthly').price}
+                    </span>
+                    <span className="text-xs text-stone-500 dark:text-stone-400">
+                      {getPlan('monthly').period}
+                    </span>
                   </div>
-                  <p className="text-[10px] text-stone-400 mt-0.5">Billed monthly</p>
+                  <p className="text-[10px] text-stone-400 mt-0.5">
+                    {getPlan('monthly').subtext}
+                  </p>
                 </div>
               </button>
 
@@ -251,11 +293,15 @@ export default function DhikrlyProModal({
 
                 <div className="mt-3 min-w-0">
                   <div className="flex items-baseline gap-1">
-                    <span className="text-2xl font-extrabold text-amber-700 dark:text-amber-300">$49.99</span>
-                    <span className="text-xs text-stone-500 dark:text-stone-400">one-time</span>
+                    <span className="text-2xl font-extrabold text-amber-700 dark:text-amber-300">
+                      {getPlan('lifetime').price}
+                    </span>
+                    <span className="text-xs text-stone-500 dark:text-stone-400">
+                      {getPlan('lifetime').period}
+                    </span>
                   </div>
                   <p className="text-[10px] text-amber-600 dark:text-amber-400 font-bold mt-0.5 break-words">
-                    Sponsors 1 Student of Knowledge
+                    {getPlan('lifetime').subtext}
                   </p>
                 </div>
               </button>
@@ -381,11 +427,7 @@ export default function DhikrlyProModal({
             <div className="flex items-center gap-1.5 justify-center sm:justify-start">
               <span className="inline-block h-2 w-2 rounded-full bg-amber-500 animate-pulse shrink-0" />
               <p className="text-xs font-bold text-[var(--app-ink)] truncate">
-                {selectedPlan === 'annual'
-                  ? 'Annual Patron Pass ($24.99/yr target)'
-                  : selectedPlan === 'monthly'
-                    ? 'Monthly Pass ($2.99/mo target)'
-                    : 'Lifetime Waqf Pass ($49.99 target)'}
+                {getPlan(selectedPlan).targetText}
               </p>
             </div>
             <p className="text-[10px] text-stone-500 dark:text-stone-400 mt-0.5">
