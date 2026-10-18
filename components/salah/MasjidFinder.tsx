@@ -52,35 +52,19 @@ export default function MasjidFinder({ location, dark }: MasjidFinderProps) {
     setSearched(true);
 
     try {
-      // Use Overpass API (OpenStreetMap) — free, no API key needed
-      const query = `
-        [out:json][timeout:15];
-        (
-          node["amenity"="place_of_worship"]["religion"="muslim"](around:3000,${location.lat},${location.lng});
-          way["amenity"="place_of_worship"]["religion"="muslim"](around:3000,${location.lat},${location.lng});
-        );
-        out body center 15;
-      `;
-      const res = await fetch('https://overpass-api.de/api/interpreter', {
-        method: 'POST',
-        body: query,
-      });
+      const res = await fetch(`/api/masjids?lat=${location.lat}&lng=${location.lng}&radius=3`);
+      if (!res.ok) throw new Error('Failed to fetch masjids');
       const data = await res.json();
 
-      const results: Masjid[] = (data.elements ?? [])
-        .map((el: { type: string; lat?: number; lon?: number; center?: { lat: number; lon: number }; tags?: { name?: string; 'name:en'?: string }; id: number }) => {
-          const lat = el.lat ?? el.center?.lat ?? 0;
-          const lng = el.lon ?? el.center?.lon ?? 0;
-          return {
-            name: el.tags?.['name:en'] || el.tags?.name || 'Masjid',
-            vicinity: '',
-            lat, lng,
-            distance: haversine(location.lat, location.lng, lat, lng),
-            placeId: String(el.id),
-          };
-        })
-        .filter((m: Masjid) => m.lat && m.lng)
-        .sort((a: Masjid, b: Masjid) => a.distance - b.distance)
+      const results: Masjid[] = (data.masjids ?? [])
+        .map((m: { name: string; address?: string; lat: number; lng: number; distance: number; id: string }) => ({
+          name: m.name,
+          vicinity: m.address || '',
+          lat: m.lat,
+          lng: m.lng,
+          distance: m.distance,
+          placeId: m.id,
+        }))
         .slice(0, 10);
 
       setMasjids(results);
