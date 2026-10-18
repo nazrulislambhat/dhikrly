@@ -15,6 +15,9 @@
         "Regional Purchasing Power Parity (PPP) Pricing — localized Indian Rupee (₹) pricing for patrons in India (₹149/mo, ₹1,199/yr, ₹2,499 lifetime) with automatic country detection and interactive currency switcher between INR and USD"
       ],
       "improved": [
+        "Polished Nearby Masjids Finder (/masjids) — animated spatial radar sweep with cardinal markers (N/S/E/W), interactive pin tooltips, live directional bearing compass needles on mosque cards, multi-select facilities filter (Women's section, wheelchair, parking, wudu, Jumu'ah), and global city switcher modal",
+        "Interactive Jamā‘ah Congregation Logger — smart prayer time selector (Fajr, Dhuhr/Jumu'ah, Asr, Maghrib, Isha) with 27x reward motivation and instant local salah log persistence",
+        "Upgraded Mosque Discovery API (/api/masjids) — expanded OpenStreetMap tag indexing (building=mosque, amenity=mosque), coordinate deduplication, direct Apple & Google Maps URLs, and client caching",
         "Added /pro roadmap link to main navigation drawer and desktop dropdown",
         "Fixed Next.js hydration error on Friday Jumu'ah banner with client mount safety guard",
         "Updated Buy Me a Coffee support links across all headers, footers, drawers, and legal policies"
