@@ -14,14 +14,20 @@ interface OsmElement {
     'name:ar'?: string;
     'name:ur'?: string;
     'addr:street'?: string;
+    'addr:housenumber'?: string;
     'addr:city'?: string;
     'addr:suburb'?: string;
     'addr:postcode'?: string;
     female?: string;
+    'female:prayer_room'?: string;
+    'female:wudu'?: string;
     wheelchair?: string;
     wudu?: string;
+    'wudu:foot_bath'?: string;
     parking?: string;
     jummah?: string;
+    friday_prayer?: string;
+    toilets?: string;
     [key: string]: string | undefined;
   };
 }
@@ -37,6 +43,8 @@ export interface MasjidItem {
   bearing: number; // in degrees
   cardinal: string; // 'N', 'NE', etc.
   facilities: string[];
+  googleMapsUrl: string;
+  appleMapsUrl: string;
 }
 
 function haversineDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
@@ -104,8 +112,12 @@ export async function GET(req: Request) {
       node["amenity"="place_of_worship"]["religion"="muslim"](around:${radiusMeters},${userLat},${userLng});
       way["amenity"="place_of_worship"]["religion"="muslim"](around:${radiusMeters},${userLat},${userLng});
       relation["amenity"="place_of_worship"]["religion"="muslim"](around:${radiusMeters},${userLat},${userLng});
+      node["building"="mosque"](around:${radiusMeters},${userLat},${userLng});
+      way["building"="mosque"](around:${radiusMeters},${userLat},${userLng});
+      node["amenity"="mosque"](around:${radiusMeters},${userLat},${userLng});
+      way["amenity"="mosque"](around:${radiusMeters},${userLat},${userLng});
     );
-    out center 40;
+    out center 60;
   `;
 
   let elements: OsmElement[] = [];
@@ -120,7 +132,7 @@ export async function GET(req: Request) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
-          'User-Agent': 'DhikrlyApp/2.2 (https://dhikrly.app; contact@dhikrly.app)',
+          'User-Agent': 'DhikrlyApp/2.3 (https://dhikrly.com; contact@dhikrly.com)',
         },
         body: new URLSearchParams({ data: query }).toString(),
         signal: controller.signal,
@@ -145,10 +157,10 @@ export async function GET(req: Request) {
   // If Overpass endpoints failed or were slow, fallback to Nominatim search
   if (!fetchSuccess || elements.length === 0) {
     try {
-      const nomUrl = `https://nominatim.openstreetmap.org/search?format=json&q=mosque&lat=${userLat}&lon=${userLng}&limit=30&addressdetails=1`;
+      const nomUrl = `https://nominatim.openstreetmap.org/search?format=json&q=mosque&lat=${userLat}&lon=${userLng}&limit=35&addressdetails=1`;
       const nomRes = await fetch(nomUrl, {
         headers: {
-          'User-Agent': 'DhikrlyApp/2.2 (https://dhikrly.app; contact@dhikrly.app)',
+          'User-Agent': 'DhikrlyApp/2.3 (https://dhikrly.com; contact@dhikrly.com)',
         },
       });
 
@@ -177,6 +189,8 @@ export async function GET(req: Request) {
   }
 
   const masjids: MasjidItem[] = [];
+  const seenKeys = new Set<string>();
+
   for (const el of elements) {
     const lat = el.lat ?? el.center?.lat ?? 0;
     const lng = el.lon ?? el.center?.lon ?? 0;
@@ -186,32 +200,52 @@ export async function GET(req: Request) {
     // Filter out elements beyond search radius
     if (dist > radiusKm * 1.15) continue;
 
+    // Deduplicate items with similar coordinates (within ~30 meters) or identical ID
+    const coordKey = `${lat.toFixed(4)},${lng.toFixed(4)}`;
+    if (seenKeys.has(coordKey) || seenKeys.has(String(el.id))) continue;
+    seenKeys.add(coordKey);
+    seenKeys.add(String(el.id));
+
     const brng = calculateBearing(userLat, userLng, lat, lng);
     const cardinal = getCardinalDirection(brng);
 
     const facilities: string[] = ['Jumu‘ah Prayers', 'Wuḍū Area'];
-    if (el.tags?.female === 'yes' || el.tags?.['female:prayer_room'] === 'yes') {
+    if (
+      el.tags?.female === 'yes' ||
+      el.tags?.['female:prayer_room'] === 'yes' ||
+      el.tags?.['female:wudu'] === 'yes' ||
+      el.tags?.women === 'yes'
+    ) {
       facilities.push("Women's Section");
     }
-    if (el.tags?.wheelchair === 'yes') {
+    if (el.tags?.wheelchair === 'yes' || el.tags?.wheelchair === 'designated' || el.tags?.wheelchair === 'limited') {
       facilities.push('Wheelchair Accessible');
     }
-    if (el.tags?.parking === 'yes') {
+    if (el.tags?.parking === 'yes' || el.tags?.amenity === 'parking') {
       facilities.push('Parking Area');
     }
-    if (el.tags?.wudu === 'yes' || el.tags?.['wudu:foot_bath'] === 'yes') {
+    if (el.tags?.wudu === 'yes' || el.tags?.['wudu:foot_bath'] === 'yes' || el.tags?.toilets === 'yes') {
       if (!facilities.includes('Wuḍū Area')) facilities.push('Wuḍū Area');
     }
 
     const street = el.tags?.['addr:street'];
+    const house = el.tags?.['addr:housenumber'];
+    const streetAddress = street ? (house ? `${house} ${street}` : street) : undefined;
     const city = el.tags?.['addr:city'] || el.tags?.['addr:suburb'];
-    const address = street ? (city ? `${street}, ${city}` : street) : city || 'Masjid Premises';
+    const address = streetAddress
+      ? city
+        ? `${streetAddress}, ${city}`
+        : streetAddress
+      : city || 'Masjid Premises';
 
     const name =
       el.tags?.['name:en'] ||
       el.tags?.name ||
       el.tags?.['name:ur'] ||
       'Local Masjid';
+
+    const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+    const appleMapsUrl = `maps://maps.apple.com/?q=${encodeURIComponent(name)}&ll=${lat},${lng}`;
 
     masjids.push({
       id: String(el.id),
@@ -224,6 +258,8 @@ export async function GET(req: Request) {
       bearing: Math.round(brng),
       cardinal,
       facilities,
+      googleMapsUrl,
+      appleMapsUrl,
     });
   }
 

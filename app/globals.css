@@ -237,10 +237,25 @@ input[type='time']::-webkit-calendar-picker-indicator {
   filter: invert(0.8);
 }
 
-/* â”€â”€ Selection colour â”€â”€ */
+/* ── Selection colour ── */
 ::selection {
   background: rgb(24 183 131 / 22%);
   color: inherit;
+}
+
+/* ── Radar Scanner Sweep ── */
+@keyframes radar-sweep {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-radar-sweep {
+  animation: radar-sweep 4s linear infinite;
+  transform-origin: center;
 }
 
 /* â”€â”€ Print styles (PDF export window) â”€â”€ */
