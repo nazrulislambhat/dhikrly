@@ -11,7 +11,8 @@
         "Interactive Testing Voucher Playground — test preview access directly on /pro and in Settings",
         "Makrooh (Prohibited) Prayer Clocks — Shurūq (sunrise), Zawāl (zenith), and Ghurūb (sunset) times with countdowns on the Salah tracker",
         "Live Geolocation Nearby Masjid Finder (/masjids) — GPS-powered mosque locator with interactive search and instant Google Maps navigation",
-        "Dynamic In-App Update Progress Bar — real-time stepped progress animation and status feedback when upgrading Dhikrly"
+        "Dynamic In-App Update Progress Bar — real-time stepped progress animation and status feedback when upgrading Dhikrly",
+        "Regional Purchasing Power Parity (PPP) Pricing — localized Indian Rupee (₹) pricing for patrons in India (₹149/mo, ₹1,199/yr, ₹2,499 lifetime) with automatic country detection and interactive currency switcher between INR and USD"
       ],
       "improved": [
         "Added /pro roadmap link to main navigation drawer and desktop dropdown",
