@@ -34,6 +34,7 @@ import {
 import AppShell from '@/components/AppShell';
 import DhikrlyProModal from '@/components/DhikrlyProModal';
 import { usePro } from '@/hooks/usePro';
+import { usePricing } from '@/hooks/usePricing';
 import { load, save, SETTINGS_KEY } from '@/lib/storage';
 
 interface ProFeature {
@@ -177,40 +178,11 @@ const PRO_FEATURES: ProFeature[] = [
   },
 ];
 
-const PRO_TIERS = [
-  {
-    id: 'annual',
-    title: 'Annual Patron Pass',
-    badge: 'Most Popular · 7-Day Free Trial',
-    price: '$24.99',
-    period: '/year',
-    subtext: 'Only $2.08 / month · Save 30%',
-    description: 'Full access to all Pro features with a 7-day free trial. Cancel anytime with 1 click.',
-    highlight: true,
-  },
-  {
-    id: 'monthly',
-    title: 'Monthly Pass',
-    badge: 'Flexibility',
-    price: '$2.99',
-    period: '/month',
-    subtext: 'Billed monthly · Cancel anytime',
-    description: 'Month-to-month access with complete flexibility and no commitments.',
-    highlight: false,
-  },
-  {
-    id: 'lifetime',
-    title: 'Lifetime Waqf Pass',
-    badge: '1-for-1 Student Sponsor',
-    price: '$49.99',
-    period: 'one-time',
-    subtext: 'Lifetime access + 1 Student Sponsored',
-    description: 'Lifetime VIP access forever. Sponsoring 1 full student account as Sadaqah Jariyah.',
-    highlight: false,
-  },
-];
-
 const FAQS = [
+  {
+    q: 'Do you offer regional pricing for India (Purchasing Power Parity)?',
+    a: 'Yes! To make Dhikrly Pro accessible worldwide, we offer localized Indian Rupee (₹) pricing for patrons in India (₹149/month, ₹1,199/year, or ₹2,499 for the lifetime waqf pass), while international patrons across the rest of the world are billed in US Dollars ($2.99/month, $24.99/year, $49.99 lifetime). You can toggle between INR and USD using the currency switcher anytime.',
+  },
   {
     q: 'Will Dhikrly ever put obligatory prayers or Quran behind a paywall?',
     a: 'Never. Obligatory prayers (Salah times and Makrooh clocks), Qibla direction, the complete Holy Quran text, and authentic Hisn al-Muslim adhkār will remain 100% free forever for all Muslims worldwide with ZERO ads and ZERO tracking.',
@@ -243,6 +215,7 @@ export default function DhikrlyProPage() {
   const [promoResult, setPromoResult] = useState<{ text: string; isError: boolean } | null>(null);
 
   const { isPro, tier, redeemCode, deactivatePro } = usePro();
+  const { region, isIndia, plans: pricingPlans, setRegion } = usePricing();
 
   /* ── Dark mode persistence & HTML class toggle ── */
   useEffect(() => {
@@ -370,17 +343,60 @@ export default function DhikrlyProPage() {
 
           {/* Pro Subscription Tiers Preview */}
           <section className="space-y-4 min-w-0" aria-labelledby="pricing-title">
-            <div className="text-center sm:text-left">
-              <h2 id="pricing-title" className="text-xl sm:text-2xl font-black tracking-tight">
-                Dhikrly Pro Membership Plans
-              </h2>
-              <p className="text-xs text-[var(--app-muted)] mt-0.5">
-                Simple, transparent pricing. Every plan includes all current and upcoming Pro features.
-              </p>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 min-w-0">
+              <div className="text-center sm:text-left min-w-0">
+                <h2 id="pricing-title" className="text-xl sm:text-2xl font-black tracking-tight">
+                  Dhikrly Pro Membership Plans
+                </h2>
+                <p className="text-xs text-[var(--app-muted)] mt-0.5">
+                  Simple, transparent pricing. Every plan includes all current and upcoming Pro features.
+                </p>
+              </div>
+
+              {/* Region / Currency Switcher Pill */}
+              <div className="inline-flex items-center gap-1 rounded-2xl border border-[var(--app-line)] bg-[var(--app-surface)] p-1 text-xs font-bold self-center sm:self-auto shadow-xs shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setRegion('IN')}
+                  aria-pressed={region === 'IN'}
+                  className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 transition-all text-xs font-bold ${
+                    region === 'IN'
+                      ? 'bg-amber-500/20 text-amber-900 dark:text-amber-300 border border-amber-500/40 shadow-xs'
+                      : 'text-[var(--app-muted)] hover:text-[var(--app-ink)]'
+                  }`}
+                  title="View localized Indian Rupee (₹) pricing"
+                >
+                  <span>🇮🇳 India (₹ INR)</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setRegion('GLOBAL')}
+                  aria-pressed={region === 'GLOBAL'}
+                  className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 transition-all text-xs font-bold ${
+                    region === 'GLOBAL'
+                      ? 'bg-amber-500/20 text-amber-900 dark:text-amber-300 border border-amber-500/40 shadow-xs'
+                      : 'text-[var(--app-muted)] hover:text-[var(--app-ink)]'
+                  }`}
+                  title="View US Dollar ($) global pricing"
+                >
+                  <span>🌐 Global ($ USD)</span>
+                </button>
+              </div>
             </div>
 
+            {/* Indian Pricing PPP Banner */}
+            {isIndia && (
+              <div className="flex items-center gap-2.5 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 px-3.5 py-2.5 text-xs text-emerald-900 dark:text-emerald-200">
+                <Sparkles className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                <span>
+                  <strong>Purchasing Power Parity (PPP) Active:</strong> Tailored regional pricing for patrons in India.
+                </span>
+              </div>
+            )}
+
             <div className="grid gap-3 sm:gap-4 sm:grid-cols-3 min-w-0">
-              {PRO_TIERS.map((t) => (
+              {pricingPlans.map((t) => (
                 <div
                   key={t.id}
                   className={`relative flex flex-col justify-between rounded-3xl border p-4 sm:p-6 transition-all min-w-0 ${
