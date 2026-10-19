@@ -16,6 +16,7 @@ interface Masjid {
 interface MasjidFinderProps {
   location: SalahLocation | null;
   dark: boolean;
+  onSelectLocalMasjid?: (masjidName: string) => void;
 }
 
 function haversine(lat1: number, lng1: number, lat2: number, lng2: number): number {
@@ -26,7 +27,7 @@ function haversine(lat1: number, lng1: number, lat2: number, lng2: number): numb
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-export default function MasjidFinder({ location, dark }: MasjidFinderProps) {
+export default function MasjidFinder({ location, dark, onSelectLocalMasjid }: MasjidFinderProps) {
   const [masjids, setMasjids] = useState<Masjid[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -185,14 +186,31 @@ export default function MasjidFinder({ location, dark }: MasjidFinderProps) {
                     : `${m.distance.toFixed(1)}km away`}
                 </p>
               </div>
-              <button
-                onClick={() => openInMaps(m)}
-                className={`inline-flex min-h-9 shrink-0 items-center gap-1 rounded-lg px-2.5 py-1 text-[10px] font-medium transition-all ${
-                  dark ? 'bg-white/5 text-stone-300 hover:text-white' : 'bg-emerald-50 text-emerald-800 hover:bg-emerald-100'
-                }`}
-              >
-                Maps <Navigation className="h-3 w-3" aria-hidden="true" />
-              </button>
+              <div className="flex items-center gap-1.5 shrink-0">
+                {onSelectLocalMasjid && (
+                  <button
+                    type="button"
+                    onClick={() => onSelectLocalMasjid(m.name)}
+                    className={`inline-flex min-h-9 items-center gap-1 rounded-lg px-2.5 py-1 text-[10px] font-semibold transition-all ${
+                      dark
+                        ? 'bg-emerald-400/15 text-emerald-200 hover:bg-emerald-400/25'
+                        : 'bg-emerald-100 text-emerald-900 hover:bg-emerald-200'
+                    }`}
+                  >
+                    <Landmark className="h-3 w-3" aria-hidden="true" />
+                    <span>Set as Local</span>
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => openInMaps(m)}
+                  className={`inline-flex min-h-9 items-center gap-1 rounded-lg px-2.5 py-1 text-[10px] font-medium transition-all ${
+                    dark ? 'bg-white/5 text-stone-300 hover:text-white' : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
+                  }`}
+                >
+                  Maps <Navigation className="h-3 w-3" aria-hidden="true" />
+                </button>
+              </div>
             </div>
           ))}
         </div>
