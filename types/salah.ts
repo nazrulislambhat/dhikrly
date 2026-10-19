@@ -59,12 +59,25 @@ export interface LocalPrayerTiming {
   notifyOffsetMinutes?: number; // 0 for at azan time, 5/10/15 min before
 }
 
+export const MAX_LOCAL_MASJIDS = 5;
+
+export interface LocalMasjidItem {
+  id: string;
+  name: string;
+  label?: string; // e.g. "Home", "Work", "Jumu'ah", "Campus", "Travel"
+  notes?: string;
+  timings: Partial<Record<PrayerName, LocalPrayerTiming>>;
+  updatedAt: string;
+}
+
 export interface LocalMasjidSettings {
   enabled: boolean;
   masjidName: string;
   notes?: string;
   timings: Partial<Record<PrayerName, LocalPrayerTiming>>;
   updatedAt?: string;
+  masjids?: LocalMasjidItem[];
+  selectedId?: string | null;
 }
 
 export interface SalahSettings {
@@ -76,6 +89,8 @@ export interface SalahSettings {
   tahajjudNotif: boolean;
   location: SalahLocation | null;
   localMasjid?: LocalMasjidSettings | null;
+  localMasjids?: LocalMasjidItem[];
+  selectedMasjidId?: string | null;
 }
 
 export interface HeatmapCell {

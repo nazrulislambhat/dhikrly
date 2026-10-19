@@ -11,12 +11,22 @@ import {
   MapPinned,
   Pencil,
   Plus,
+  Star,
 } from 'lucide-react';
 import { getHijriDate, getTodayKey } from '@/lib/dates';
-import { getSalahSettings, saveSalahSettings } from '@/lib/salahStorage';
+import {
+  getSalahSettings,
+  saveSalahSettings,
+  getLocalMasjidsList,
+  getActiveLocalMasjid,
+  saveLocalMasjidsList,
+  saveLocalMasjidSettings,
+} from '@/lib/salahStorage';
 import { getCurrentAndNextPrayer, formatTimeString } from '@/lib/prayerTimes';
 import { load, save, SETTINGS_KEY } from '@/lib/storage';
 import { startAzanNotificationScheduler, getPlannedAzanList } from '@/lib/azanNotificationService';
+import { pullLocalMasjidsFromSupabase, pushLocalMasjidsToSupabase } from '@/lib/masjidSync';
+import { hasSupabaseConfig } from '@/lib/supabase';
 
 import { usePrayerTimes } from '@/hooks/usePrayerTimes';
 import { useSalahLog } from '@/hooks/useSalahLog';
@@ -24,7 +34,7 @@ import { useSalahSync } from '@/hooks/useSalahSync';
 import { useAuth } from '@/hooks/useAuth';
 
 import LocationSetup from '@/components/salah/LocationSetup';
-import PrayerCard from '@/components/salah/PrayerCard';
+import PrayerCard, { MasjidPrayerItem } from '@/components/salah/PrayerCard';
 import LocalMasjidModal from '@/components/salah/LocalMasjidModal';
 import SunnahPanel from '@/components/salah/SunnahPanel';
 import TahajjudPanel from '@/components/salah/TahajjudPanel';
@@ -42,8 +52,9 @@ import type {
   SalahLocation,
   DayLog,
   LocalMasjidSettings,
+  LocalMasjidItem,
 } from '@/types/salah';
-import { PRAYERS, PRAYER_LABELS } from '@/types/salah';
+import { PRAYERS, PRAYER_LABELS, MAX_LOCAL_MASJIDS } from '@/types/salah';
 import AppShell from '@/components/AppShell';
 import JumuahBanner from '@/components/JumuahBanner';
 import MakroohTimesCard from '@/components/salah/MakroohTimesCard';
@@ -62,6 +73,8 @@ export default function SalahPage() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showLocalMasjidModal, setShowLocalMasjidModal] = useState(false);
   const [prayerFocusForModal, setPrayerFocusForModal] = useState<PrayerName | undefined>(undefined);
+  const [editingMasjidIdForModal, setEditingMasjidIdForModal] = useState<string | undefined>(undefined);
+  const [selectedMasjidTab, setSelectedMasjidTab] = useState<string>('all');
 
   const today = getTodayKey();
   const {
@@ -128,24 +141,59 @@ export default function SalahPage() {
     return cleanup;
   }, [settings.localMasjid]);
 
+  // Pull remote masjids when user is signed in (Zero Data Loss non-destructive merge)
+  useEffect(() => {
+    if (!user || !hasSupabaseConfig) return;
+    let cancelled = false;
+    pullLocalMasjidsFromSupabase(user.id).then((merged) => {
+      if (cancelled || !merged) return;
+      setSettings(getSalahSettings());
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
+
   const handleLocation = (loc: SalahLocation) => {
     const updated = { ...settings, location: loc };
     setSettings(updated);
     saveSalahSettings(updated);
   };
 
+  const masjidsList = getLocalMasjidsList(settings);
+  const activeMasjid = getActiveLocalMasjid(settings);
+
   const handleSaveLocalMasjid = (updatedLocalMasjid: LocalMasjidSettings | null) => {
-    const updated: typeof settings = { ...settings, localMasjid: updatedLocalMasjid };
+    saveLocalMasjidSettings(updatedLocalMasjid);
+    const updated = getSalahSettings();
     setSettings(updated);
-    saveSalahSettings(updated);
+
+    // Push to Supabase with zero data loss
+    if (user?.id && hasSupabaseConfig) {
+      const list = getLocalMasjidsList(updated);
+      const active = getActiveLocalMasjid(updated);
+      void pushLocalMasjidsToSupabase(user.id, list, active?.id ?? null);
+    }
   };
 
-  const localMasjidTimings = settings.localMasjid?.timings;
-  const configuredTimingsCount = localMasjidTimings
-    ? Object.values(localMasjidTimings).filter((t) => t?.azanTime || t?.iqamahTime).length
+  const handleSwitchActiveMasjid = (masjidId: string) => {
+    const list = getLocalMasjidsList(settings);
+    saveLocalMasjidsList(list, masjidId);
+    const updated = getSalahSettings();
+    setSettings(updated);
+
+    // Sync active selection to Supabase
+    if (user?.id && hasSupabaseConfig) {
+      void pushLocalMasjidsToSupabase(user.id, list, masjidId);
+    }
+  };
+
+  const activeTimings = activeMasjid?.timings;
+  const configuredTimingsCount = activeTimings
+    ? Object.values(activeTimings).filter((t) => t?.azanTime || t?.iqamahTime).length
     : 0;
-  const plannedAzanCount = localMasjidTimings
-    ? Object.values(localMasjidTimings).filter((t) => t?.notifyAzan && t?.azanTime).length
+  const plannedAzanCount = activeTimings
+    ? Object.values(activeTimings).filter((t) => t?.notifyAzan && t?.azanTime).length
     : 0;
 
   const { current, next, minutesUntilNext } = times
@@ -206,6 +254,9 @@ export default function SalahPage() {
         onClose={() => setShowLocalMasjidModal(false)}
         dark={dark}
         currentSettings={settings.localMasjid ?? null}
+        allMasjids={masjidsList}
+        initialActiveId={activeMasjid?.id}
+        initialEditingId={editingMasjidIdForModal || activeMasjid?.id}
         calculatedTimes={times}
         timezone={settings.location?.timezone}
         initialPrayerFocus={prayerFocusForModal}
@@ -413,111 +464,312 @@ export default function SalahPage() {
         {activeTab === 'today' && (
           <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1.25fr)_minmax(17rem,0.75fr)]">
             <section className="space-y-3" aria-label="Prayer times and log">
-              {/* Local Masjid & Azan Timings Banner */}
-              {settings.localMasjid ? (
+              {/* Local Masjid & Azan Timings Banner (Supports up to 5 Masjids) */}
+              {masjidsList.length > 0 && activeMasjid ? (
                 <div className={`rounded-2xl border p-4 sm:p-5 transition-all ${cardBase}`}>
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div className="flex items-center gap-3">
-                      <span
-                        className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${
-                          dark ? 'bg-emerald-400/15 text-emerald-300' : 'bg-emerald-50 text-emerald-800'
-                        }`}
-                      >
-                        <Landmark className="h-5 w-5" aria-hidden="true" />
-                      </span>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h2 className={`font-serif text-base font-bold ${dark ? 'text-stone-100' : 'text-stone-900'}`}>
-                            {settings.localMasjid.masjidName || 'Local Masjid Timings'}
-                          </h2>
-                          <span
-                            className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
-                              dark ? 'bg-emerald-400/15 text-emerald-300' : 'bg-emerald-100 text-emerald-800'
+                  {/* Top Header */}
+                  {(() => {
+                    const currentTabMasjid =
+                      selectedMasjidTab === 'all'
+                        ? null
+                        : masjidsList.find((m) => m.id === selectedMasjidTab) ?? activeMasjid;
+
+                    const tabTimings = currentTabMasjid?.timings;
+                    const tabTimingsCount = tabTimings
+                      ? Object.values(tabTimings).filter((t) => t?.azanTime || t?.iqamahTime).length
+                      : 0;
+                    const tabPlannedAzanCount = tabTimings
+                      ? Object.values(tabTimings).filter((t) => t?.notifyAzan && t?.azanTime).length
+                      : 0;
+
+                    return (
+                      <>
+                        <div className="flex flex-wrap items-center justify-between gap-3">
+                          <div className="flex items-center gap-3">
+                            <span
+                              className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${
+                                dark ? 'bg-emerald-400/15 text-emerald-300' : 'bg-emerald-50 text-emerald-800'
+                              }`}
+                            >
+                              <Landmark className="h-5 w-5" aria-hidden="true" />
+                            </span>
+                            <div>
+                              <div className="flex flex-wrap items-center gap-2">
+                                <h2 className={`font-serif text-base font-bold ${dark ? 'text-stone-100' : 'text-stone-900'}`}>
+                                  {selectedMasjidTab === 'all'
+                                    ? 'All Local Mosques Schedule'
+                                    : currentTabMasjid?.name || 'Local Masjid Timings'}
+                                </h2>
+                                {currentTabMasjid?.label && (
+                                  <span
+                                    className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                                      dark ? 'bg-emerald-400/15 text-emerald-300' : 'bg-emerald-100 text-emerald-800'
+                                    }`}
+                                  >
+                                    {currentTabMasjid.label}
+                                  </span>
+                                )}
+                                <span
+                                  className={`rounded-full px-1.5 py-0.5 text-[10px] font-medium ${
+                                    dark ? 'bg-white/5 text-stone-400' : 'bg-stone-100 text-stone-600'
+                                  }`}
+                                >
+                                  {masjidsList.length} of {MAX_LOCAL_MASJIDS} Mosques
+                                </span>
+                              </div>
+                              <p
+                                className={`mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs ${
+                                  dark ? 'text-stone-400' : 'text-stone-500'
+                                }`}
+                              >
+                                {selectedMasjidTab === 'all' ? (
+                                  <span>Showing all {masjidsList.length} mosques across all 5 daily prayers</span>
+                                ) : (
+                                  <>
+                                    <span>{tabTimingsCount} timings active</span>
+                                    {tabPlannedAzanCount > 0 ? (
+                                      <span className="inline-flex items-center gap-1 font-semibold text-amber-600 dark:text-amber-400">
+                                        <Bell className="h-3 w-3" />
+                                        <span>{tabPlannedAzanCount} Azan alert{tabPlannedAzanCount === 1 ? '' : 's'} planned</span>
+                                      </span>
+                                    ) : (
+                                      <span>· No Azan alerts</span>
+                                    )}
+                                    {currentTabMasjid?.notes && (
+                                      <span className="truncate max-w-[200px] opacity-75">
+                                        · {currentTabMasjid.notes}
+                                      </span>
+                                    )}
+                                  </>
+                                )}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            {currentTabMasjid && currentTabMasjid.id !== activeMasjid.id && (
+                              <button
+                                type="button"
+                                onClick={() => handleSwitchActiveMasjid(currentTabMasjid.id)}
+                                title="Make this mosque default active for daily alerts"
+                                className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold transition ${
+                                  dark
+                                    ? 'border-amber-400/30 text-amber-300 hover:bg-amber-400/10'
+                                    : 'border-amber-300 text-amber-800 hover:bg-amber-50'
+                                }`}
+                              >
+                                <Star className="h-3.5 w-3.5" />
+                                <span>Set as Primary</span>
+                              </button>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setPrayerFocusForModal(undefined);
+                                setEditingMasjidIdForModal(currentTabMasjid?.id || activeMasjid.id);
+                                setShowLocalMasjidModal(true);
+                              }}
+                              className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold transition ${
+                                dark
+                                  ? 'border-white/10 hover:bg-white/5 text-stone-200'
+                                  : 'border-stone-200 hover:bg-stone-50 text-stone-700'
+                              }`}
+                            >
+                              <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
+                              <span>Manage Mosques</span>
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Mosque Switcher Chips / Tabs */}
+                        <div className="mt-3 flex flex-wrap items-center gap-1.5 pt-2.5 border-t border-inherit">
+                          <span className={`text-[10px] font-bold uppercase tracking-wider mr-1 ${dark ? 'text-stone-500' : 'text-stone-400'}`}>
+                            Tabs:
+                          </span>
+
+                          <button
+                            type="button"
+                            onClick={() => setSelectedMasjidTab('all')}
+                            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold transition ${
+                              selectedMasjidTab === 'all'
+                                ? dark
+                                  ? 'bg-emerald-500/20 text-emerald-300 ring-1 ring-emerald-400/40'
+                                  : 'bg-emerald-600 text-white shadow-xs'
+                                : dark
+                                  ? 'bg-white/5 text-stone-300 hover:bg-white/10'
+                                  : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
                             }`}
                           >
-                            Mosque Schedule
-                          </span>
-                        </div>
-                        <p
-                          className={`mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs ${
-                            dark ? 'text-stone-400' : 'text-stone-500'
-                          }`}
-                        >
-                          <span>{configuredTimingsCount} timings active</span>
-                          {plannedAzanCount > 0 ? (
-                            <span className="inline-flex items-center gap-1 font-semibold text-amber-600 dark:text-amber-400">
-                              <Bell className="h-3 w-3" />
-                              <span>{plannedAzanCount} Azan alerts planned</span>
-                            </span>
-                          ) : (
-                            <span>· No Azan alerts</span>
-                          )}
-                          {settings.localMasjid.notes && (
-                            <span className="truncate max-w-[200px] opacity-75">
-                              · {settings.localMasjid.notes}
-                            </span>
-                          )}
-                        </p>
-                      </div>
-                    </div>
+                            <Landmark className="h-3 w-3" />
+                            <span>All Mosques ({masjidsList.length})</span>
+                          </button>
 
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setPrayerFocusForModal(undefined);
-                          setShowLocalMasjidModal(true);
-                        }}
-                        className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold transition ${
-                          dark
-                            ? 'border-white/10 hover:bg-white/5 text-stone-200'
-                            : 'border-stone-200 hover:bg-stone-50 text-stone-700'
-                        }`}
-                      >
-                        <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
-                        <span>Update Timings</span>
-                      </button>
-                    </div>
-                  </div>
+                          {masjidsList.map((m) => {
+                            const isTabActive = selectedMasjidTab === m.id;
+                            const isPrimary = m.id === activeMasjid.id;
+                            return (
+                              <button
+                                key={m.id}
+                                type="button"
+                                onClick={() => {
+                                  setSelectedMasjidTab(m.id);
+                                  handleSwitchActiveMasjid(m.id);
+                                }}
+                                className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold transition ${
+                                  isTabActive
+                                    ? dark
+                                      ? 'bg-emerald-500/20 text-emerald-300 ring-1 ring-emerald-400/40'
+                                      : 'bg-emerald-600 text-white shadow-xs'
+                                    : dark
+                                      ? 'bg-white/5 text-stone-300 hover:bg-white/10'
+                                      : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
+                                }`}
+                              >
+                                {isPrimary && <Star className="h-3 w-3 fill-current text-amber-400" aria-label="Primary Active Mosque" />}
+                                <span className="truncate max-w-[120px]">{m.name}</span>
+                                {m.label && (
+                                  <span className="text-[10px] opacity-75">({m.label})</span>
+                                )}
+                              </button>
+                            );
+                          })}
 
-                  {/* 5-prayer quick overview strip */}
-                  <div
-                    className={`mt-3.5 grid grid-cols-5 gap-1.5 border-t pt-3 text-center ${
-                      dark ? 'border-white/[0.06]' : 'border-black/[0.06]'
-                    }`}
-                  >
-                    {PRAYERS.map((p) => {
-                      const t = settings.localMasjid?.timings?.[p];
-                      const shortName = PRAYER_LABELS[p].en.slice(0, 3);
-                      return (
-                        <div
-                          key={p}
-                          className={`rounded-xl p-1.5 sm:p-2 ${
-                            dark ? 'bg-white/[0.02]' : 'bg-stone-50/70'
-                          }`}
-                        >
-                          <div className="flex items-center justify-center gap-1 text-[11px] font-bold">
-                            <span>{shortName}</span>
-                            {t?.notifyAzan && (
-                              <Bell className="h-2.5 w-2.5 text-amber-500" aria-label="Notification planned" />
-                            )}
-                          </div>
-                          <div className="mt-1 text-[10px]">
-                            <div className="text-stone-400">Azan</div>
-                            <div className="font-semibold truncate">
-                              {t?.azanTime ? formatTimeString(t.azanTime) : '—'}
-                            </div>
-                          </div>
-                          <div className="mt-0.5 text-[10px]">
-                            <div className="text-stone-400">Iqāmah</div>
-                            <div className="font-semibold text-emerald-700 dark:text-emerald-300 truncate">
-                              {t?.iqamahTime ? formatTimeString(t.iqamahTime) : '—'}
-                            </div>
-                          </div>
+                          {masjidsList.length < MAX_LOCAL_MASJIDS && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setPrayerFocusForModal(undefined);
+                                setEditingMasjidIdForModal(undefined);
+                                setShowLocalMasjidModal(true);
+                              }}
+                              className={`inline-flex items-center gap-1 rounded-full border border-dashed px-2 py-0.5 text-xs font-medium transition ${
+                                dark
+                                  ? 'border-white/20 text-stone-400 hover:text-stone-200 hover:border-white/40'
+                                  : 'border-stone-300 text-stone-600 hover:text-stone-900 hover:border-stone-400'
+                              }`}
+                            >
+                              <Plus className="h-3 w-3" />
+                              <span>Add ({masjidsList.length}/{MAX_LOCAL_MASJIDS})</span>
+                            </button>
+                          )}
                         </div>
-                      );
-                    })}
-                  </div>
+
+                        {/* 5-prayer quick overview */}
+                        {selectedMasjidTab === 'all' ? (
+                          <div className="mt-3.5 space-y-2 border-t pt-3">
+                            {masjidsList.map((m) => {
+                              const isPrimary = m.id === activeMasjid.id;
+                              return (
+                                <div
+                                  key={m.id}
+                                  className={`rounded-xl p-2.5 sm:p-3 border transition-all ${
+                                    dark ? 'bg-white/[0.02] border-white/[0.06]' : 'bg-stone-50/80 border-stone-200/80'
+                                  }`}
+                                >
+                                  <div className="flex items-center justify-between gap-2 mb-2">
+                                    <div className="flex items-center gap-1.5">
+                                      <Landmark className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                                      <span className="text-xs font-bold">{m.name}</span>
+                                      {m.label && (
+                                        <span className={`rounded-full px-1.5 py-0.2 text-[9px] font-semibold ${
+                                          dark ? 'bg-white/10 text-stone-300' : 'bg-emerald-100 text-emerald-800'
+                                        }`}>
+                                          {m.label}
+                                        </span>
+                                      )}
+                                      {isPrimary && (
+                                        <span className="inline-flex items-center gap-0.5 text-[10px] text-amber-500 font-medium">
+                                          <Star className="h-2.5 w-2.5 fill-current" /> Primary
+                                        </span>
+                                      )}
+                                    </div>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setPrayerFocusForModal(undefined);
+                                        setEditingMasjidIdForModal(m.id);
+                                        setShowLocalMasjidModal(true);
+                                      }}
+                                      className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-md border transition ${
+                                        dark ? 'border-white/10 hover:bg-white/5 text-stone-300' : 'border-stone-200 hover:bg-stone-100 text-stone-600'
+                                      }`}
+                                    >
+                                      <Pencil className="h-2.5 w-2.5" />
+                                      <span>Edit</span>
+                                    </button>
+                                  </div>
+
+                                  <div className="grid grid-cols-5 gap-1 text-center">
+                                    {PRAYERS.map((p) => {
+                                      const t = m.timings?.[p];
+                                      const shortName = PRAYER_LABELS[p].en.slice(0, 3);
+                                      return (
+                                        <div
+                                          key={p}
+                                          className={`rounded-lg p-1 text-[10px] ${
+                                            dark ? 'bg-white/[0.02]' : 'bg-white'
+                                          }`}
+                                        >
+                                          <div className="flex items-center justify-center gap-0.5 font-bold text-[10px]">
+                                            <span>{shortName}</span>
+                                            {t?.notifyAzan && <Bell className="h-2.5 w-2.5 text-amber-500" />}
+                                          </div>
+                                          <div className="text-stone-400 text-[9px] mt-0.5 truncate">
+                                            {t?.azanTime ? formatTimeString(t.azanTime) : '—'}
+                                          </div>
+                                          <div className="font-semibold text-emerald-700 dark:text-emerald-300 text-[9px] truncate">
+                                            {t?.iqamahTime ? formatTimeString(t.iqamahTime) : '—'}
+                                          </div>
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <div
+                            className={`mt-3.5 grid grid-cols-5 gap-1.5 border-t pt-3 text-center ${
+                              dark ? 'border-white/[0.06]' : 'border-black/[0.06]'
+                            }`}
+                          >
+                            {PRAYERS.map((p) => {
+                              const t = currentTabMasjid?.timings?.[p];
+                              const shortName = PRAYER_LABELS[p].en.slice(0, 3);
+                              return (
+                                <div
+                                  key={p}
+                                  className={`rounded-xl p-1.5 sm:p-2 ${
+                                    dark ? 'bg-white/[0.02]' : 'bg-stone-50/70'
+                                  }`}
+                                >
+                                  <div className="flex items-center justify-center gap-1 text-[11px] font-bold">
+                                    <span>{shortName}</span>
+                                    {t?.notifyAzan && (
+                                      <Bell className="h-2.5 w-2.5 text-amber-500" aria-label="Notification planned" />
+                                    )}
+                                  </div>
+                                  <div className="mt-1 text-[10px]">
+                                    <div className="text-stone-400">Azan</div>
+                                    <div className="font-semibold truncate">
+                                      {t?.azanTime ? formatTimeString(t.azanTime) : '—'}
+                                    </div>
+                                  </div>
+                                  <div className="mt-0.5 text-[10px]">
+                                    <div className="text-stone-400">Iqāmah</div>
+                                    <div className="font-semibold text-emerald-700 dark:text-emerald-300 truncate">
+                                      {t?.iqamahTime ? formatTimeString(t.iqamahTime) : '—'}
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </>
+                    );
+                  })()}
                 </div>
               ) : (
                 <div
@@ -535,15 +787,24 @@ export default function SalahPage() {
                         <Landmark className="h-5 w-5" aria-hidden="true" />
                       </span>
                       <div>
-                        <h2
-                          className={`font-serif text-sm sm:text-base font-semibold ${
-                            dark ? 'text-stone-100' : 'text-stone-900'
-                          }`}
-                        >
-                          Local Masjid Timings & Azaan Alerts
-                        </h2>
+                        <div className="flex items-center gap-2">
+                          <h2
+                            className={`font-serif text-sm sm:text-base font-semibold ${
+                              dark ? 'text-stone-100' : 'text-stone-900'
+                            }`}
+                          >
+                            Local Masjid Timings & Azaan Alerts
+                          </h2>
+                          <span
+                            className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                              dark ? 'bg-emerald-400/15 text-emerald-300' : 'bg-emerald-100 text-emerald-800'
+                            }`}
+                          >
+                            Up to 5 Mosques
+                          </span>
+                        </div>
                         <p className={`mt-0.5 text-xs ${dark ? 'text-stone-400' : 'text-stone-600'}`}>
-                          Manually enter your mosque’s Azaan & Iqāmah schedule to plan alerts alongside automatic calculated times.
+                          Add up to 5 local masjids (Home, Work, Jumu‘ah) with custom Azaan & Iqāmah timings and automatic notifications. All data is synced to Supabase with zero data loss.
                         </p>
                       </div>
                     </div>
@@ -595,6 +856,14 @@ export default function SalahPage() {
               ) : (
                 PRAYERS.map((prayer) => {
                   const window = times ? getPrayerWindows(times)[prayer] : null;
+                  const prayerMasjids: MasjidPrayerItem[] = masjidsList.map((m) => ({
+                    id: m.id,
+                    name: m.name,
+                    label: m.label,
+                    timing: m.timings?.[prayer] ?? null,
+                    isPrimary: Boolean(activeMasjid && m.id === activeMasjid.id),
+                  }));
+
                   return (
                     <PrayerCard
                       key={prayer}
@@ -607,10 +876,12 @@ export default function SalahPage() {
                       isCurrent={current === prayer}
                       isNext={next === prayer && current !== prayer}
                       dark={dark}
-                      localTiming={settings.localMasjid?.timings?.[prayer]}
-                      masjidName={settings.localMasjid?.masjidName}
-                      onEditLocalTiming={() => {
+                      allMasjids={prayerMasjids}
+                      activeMasjidTab={selectedMasjidTab}
+                      onSelectMasjidTab={(tabId) => setSelectedMasjidTab(tabId)}
+                      onEditLocalTiming={(targetMasjidId) => {
                         setPrayerFocusForModal(prayer);
+                        setEditingMasjidIdForModal(targetMasjidId || activeMasjid?.id);
                         setShowLocalMasjidModal(true);
                       }}
                       onStatusChange={(s: PrayerStatus) => updatePrayer(prayer, s)}
@@ -749,16 +1020,17 @@ export default function SalahPage() {
                 <div className="pt-2 border-t border-inherit flex items-center justify-between">
                   <div>
                     <span className={`text-[13px] ${dark ? 'text-stone-300' : 'text-stone-700'}`}>
-                      Local Mosque Schedule
+                      Local Mosques ({masjidsList.length}/{MAX_LOCAL_MASJIDS})
                     </span>
                     <p className={`text-[10px] ${dark ? 'text-stone-500' : 'text-stone-400'}`}>
-                      {settings.localMasjid ? settings.localMasjid.masjidName : 'Not configured'}
+                      {activeMasjid ? `${activeMasjid.name} (Active)` : 'Not configured'}
                     </p>
                   </div>
                   <button
                     type="button"
                     onClick={() => {
                       setPrayerFocusForModal(undefined);
+                      setEditingMasjidIdForModal(activeMasjid?.id);
                       setShowLocalMasjidModal(true);
                     }}
                     className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition ${
@@ -767,7 +1039,7 @@ export default function SalahPage() {
                         : 'bg-emerald-50 text-emerald-800 hover:bg-emerald-100'
                     }`}
                   >
-                    {settings.localMasjid ? 'Edit' : 'Configure'}
+                    {masjidsList.length > 0 ? 'Manage' : 'Configure'}
                   </button>
                 </div>
               </div>
@@ -802,15 +1074,37 @@ export default function SalahPage() {
             location={settings.location}
             dark={dark}
             onSelectLocalMasjid={(name) => {
-              const existing = settings.localMasjid;
-              const updated: LocalMasjidSettings = {
-                enabled: true,
-                masjidName: name,
-                notes: existing?.notes,
-                timings: existing?.timings ?? {},
-                updatedAt: new Date().toISOString(),
-              };
-              handleSaveLocalMasjid(updated);
+              const currentList = getLocalMasjidsList(settings);
+              const existingIdx = currentList.findIndex(
+                (m) => m.name.toLowerCase() === name.toLowerCase(),
+              );
+              let updatedList = [...currentList];
+              let activeId: string;
+              if (existingIdx >= 0) {
+                activeId = updatedList[existingIdx].id;
+              } else {
+                const newId = `masjid_${Date.now()}`;
+                const newItem: LocalMasjidItem = {
+                  id: newId,
+                  name,
+                  label: currentList.length === 0 ? 'Home' : 'Local',
+                  timings: {},
+                  updatedAt: new Date().toISOString(),
+                };
+                if (updatedList.length >= MAX_LOCAL_MASJIDS) {
+                  updatedList = [...updatedList.slice(0, MAX_LOCAL_MASJIDS - 1), newItem];
+                } else {
+                  updatedList.push(newItem);
+                }
+                activeId = newId;
+              }
+              saveLocalMasjidsList(updatedList, activeId);
+              const updated = getSalahSettings();
+              setSettings(updated);
+              if (user?.id && hasSupabaseConfig) {
+                void pushLocalMasjidsToSupabase(user.id, updatedList, activeId);
+              }
+              setEditingMasjidIdForModal(activeId);
               setShowLocalMasjidModal(true);
             }}
           />
