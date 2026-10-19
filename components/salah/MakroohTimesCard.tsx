@@ -108,7 +108,7 @@ export default function MakroohTimesCard({
                   <p className="font-arabic text-[11px] text-stone-400 mb-1.5" dir="rtl">
                     {int.nameAr}
                   </p>
-                  <p className="text-xs font-extrabold text-emerald-700 dark:text-emerald-300">
+                  <p className="text-xs font-extrabold text-red-500 dark:text-emerald-300">
                     {formatTime(int.start, timezone)} — {formatTime(int.end, timezone)}
                   </p>
                   <p className="mt-1 text-[11px] text-stone-500 dark:text-stone-400 leading-tight">
