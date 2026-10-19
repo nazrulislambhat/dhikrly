@@ -52,6 +52,21 @@ export interface SalahLocation {
   timezone: string;
 }
 
+export interface LocalPrayerTiming {
+  azanTime?: string; // "HH:mm" in 24-hour format
+  iqamahTime?: string; // "HH:mm" in 24-hour format
+  notifyAzan?: boolean; // whether notification is planned for this prayer
+  notifyOffsetMinutes?: number; // 0 for at azan time, 5/10/15 min before
+}
+
+export interface LocalMasjidSettings {
+  enabled: boolean;
+  masjidName: string;
+  notes?: string;
+  timings: Partial<Record<PrayerName, LocalPrayerTiming>>;
+  updatedAt?: string;
+}
+
 export interface SalahSettings {
   calcMethod: CalcMethod;
   asrMethod: 'Standard' | 'Hanafi';
@@ -60,6 +75,7 @@ export interface SalahSettings {
   trackNafl: boolean;
   tahajjudNotif: boolean;
   location: SalahLocation | null;
+  localMasjid?: LocalMasjidSettings | null;
 }
 
 export interface HeatmapCell {

@@ -73,6 +73,20 @@ export function formatTime(date: Date, timezone?: string): string {
   });
 }
 
+/** Format a 24-hour time string like "05:15" or "18:45" to "5:15 AM" or "6:45 PM" */
+export function formatTimeString(timeStr?: string): string {
+  if (!timeStr) return '';
+  const parts = timeStr.split(':');
+  if (parts.length < 2) return timeStr;
+  const h = parseInt(parts[0], 10);
+  const m = parseInt(parts[1], 10);
+  if (isNaN(h) || isNaN(m)) return timeStr;
+  const period = h >= 12 ? 'PM' : 'AM';
+  const displayHour = h % 12 === 0 ? 12 : h % 12;
+  const displayMinute = m < 10 ? `0${m}` : `${m}`;
+  return `${displayHour}:${displayMinute} ${period}`;
+}
+
 export function getCurrentAndNextPrayer(
   times: PrayerTimesResult,
   now = new Date(),

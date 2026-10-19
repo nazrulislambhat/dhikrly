@@ -119,3 +119,35 @@ export function playComplete(): void {
     osc.stop(now + 0.5);
   });
 }
+
+/**
+ * Azan notification chime — gentle, serene harmonic bell sequence
+ * Invokes a calm, reverent call to prayer reminder.
+ */
+export function playAzanChime(): void {
+  const audioCtx = getCtx();
+  if (!audioCtx) return;
+
+  // Harmonious meditative frequencies: C4 (261.63Hz), G4 (392.00Hz), C5 (523.25Hz)
+  const notes = [
+    { freq: 261.63, delay: 0, duration: 1.1, peak: 0.16 },
+    { freq: 392.0, delay: 0.28, duration: 1.3, peak: 0.18 },
+    { freq: 523.25, delay: 0.58, duration: 1.6, peak: 0.2 },
+  ];
+
+  notes.forEach(({ freq, delay, duration, peak }) => {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    const now = audioCtx.currentTime + delay;
+
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(freq, now);
+
+    envelope(gain, audioCtx, 0.04, 0.15, duration, peak);
+
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start(now);
+    osc.stop(now + duration + 0.1);
+  });
+}

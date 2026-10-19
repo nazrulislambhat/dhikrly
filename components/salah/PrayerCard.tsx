@@ -1,9 +1,9 @@
 'use client';
 
-import type { PrayerName, PrayerStatus } from '@/types/salah';
+import type { PrayerName, PrayerStatus, LocalPrayerTiming } from '@/types/salah';
 import { PRAYER_LABELS } from '@/types/salah';
-import { formatTime } from '@/lib/prayerTimes';
-import { Check, Circle, Clock3, Landmark, X } from 'lucide-react';
+import { formatTime, formatTimeString } from '@/lib/prayerTimes';
+import { Bell, Check, Circle, Clock3, Landmark, Pencil, Plus, X } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import SlideToFinish from '@/components/SlideToFinish';
 
@@ -17,6 +17,9 @@ interface PrayerCardProps {
   isCurrent: boolean;
   isNext: boolean;
   dark: boolean;
+  localTiming?: LocalPrayerTiming | null;
+  masjidName?: string;
+  onEditLocalTiming?: () => void;
   onStatusChange: (status: PrayerStatus) => void;
 }
 
@@ -48,6 +51,9 @@ export default function PrayerCard({
   isCurrent,
   isNext,
   dark,
+  localTiming,
+  masjidName,
+  onEditLocalTiming,
   onStatusChange,
 }: PrayerCardProps) {
   const cfg = status ? STATUS_CONFIG[status] : null;
@@ -64,6 +70,8 @@ export default function PrayerCard({
     : 'bg-white border-stone-300 shadow-sm';
 
   const cardClass = isCurrent ? currentCard : isNext ? nextCard : baseCard;
+
+  const hasLocalTimes = localTiming && (localTiming.azanTime || localTiming.iqamahTime);
 
   return (
     <div className={`relative rounded-2xl border p-4 transition-all ${cardClass}`}>
@@ -90,6 +98,7 @@ export default function PrayerCard({
             </span>
           </div>
 
+          {/* Automatic calculation window */}
           <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
             <span className={`font-bold ${dark ? 'text-emerald-300' : 'text-emerald-800'}`}>
               Start: {time ? formatTime(time, timezone) : '—'}
@@ -101,6 +110,75 @@ export default function PrayerCard({
               </span>
             )}
           </div>
+
+          {/* Local Masjid & Azaan Timing Pill */}
+          {hasLocalTimes ? (
+            <div
+              className={`mt-2 flex flex-wrap items-center gap-2 rounded-xl px-2.5 py-1.5 text-xs border ${
+                dark
+                  ? 'bg-white/[0.03] border-white/[0.08] text-stone-200'
+                  : 'bg-emerald-50/70 border-emerald-100 text-emerald-950'
+              }`}
+            >
+              <span className="inline-flex items-center gap-1 font-semibold text-emerald-800 dark:text-emerald-300">
+                <Landmark className="h-3.5 w-3.5" aria-hidden="true" />
+                <span>{masjidName || 'Local Masjid'}:</span>
+              </span>
+              {localTiming?.azanTime && (
+                <span className="inline-flex items-center gap-1">
+                  <span className="opacity-70">Azan</span>
+                  <strong className="font-semibold">{formatTimeString(localTiming.azanTime)}</strong>
+                  {localTiming.notifyAzan && (
+                    <span
+                      title={`Azan notification planned${
+                        localTiming.notifyOffsetMinutes ? ` (${localTiming.notifyOffsetMinutes}m before)` : ''
+                      }`}
+                      className="inline-flex items-center text-amber-600 dark:text-amber-400"
+                    >
+                      <Bell className="h-3 w-3" aria-hidden="true" />
+                    </span>
+                  )}
+                </span>
+              )}
+              {localTiming?.iqamahTime && (
+                <span className="inline-flex items-center gap-1">
+                  <span className="opacity-40">·</span>
+                  <span className="opacity-70">Iqāmah</span>
+                  <strong className="font-semibold text-emerald-800 dark:text-emerald-300">
+                    {formatTimeString(localTiming.iqamahTime)}
+                  </strong>
+                </span>
+              )}
+              {onEditLocalTiming && (
+                <button
+                  type="button"
+                  onClick={onEditLocalTiming}
+                  title="Update local timings"
+                  className={`ml-auto inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-semibold transition ${
+                    dark
+                      ? 'text-stone-400 hover:text-stone-100 hover:bg-white/5'
+                      : 'text-stone-600 hover:text-stone-900 hover:bg-emerald-100/60'
+                  }`}
+                >
+                  <Pencil className="h-3 w-3" aria-hidden="true" />
+                  <span>Edit</span>
+                </button>
+              )}
+            </div>
+          ) : onEditLocalTiming ? (
+            <div className="mt-1.5">
+              <button
+                type="button"
+                onClick={onEditLocalTiming}
+                className={`inline-flex items-center gap-1 text-[11px] font-medium transition ${
+                  dark ? 'text-stone-500 hover:text-stone-300' : 'text-stone-400 hover:text-stone-700'
+                }`}
+              >
+                <Plus className="h-3 w-3" aria-hidden="true" />
+                <span>Add local masjid time</span>
+              </button>
+            </div>
+          ) : null}
         </div>
 
         {/* Status badge */}
