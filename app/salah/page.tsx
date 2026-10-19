@@ -2,16 +2,21 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import {
+  Bell,
   ChartColumnIncreasing,
   Check,
   Clock3,
+  Landmark,
   LocateFixed,
   MapPinned,
+  Pencil,
+  Plus,
 } from 'lucide-react';
 import { getHijriDate, getTodayKey } from '@/lib/dates';
 import { getSalahSettings, saveSalahSettings } from '@/lib/salahStorage';
-import { getCurrentAndNextPrayer } from '@/lib/prayerTimes';
+import { getCurrentAndNextPrayer, formatTimeString } from '@/lib/prayerTimes';
 import { load, save, SETTINGS_KEY } from '@/lib/storage';
+import { startAzanNotificationScheduler, getPlannedAzanList } from '@/lib/azanNotificationService';
 
 import { usePrayerTimes } from '@/hooks/usePrayerTimes';
 import { useSalahLog } from '@/hooks/useSalahLog';
@@ -20,6 +25,7 @@ import { useAuth } from '@/hooks/useAuth';
 
 import LocationSetup from '@/components/salah/LocationSetup';
 import PrayerCard from '@/components/salah/PrayerCard';
+import LocalMasjidModal from '@/components/salah/LocalMasjidModal';
 import SunnahPanel from '@/components/salah/SunnahPanel';
 import TahajjudPanel from '@/components/salah/TahajjudPanel';
 import NaflPanel from '@/components/salah/NaflPanel';
@@ -35,6 +41,7 @@ import type {
   PrayerStatus,
   SalahLocation,
   DayLog,
+  LocalMasjidSettings,
 } from '@/types/salah';
 import { PRAYERS, PRAYER_LABELS } from '@/types/salah';
 import AppShell from '@/components/AppShell';
@@ -53,6 +60,8 @@ export default function SalahPage() {
   const [showHeatmap, setShowHeatmap] = useState(false);
   const [now, setNow] = useState(new Date());
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showLocalMasjidModal, setShowLocalMasjidModal] = useState(false);
+  const [prayerFocusForModal, setPrayerFocusForModal] = useState<PrayerName | undefined>(undefined);
 
   const today = getTodayKey();
   const {
@@ -113,11 +122,31 @@ export default function SalahPage() {
     save(SETTINGS_KEY, { ...currentSettings, dark });
   }, [dark]);
 
+  // Recurring scheduler for planned Azan notifications
+  useEffect(() => {
+    const cleanup = startAzanNotificationScheduler(() => settings.localMasjid);
+    return cleanup;
+  }, [settings.localMasjid]);
+
   const handleLocation = (loc: SalahLocation) => {
     const updated = { ...settings, location: loc };
     setSettings(updated);
     saveSalahSettings(updated);
   };
+
+  const handleSaveLocalMasjid = (updatedLocalMasjid: LocalMasjidSettings | null) => {
+    const updated: typeof settings = { ...settings, localMasjid: updatedLocalMasjid };
+    setSettings(updated);
+    saveSalahSettings(updated);
+  };
+
+  const localMasjidTimings = settings.localMasjid?.timings;
+  const configuredTimingsCount = localMasjidTimings
+    ? Object.values(localMasjidTimings).filter((t) => t?.azanTime || t?.iqamahTime).length
+    : 0;
+  const plannedAzanCount = localMasjidTimings
+    ? Object.values(localMasjidTimings).filter((t) => t?.notifyAzan && t?.azanTime).length
+    : 0;
 
   const { current, next, minutesUntilNext } = times
     ? getCurrentAndNextPrayer(times, now)
@@ -170,6 +199,18 @@ export default function SalahPage() {
       {showAuthModal && (
         <AuthModal dark={dark} onClose={() => setShowAuthModal(false)} />
       )}
+
+      {/* Local Masjid & Azan Timings Modal */}
+      <LocalMasjidModal
+        isOpen={showLocalMasjidModal}
+        onClose={() => setShowLocalMasjidModal(false)}
+        dark={dark}
+        currentSettings={settings.localMasjid ?? null}
+        calculatedTimes={times}
+        timezone={settings.location?.timezone}
+        initialPrayerFocus={prayerFocusForModal}
+        onSave={handleSaveLocalMasjid}
+      />
 
       <AppShell active="salah" dark={dark} onToggleDark={() => setDark((value) => !value)}>
       <div className="mx-auto w-[min(calc(100%-2rem),72rem)] px-2 pt-5 pb-10 sm:px-4 sm:pt-8 lg:px-4">
@@ -372,6 +413,155 @@ export default function SalahPage() {
         {activeTab === 'today' && (
           <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1.25fr)_minmax(17rem,0.75fr)]">
             <section className="space-y-3" aria-label="Prayer times and log">
+              {/* Local Masjid & Azan Timings Banner */}
+              {settings.localMasjid ? (
+                <div className={`rounded-2xl border p-4 sm:p-5 transition-all ${cardBase}`}>
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <span
+                        className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${
+                          dark ? 'bg-emerald-400/15 text-emerald-300' : 'bg-emerald-50 text-emerald-800'
+                        }`}
+                      >
+                        <Landmark className="h-5 w-5" aria-hidden="true" />
+                      </span>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h2 className={`font-serif text-base font-bold ${dark ? 'text-stone-100' : 'text-stone-900'}`}>
+                            {settings.localMasjid.masjidName || 'Local Masjid Timings'}
+                          </h2>
+                          <span
+                            className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                              dark ? 'bg-emerald-400/15 text-emerald-300' : 'bg-emerald-100 text-emerald-800'
+                            }`}
+                          >
+                            Mosque Schedule
+                          </span>
+                        </div>
+                        <p
+                          className={`mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs ${
+                            dark ? 'text-stone-400' : 'text-stone-500'
+                          }`}
+                        >
+                          <span>{configuredTimingsCount} timings active</span>
+                          {plannedAzanCount > 0 ? (
+                            <span className="inline-flex items-center gap-1 font-semibold text-amber-600 dark:text-amber-400">
+                              <Bell className="h-3 w-3" />
+                              <span>{plannedAzanCount} Azan alerts planned</span>
+                            </span>
+                          ) : (
+                            <span>· No Azan alerts</span>
+                          )}
+                          {settings.localMasjid.notes && (
+                            <span className="truncate max-w-[200px] opacity-75">
+                              · {settings.localMasjid.notes}
+                            </span>
+                          )}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setPrayerFocusForModal(undefined);
+                          setShowLocalMasjidModal(true);
+                        }}
+                        className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold transition ${
+                          dark
+                            ? 'border-white/10 hover:bg-white/5 text-stone-200'
+                            : 'border-stone-200 hover:bg-stone-50 text-stone-700'
+                        }`}
+                      >
+                        <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
+                        <span>Update Timings</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* 5-prayer quick overview strip */}
+                  <div
+                    className={`mt-3.5 grid grid-cols-5 gap-1.5 border-t pt-3 text-center ${
+                      dark ? 'border-white/[0.06]' : 'border-black/[0.06]'
+                    }`}
+                  >
+                    {PRAYERS.map((p) => {
+                      const t = settings.localMasjid?.timings?.[p];
+                      const shortName = PRAYER_LABELS[p].en.slice(0, 3);
+                      return (
+                        <div
+                          key={p}
+                          className={`rounded-xl p-1.5 sm:p-2 ${
+                            dark ? 'bg-white/[0.02]' : 'bg-stone-50/70'
+                          }`}
+                        >
+                          <div className="flex items-center justify-center gap-1 text-[11px] font-bold">
+                            <span>{shortName}</span>
+                            {t?.notifyAzan && (
+                              <Bell className="h-2.5 w-2.5 text-amber-500" aria-label="Notification planned" />
+                            )}
+                          </div>
+                          <div className="mt-1 text-[10px]">
+                            <div className="text-stone-400">Azan</div>
+                            <div className="font-semibold truncate">
+                              {t?.azanTime ? formatTimeString(t.azanTime) : '—'}
+                            </div>
+                          </div>
+                          <div className="mt-0.5 text-[10px]">
+                            <div className="text-stone-400">Iqāmah</div>
+                            <div className="font-semibold text-emerald-700 dark:text-emerald-300 truncate">
+                              {t?.iqamahTime ? formatTimeString(t.iqamahTime) : '—'}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ) : (
+                <div
+                  className={`rounded-2xl border p-4 sm:p-5 transition-all ${
+                    dark ? 'border-emerald-400/20 bg-emerald-400/[0.03]' : 'border-emerald-200 bg-emerald-50/60'
+                  }`}
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <span
+                        className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${
+                          dark ? 'bg-emerald-400/15 text-emerald-300' : 'bg-emerald-100 text-emerald-800'
+                        }`}
+                      >
+                        <Landmark className="h-5 w-5" aria-hidden="true" />
+                      </span>
+                      <div>
+                        <h2
+                          className={`font-serif text-sm sm:text-base font-semibold ${
+                            dark ? 'text-stone-100' : 'text-stone-900'
+                          }`}
+                        >
+                          Local Masjid Timings & Azaan Alerts
+                        </h2>
+                        <p className={`mt-0.5 text-xs ${dark ? 'text-stone-400' : 'text-stone-600'}`}>
+                          Manually enter your mosque’s Azaan & Iqāmah schedule to plan alerts alongside automatic calculated times.
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPrayerFocusForModal(undefined);
+                        setShowLocalMasjidModal(true);
+                      }}
+                      className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-700 dark:bg-emerald-600 px-3.5 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-emerald-800 dark:hover:bg-emerald-500 active:scale-95"
+                    >
+                      <Plus className="h-4 w-4" aria-hidden="true" />
+                      <span>Add Local Timings</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {times && (
                 <MakroohTimesCard
                   times={times}
@@ -417,6 +607,12 @@ export default function SalahPage() {
                       isCurrent={current === prayer}
                       isNext={next === prayer && current !== prayer}
                       dark={dark}
+                      localTiming={settings.localMasjid?.timings?.[prayer]}
+                      masjidName={settings.localMasjid?.masjidName}
+                      onEditLocalTiming={() => {
+                        setPrayerFocusForModal(prayer);
+                        setShowLocalMasjidModal(true);
+                      }}
                       onStatusChange={(s: PrayerStatus) => updatePrayer(prayer, s)}
                     />
                   );
@@ -548,6 +744,32 @@ export default function SalahPage() {
                     </button>
                   </div>
                 ))}
+
+                {/* Local Masjid shortcut */}
+                <div className="pt-2 border-t border-inherit flex items-center justify-between">
+                  <div>
+                    <span className={`text-[13px] ${dark ? 'text-stone-300' : 'text-stone-700'}`}>
+                      Local Mosque Schedule
+                    </span>
+                    <p className={`text-[10px] ${dark ? 'text-stone-500' : 'text-stone-400'}`}>
+                      {settings.localMasjid ? settings.localMasjid.masjidName : 'Not configured'}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPrayerFocusForModal(undefined);
+                      setShowLocalMasjidModal(true);
+                    }}
+                    className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition ${
+                      dark
+                        ? 'bg-emerald-400/15 text-emerald-300 hover:bg-emerald-400/25'
+                        : 'bg-emerald-50 text-emerald-800 hover:bg-emerald-100'
+                    }`}
+                  >
+                    {settings.localMasjid ? 'Edit' : 'Configure'}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -576,7 +798,22 @@ export default function SalahPage() {
 
         {/* ── Masjid tab ── */}
         {activeTab === 'masjid' && (
-          <MasjidFinder location={settings.location} dark={dark} />
+          <MasjidFinder
+            location={settings.location}
+            dark={dark}
+            onSelectLocalMasjid={(name) => {
+              const existing = settings.localMasjid;
+              const updated: LocalMasjidSettings = {
+                enabled: true,
+                masjidName: name,
+                notes: existing?.notes,
+                timings: existing?.timings ?? {},
+                updatedAt: new Date().toISOString(),
+              };
+              handleSaveLocalMasjid(updated);
+              setShowLocalMasjidModal(true);
+            }}
+          />
         )}
 
         {/* ── Footer ── */}
