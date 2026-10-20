@@ -1,10 +1,13 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   Bell,
+  Calendar,
   ChartColumnIncreasing,
   Check,
+  ChevronLeft,
+  ChevronRight,
   Clock3,
   Landmark,
   LocateFixed,
@@ -13,7 +16,7 @@ import {
   Plus,
   Star,
 } from 'lucide-react';
-import { getHijriDate, getTodayKey } from '@/lib/dates';
+import { getHijriDate, getTodayKey, formatSafeDate } from '@/lib/dates';
 import {
   getSalahSettings,
   saveSalahSettings,
@@ -77,6 +80,19 @@ export default function SalahPage() {
   const [selectedMasjidTab, setSelectedMasjidTab] = useState<string>('all');
 
   const today = getTodayKey();
+  const [selectedDate, setSelectedDate] = useState<string>(today);
+  const isToday = selectedDate === today;
+
+  const yesterdayStr = useMemo(
+    () => new Date(Date.now() - 86_400_000).toISOString().slice(0, 10),
+    [],
+  );
+  const isYesterday = selectedDate === yesterdayStr;
+
+  const selectedDateObj = useMemo(() => {
+    return new Date(`${selectedDate}T12:00:00`);
+  }, [selectedDate]);
+
   const {
     log,
     setLog,
@@ -85,28 +101,54 @@ export default function SalahPage() {
     toggleSunnah,
     updateTahajjud,
     toggleNafl,
-  } = useSalahLog(today);
+  } = useSalahLog(selectedDate);
   const { user, loading: authLoading, signOut } = useAuth();
   const { times, loading: timesLoading } = usePrayerTimes(
     settings.location,
     settings.calcMethod,
     settings.asrMethod,
+    selectedDateObj,
   );
+
+  // Date navigation handlers
+  const goToPreviousDay = useCallback(() => {
+    setSelectedDate((curr) => {
+      const d = new Date(`${curr}T12:00:00`);
+      d.setDate(d.getDate() - 1);
+      return d.toISOString().slice(0, 10);
+    });
+  }, []);
+
+  const goToNextDay = useCallback(() => {
+    setSelectedDate((curr) => {
+      if (curr >= today) return today;
+      const d = new Date(`${curr}T12:00:00`);
+      d.setDate(d.getDate() + 1);
+      const nextStr = d.toISOString().slice(0, 10);
+      return nextStr > today ? today : nextStr;
+    });
+  }, [today]);
+
+  const jumpToToday = useCallback(() => {
+    setSelectedDate(today);
+  }, [today]);
 
   // Sync callbacks
   const handlePullComplete = useCallback(
     (logs: DayLog[]) => {
-      const todayLog = logs.find((l) => l.date === today);
-      if (todayLog) setLog(todayLog);
+      const activeLog = logs.find((l) => l.date === selectedDate);
+      if (activeLog) setLog(activeLog);
     },
-    [today, setLog],
+    [selectedDate, setLog],
   );
 
   const handleRemoteLogUpdate = useCallback(
     (remoteLog: DayLog) => {
-      setLog(remoteLog);
+      if (remoteLog.date === selectedDate) {
+        setLog(remoteLog);
+      }
     },
-    [setLog],
+    [selectedDate, setLog],
   );
 
   const {
@@ -115,7 +157,7 @@ export default function SalahPage() {
     lastSyncedAt,
   } = useSalahSync({
     user,
-    today,
+    today: selectedDate,
     log,
     localRevision,
     onPullComplete: handlePullComplete,
@@ -196,7 +238,7 @@ export default function SalahPage() {
     ? Object.values(activeTimings).filter((t) => t?.notifyAzan && t?.azanTime).length
     : 0;
 
-  const { current, next, minutesUntilNext } = times
+  const { current, next, minutesUntilNext } = times && isToday
     ? getCurrentAndNextPrayer(times, now)
     : { current: null, next: 'fajr' as const, minutesUntilNext: 0 };
 
@@ -279,11 +321,12 @@ export default function SalahPage() {
                 Daily Ṣalāh
               </h1>
               <div className="mt-1 flex flex-wrap items-center gap-2 text-xs">
-                <span className={`font-semibold uppercase tracking-[0.14em] ${dark ? 'text-emerald-300/80' : 'text-emerald-800/80'}`}>
+                <span suppressHydrationWarning className={`font-semibold uppercase tracking-[0.14em] ${dark ? 'text-emerald-300/80' : 'text-emerald-800/80'}`}>
                   {getHijriDate()}
                 </span>
                 <span className={dark ? 'text-stone-600' : 'text-stone-300'}>•</span>
                 <p
+                  suppressHydrationWarning
                   className={`inline-flex items-center gap-1.5 ${dark ? 'text-stone-400' : 'text-stone-500'}`}
                 >
                   <MapPinned className="h-3.5 w-3.5 text-emerald-700 dark:text-emerald-400" aria-hidden="true" />
@@ -350,57 +393,88 @@ export default function SalahPage() {
             />
           </div>
 
-          {/* Next prayer banner */}
-          {times && (
+          {/* Next prayer banner (if today) or Historical banner (if past date) */}
+          {!isToday ? (
             <div
-              className={`relative mt-5 flex min-h-36 items-center justify-between overflow-hidden rounded-2xl border px-5 py-5 sm:px-7 ${
+              className={`relative mt-5 flex flex-col sm:flex-row min-h-24 sm:items-center justify-between gap-4 overflow-hidden rounded-2xl border px-5 py-4 sm:px-7 ${
                 dark
-                  ? 'border-emerald-300/20 bg-gradient-to-br from-[#123a30] via-[#142b25] to-[#101c19]'
-                  : 'border-emerald-800/10 bg-gradient-to-br from-[#e5f5e9] via-[#d6edda] to-[#c2e7d2] text-emerald-950 shadow-sm'
+                  ? 'border-amber-400/20 bg-gradient-to-br from-[#2a2415] via-[#201c13] to-[#16140e]'
+                  : 'border-amber-200 bg-gradient-to-br from-[#fef8e7] via-[#fbf2d5] to-[#f4e8c1] text-amber-950 shadow-sm'
               }`}
             >
               <div className="relative z-10">
-                <p
-                  className={`text-[10px] font-semibold uppercase tracking-[0.16em] ${dark ? 'text-emerald-200/70' : 'text-emerald-900/65'}`}
-                >
-                  {current
-                    ? `Current · ${current.charAt(0).toUpperCase() + current.slice(1)}`
-                    : 'Before Fajr'}
+                <span className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">
+                  <Calendar className="h-3.5 w-3.5" /> Historical Prayer Record
+                </span>
+                <p className="mt-1 font-serif text-xl font-bold">
+                  {formatSafeDate(selectedDate, { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' }, selectedDate)}
                 </p>
-                <p
-                  className={`mt-1 font-serif text-2xl font-semibold ${dark ? 'text-stone-50' : 'text-emerald-950'}`}
-                >
-                  {next.charAt(0).toUpperCase() + next.slice(1)} is next
-                </p>
-                <p className={`mt-1 text-sm ${dark ? 'text-stone-300' : 'text-emerald-950/80'}`}>
-                  {times[next].toLocaleTimeString('en', {
-                    hour: 'numeric',
-                    minute: '2-digit',
-                    timeZone: settings.location!.timezone,
-                  })}
+                <p className="text-xs text-[var(--app-muted)] mt-0.5">
+                  You are viewing and updating past prayers. All modifications save and sync automatically.
                 </p>
               </div>
-              <div className="relative z-10 text-right">
-                <p
-                  className={`text-3xl font-semibold tabular-nums tracking-tight sm:text-4xl ${dark ? 'text-emerald-200' : 'text-emerald-900'}`}
-                >
-                  {minutesUntilNext < 60
-                    ? `${minutesUntilNext}m`
-                    : `${Math.floor(minutesUntilNext / 60)}h ${minutesUntilNext % 60}m`}
-                </p>
-                <p
-                  className={`mt-1 text-xs ${dark ? 'text-stone-300' : 'text-emerald-900/70'}`}
-                >
-                  until prayer
-                </p>
-              </div>
-              <span className={`pointer-events-none absolute -bottom-6 right-4 opacity-[0.12] ${dark ? 'text-emerald-100' : 'text-emerald-900'}`} aria-hidden="true">
-                <svg viewBox="0 0 180 150" className="h-36 w-44 sm:h-44 sm:w-52" fill="none">
-                  <path d="M30 132V73h120v59M24 132h132M41 72c0-22 18-40 49-40s49 18 49 40M90 32V15m-5 4h10M35 73V41l8-13 8 13v32m86 0V41l8-13 8 13v32M80 132V98a10 10 0 0 1 20 0v34" stroke="currentColor" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M68 73c0-12 10-22 22-22s22 10 22 22" stroke="currentColor" strokeWidth="4" />
-                </svg>
-              </span>
+              <button
+                type="button"
+                onClick={jumpToToday}
+                className="relative z-10 shrink-0 self-start sm:self-auto rounded-xl px-4 py-2 text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white shadow-xs transition-all"
+              >
+                Jump to Today ↩
+              </button>
             </div>
+          ) : (
+            times && (
+              <div
+                className={`relative mt-5 flex min-h-36 items-center justify-between overflow-hidden rounded-2xl border px-5 py-5 sm:px-7 ${
+                  dark
+                    ? 'border-emerald-300/20 bg-gradient-to-br from-[#123a30] via-[#142b25] to-[#101c19]'
+                    : 'border-emerald-800/10 bg-gradient-to-br from-[#e5f5e9] via-[#d6edda] to-[#c2e7d2] text-emerald-950 shadow-sm'
+                }`}
+              >
+                <div className="relative z-10">
+                  <p
+                    className={`text-[10px] font-semibold uppercase tracking-[0.16em] ${dark ? 'text-emerald-200/70' : 'text-emerald-900/65'}`}
+                  >
+                    {current
+                      ? `Current · ${current.charAt(0).toUpperCase() + current.slice(1)}`
+                      : 'Before Fajr'}
+                  </p>
+                  <p
+                    className={`mt-1 font-serif text-2xl font-semibold ${dark ? 'text-stone-50' : 'text-emerald-950'}`}
+                  >
+                    {next.charAt(0).toUpperCase() + next.slice(1)} is next
+                  </p>
+                  <p suppressHydrationWarning className={`mt-1 text-sm ${dark ? 'text-stone-300' : 'text-emerald-950/80'}`}>
+                    {times[next].toLocaleTimeString('en', {
+                      hour: 'numeric',
+                      minute: '2-digit',
+                      timeZone: settings.location!.timezone,
+                    })}
+                  </p>
+                </div>
+                <div className="relative z-10 text-right">
+                  <p
+                    suppressHydrationWarning
+                    className={`text-3xl font-semibold tabular-nums tracking-tight sm:text-4xl ${dark ? 'text-emerald-200' : 'text-emerald-900'}`}
+                  >
+                    {minutesUntilNext < 60
+                      ? `${minutesUntilNext}m`
+                      : `${Math.floor(minutesUntilNext / 60)}h ${minutesUntilNext % 60}m`}
+                  </p>
+                  <p
+                    suppressHydrationWarning
+                    className={`mt-1 text-xs ${dark ? 'text-stone-300' : 'text-emerald-900/70'}`}
+                  >
+                    until prayer
+                  </p>
+                </div>
+                <span className={`pointer-events-none absolute -bottom-6 right-4 opacity-[0.12] ${dark ? 'text-emerald-100' : 'text-emerald-900'}`} aria-hidden="true">
+                  <svg viewBox="0 0 180 150" className="h-36 w-44 sm:h-44 sm:w-52" fill="none">
+                    <path d="M30 132V73h120v59M24 132h132M41 72c0-22 18-40 49-40s49 18 49 40M90 32V15m-5 4h10M35 73V41l8-13 8 13v32m86 0V41l8-13 8 13v32M80 132V98a10 10 0 0 1 20 0v34" stroke="currentColor" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M68 73c0-12 10-22 22-22s22 10 22 22" stroke="currentColor" strokeWidth="4" />
+                  </svg>
+                </span>
+              </div>
+            )
           )}
 
           {timesLoading && (
@@ -429,6 +503,7 @@ export default function SalahPage() {
               />
             </div>
             <div
+              suppressHydrationWarning
               className={`mt-1 flex justify-between text-[10px] ${dark ? 'text-stone-400' : 'text-stone-900'}`}
             >
               <span>{fardDone}/5 prayers</span>
@@ -462,7 +537,118 @@ export default function SalahPage() {
 
         {/* ── Today tab ── */}
         {activeTab === 'today' && (
-          <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1.25fr)_minmax(17rem,0.75fr)]">
+          <div className="space-y-4">
+            {/* Date Navigation & Historical Picker Bar */}
+            <div
+              className={`flex flex-wrap items-center justify-between gap-3 rounded-2xl border px-4 py-3 sm:px-5 ${cardBase}`}
+            >
+              {/* Navigation Arrows & Date Label with Picker */}
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={goToPreviousDay}
+                  className={`grid h-9 w-9 place-items-center rounded-xl border transition-all active:scale-95 ${
+                    dark
+                      ? 'border-white/10 bg-white/5 text-stone-200 hover:bg-white/10'
+                      : 'border-stone-200 bg-stone-50 text-stone-700 hover:bg-stone-100'
+                  }`}
+                  aria-label="Previous day"
+                  title="Previous day"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </button>
+
+                <div className="relative inline-block">
+                  <div
+                    className={`flex items-center gap-2 rounded-xl border px-3.5 py-1.5 transition-all ${
+                      !isToday
+                        ? dark
+                          ? 'border-amber-400/40 bg-amber-400/10 text-amber-200 font-semibold'
+                          : 'border-amber-300 bg-amber-50 text-amber-900 font-semibold'
+                        : dark
+                          ? 'border-white/10 bg-white/5 text-stone-200 hover:bg-white/10'
+                          : 'border-stone-200 bg-stone-50 text-stone-800 hover:bg-stone-100'
+                    }`}
+                  >
+                    <Calendar
+                      className={`h-4 w-4 shrink-0 ${
+                        !isToday
+                          ? dark
+                            ? 'text-amber-400'
+                            : 'text-amber-600'
+                          : dark
+                            ? 'text-emerald-400'
+                            : 'text-emerald-700'
+                      }`}
+                    />
+                    <span suppressHydrationWarning className="text-xs sm:text-sm font-medium">
+                      {isToday
+                        ? `Today · ${formatSafeDate(today, { weekday: 'short', month: 'short', day: 'numeric' }, today)}`
+                        : isYesterday
+                          ? `Yesterday · ${formatSafeDate(yesterdayStr, { weekday: 'short', month: 'short', day: 'numeric' }, yesterdayStr)}`
+                          : formatSafeDate(selectedDate, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }, selectedDate)}
+                    </span>
+                    <Pencil className="h-3 w-3 opacity-50" />
+                  </div>
+                  {/* Invisible native date input overlaid on top so clicking opens native calendar picker */}
+                  <input
+                    type="date"
+                    value={selectedDate}
+                    max={today}
+                    onChange={(e) => {
+                      if (e.target.value) {
+                        setSelectedDate(e.target.value > today ? today : e.target.value);
+                      }
+                    }}
+                    className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                    aria-label="Select prayer date"
+                    title="Choose a date"
+                  />
+                </div>
+
+                <button
+                  type="button"
+                  onClick={goToNextDay}
+                  disabled={isToday}
+                  className={`grid h-9 w-9 place-items-center rounded-xl border transition-all ${
+                    isToday
+                      ? 'cursor-not-allowed opacity-30 border-transparent'
+                      : dark
+                        ? 'border-white/10 bg-white/5 text-stone-200 hover:bg-white/10 active:scale-95'
+                        : 'border-stone-200 bg-stone-50 text-stone-700 hover:bg-stone-100 active:scale-95'
+                  }`}
+                  aria-label="Next day"
+                  title={isToday ? 'Today is the latest date' : 'Next day'}
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+              </div>
+
+              {/* Quick Jump & Status Buttons */}
+              <div className="flex items-center gap-2 text-xs">
+                {!isToday ? (
+                  <>
+                    <span className={`text-[11px] ${dark ? 'text-amber-400/90' : 'text-amber-700 font-medium'}`}>
+                      Historical Record
+                    </span>
+                    <button
+                      type="button"
+                      onClick={jumpToToday}
+                      className="inline-flex items-center gap-1 rounded-xl bg-emerald-700 dark:bg-emerald-600 px-3 py-1.5 font-semibold text-white shadow-xs transition hover:bg-emerald-800 dark:hover:bg-emerald-500 active:scale-95"
+                    >
+                      <span>Jump to Today</span>
+                      <span>↩</span>
+                    </button>
+                  </>
+                ) : (
+                  <span className={`text-[11px] ${dark ? 'text-stone-400' : 'text-stone-500'}`}>
+                    Click date to change
+                  </span>
+                )}
+              </div>
+            </div>
+
+            <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1.25fr)_minmax(17rem,0.75fr)]">
             <section className="space-y-3" aria-label="Prayer times and log">
               {/* Local Masjid & Azan Timings Banner (Supports up to 5 Masjids) */}
               {masjidsList.length > 0 && activeMasjid ? (
@@ -873,8 +1059,8 @@ export default function SalahPage() {
                       endTime={window?.end}
                       endLabel={window?.endLabel}
                       timezone={settings.location!.timezone}
-                      isCurrent={current === prayer}
-                      isNext={next === prayer && current !== prayer}
+                      isCurrent={isToday && current === prayer}
+                      isNext={isToday && next === prayer && current !== prayer}
                       dark={dark}
                       allMasjids={prayerMasjids}
                       activeMasjidTab={selectedMasjidTab}
@@ -925,7 +1111,7 @@ export default function SalahPage() {
                 <div className="mt-5 h-2 overflow-hidden rounded-full bg-emerald-900/10 dark:bg-white/10">
                   <div className="h-full rounded-full bg-emerald-700 transition-[width] dark:bg-emerald-300" style={{ width: `${fardPct}%` }} />
                 </div>
-                <p className={`mt-2 text-xs ${dark ? 'text-stone-400' : 'text-stone-500'}`}>
+                <p suppressHydrationWarning className={`mt-2 text-xs ${dark ? 'text-stone-400' : 'text-stone-500'}`}>
                   <strong className={dark ? 'text-emerald-200' : 'text-emerald-900'}>{fardDone} of 5</strong> prayers logged · {fardPct}%
                 </p>
                 <button
@@ -1046,6 +1232,7 @@ export default function SalahPage() {
             </div>
           </div>
           </aside>
+          </div>
           </div>
         )}
 

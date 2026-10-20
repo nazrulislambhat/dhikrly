@@ -32,6 +32,8 @@ import {
   Star,
   Trash2,
   UserRound,
+  Volume2,
+  Mic,
 } from 'lucide-react';
 import AppShell from '@/components/AppShell';
 import AuthModal from '@/components/AuthModal';
@@ -43,6 +45,7 @@ import { supabase } from '@/lib/supabase';
 import type { SalahSettings } from '@/types/salah';
 import DhikrlyProModal from '@/components/DhikrlyProModal';
 import { usePro } from '@/hooks/usePro';
+import { getVoiceGender, setVoiceGender, type VoiceGender } from '@/lib/duaAudio';
 
 export interface UserProfileSettings {
   displayName: string;
@@ -111,6 +114,7 @@ export default function SettingsPage() {
   const [sound, setSound] = useState(
     () => load<{ sound?: boolean }>(SETTINGS_KEY, { sound: true }).sound ?? true,
   );
+  const [voiceGender, setVoiceGenderState] = useState<VoiceGender>(() => getVoiceGender());
   const [salahSettings, setSalahSettings] = useState<SalahSettings>(() => getSalahSettings());
 
   const [profile, setProfile] = useState<UserProfileSettings>(() => {
@@ -470,7 +474,7 @@ export default function SettingsPage() {
                     Under Active Development
                   </span>
                   {isPro && proStatus.expiresAt && (
-                    <span className="text-xs text-[var(--app-muted)]">
+                    <span suppressHydrationWarning className="text-xs text-[var(--app-muted)]">
                       Renews / Valid until {new Date(proStatus.expiresAt).toLocaleDateString()}
                     </span>
                   )}
@@ -876,6 +880,48 @@ export default function SettingsPage() {
                   onChange={(e) => setSound(e.target.checked)}
                 />
               </label>
+
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-t border-[var(--app-line)] py-3">
+                <span className="grid gap-0.5">
+                  <strong className="inline-flex items-center gap-1.5 text-xs font-bold">
+                    <Volume2 className="h-3.5 w-3.5 text-emerald-700 dark:text-emerald-300" />
+                    Du‘ā & Supplication Voice
+                  </strong>
+                  <small className="text-[11px] text-[var(--app-muted)]">
+                    Authentic male recitation (default). Reads exact situational du‘ās and Prophetic supplications with male-tuned Arabic cadence.
+                  </small>
+                </span>
+                <div className="flex items-center gap-1.5 rounded-2xl border border-[var(--app-line)] bg-black/5 dark:bg-white/5 p-1 self-start sm:self-auto shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setVoiceGender('male');
+                      setVoiceGenderState('male');
+                    }}
+                    className={`rounded-xl px-3 py-1.5 text-xs font-bold transition-all ${
+                      voiceGender === 'male'
+                        ? 'bg-emerald-800 text-white dark:bg-emerald-400 dark:text-emerald-950 shadow-xs'
+                        : 'text-[var(--app-muted)] hover:text-[var(--app-ink)]'
+                    }`}
+                  >
+                    <span>♂ Male (Default)</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setVoiceGender('female');
+                      setVoiceGenderState('female');
+                    }}
+                    className={`rounded-xl px-3 py-1.5 text-xs font-bold transition-all ${
+                      voiceGender === 'female'
+                        ? 'bg-emerald-800 text-white dark:bg-emerald-400 dark:text-emerald-950 shadow-xs'
+                        : 'text-[var(--app-muted)] hover:text-[var(--app-ink)]'
+                    }`}
+                  >
+                    <span>♀ Female</span>
+                  </button>
+                </div>
+              </div>
 
               <div className="flex min-h-14 items-center justify-between gap-4 border-t border-[var(--app-line)] py-2">
                 <span className="grid gap-0.5">

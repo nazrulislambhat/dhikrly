@@ -34,6 +34,7 @@ import AppShell from '@/components/AppShell';
 import {
   load,
   save,
+  STORAGE_KEY,
   SETTINGS_KEY,
   CUSTOM_DUAS_KEY,
   NOTIFICATION_KEY,
@@ -120,7 +121,6 @@ export default function DuasTracker() {
   /* ── Auth ── */
   const { user, loading: authLoading, signOut } = useAuth();
 
-  /* ── Sync ── */
   const handlePullComplete = useCallback(
     (data: {
       checkedByDate: Record<string, Record<string, boolean>>;
@@ -131,11 +131,36 @@ export default function DuasTracker() {
         setCustomDuas(data.customDuas);
         save(CUSTOM_DUAS_KEY, data.customDuas);
       }
+
+      // Merge remote 365-day history into local storage without dropping past dates
+      const localAll = load<Record<string, Record<string, boolean>>>(STORAGE_KEY, {});
+      const mergedByDate: Record<string, Record<string, boolean>> = {
+        ...data.checkedByDate,
+        ...localAll,
+      };
+
       // Apply today's remote checked state
       const todayRemote = data.checkedByDate[today];
-      if (todayRemote) setChecked(todayRemote);
+      if (todayRemote) {
+        const resolvedToday = {
+          ...todayRemote,
+          ...(localRevision.current > 0 ? checked : {}),
+        };
+        mergedByDate[today] = resolvedToday;
+        setChecked(resolvedToday);
+      }
+      save(STORAGE_KEY, mergedByDate);
+
+      // Apply remote streak if available
+      if (data.streak && streak.setStreak) {
+        streak.setStreak(data.streak);
+      }
+
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('dhikrly:adhkar-updated'));
+      }
     },
-    [today, setChecked],
+    [today, checked, localRevision, setChecked, streak],
   );
 
   // Called by Realtime when another device updates today's progress
@@ -312,7 +337,7 @@ export default function DuasTracker() {
           <div className="text-left">
             {/* Top bar on mobile: Hijri date left, auth right */}
             <div className="mb-3 flex items-center justify-between min-[900px]:hidden">
-              <div className="text-xs font-semibold text-[var(--app-muted)]">
+              <div suppressHydrationWarning className="text-xs font-semibold text-[var(--app-muted)]">
                 {getHijriDate()}
               </div>
 
@@ -365,6 +390,7 @@ export default function DuasTracker() {
               أَذْكَار يَوْمِيَّة
             </p>
             <p
+              suppressHydrationWarning
               className={`mt-2 text-sm ${dark ? 'text-stone-400' : 'text-stone-500'}`}
             >
               {getGregorianDate()} <span className="mx-1.5 text-amber-500">·</span> {getHijriDate()}
@@ -644,7 +670,7 @@ export default function DuasTracker() {
           </section>
 
           <aside className="grid min-w-0 content-start gap-3 min-[1100px]:sticky min-[1100px]:top-5" aria-label="Your progress">
-            <div className="grid grid-cols-2 gap-3">
+            <div suppressHydrationWarning className="grid grid-cols-2 gap-3">
               <StatCard label="Total" value={total} accent="gold" dark={dark} />
               <StatCard label="Done" value={done} accent="green" dark={dark} />
               <StatCard

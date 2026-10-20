@@ -3,7 +3,7 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
 import type { User } from '@supabase/supabase-js';
 import { supabase, hasSupabaseConfig } from '@/lib/supabase';
-import { getAllLogs, saveDayLog, emptyDay } from '@/lib/salahStorage';
+import { getAllLogs, saveDayLog, saveAllLogs, emptyDay } from '@/lib/salahStorage';
 import type { DayLog, PrayerName, SunnahLog, NaflLog } from '@/types/salah';
 import type { SyncStatus } from '@/hooks/useSync';
 
@@ -258,7 +258,7 @@ export function useSalahSync({
       for (const item of readQueue(userId)) {
         if (await pushSalahLog(userId, item.date, item.log)) {
           removeQueued(userId, item);
-          if (item.date === today && JSON.stringify(item.log) === pendingLocal.current) {
+          if (item.date === (log.date || today) && JSON.stringify(item.log) === pendingLocal.current) {
             lastPushed.current = pendingLocal.current;
           }
         } else {
@@ -323,8 +323,13 @@ export function useSalahSync({
           }
 
           resolvedLogs.push(resolved);
-          saveDayLog(resolved);
         }
+
+        const logsDict: Record<string, DayLog> = {};
+        for (const rLog of resolvedLogs) {
+          logsDict[rLog.date] = rLog;
+        }
+        saveAllLogs(logsDict);
 
         const resolvedToday =
           resolvedLogs.find((l) => l.date === today) ?? emptyDay(today);
@@ -453,8 +458,10 @@ export function useSalahSync({
     logBaseline.current = log;
     pendingLocal.current = snapshot;
 
+    const syncDate = log.date || today;
+
     if (!navigator.onLine) {
-      enqueue(user.id, { date: today, log, queuedAt: Date.now() });
+      enqueue(user.id, { date: syncDate, log, queuedAt: Date.now() });
       setStatus('offline');
       return;
     }
@@ -462,8 +469,8 @@ export function useSalahSync({
     if (debounceRef.current) clearTimeout(debounceRef.current);
     setStatus('syncing');
     debounceRef.current = setTimeout(async () => {
-      const item: QueueItem = { date: today, log, queuedAt: Date.now() };
-      const succeeded = await pushSalahLog(user.id, today, log);
+      const item: QueueItem = { date: syncDate, log, queuedAt: Date.now() };
+      const succeeded = await pushSalahLog(user.id, syncDate, log);
       if (succeeded) {
         lastPushed.current = snapshot;
         removeQueued(user.id, item);

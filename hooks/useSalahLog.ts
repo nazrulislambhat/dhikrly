@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import type { DayLog, PrayerName, PrayerStatus, SalahSettings } from '@/types/salah';
 import {
   getDayLog, saveDayLog, getSalahSettings, saveSalahSettings,
@@ -12,11 +12,25 @@ export function useSalahLog(date: string) {
   const [settings, setSettings] = useState<SalahSettings>(() => getSalahSettings());
   const localRevision = useRef(0);
 
+  // Sync log whenever selected date changes
+  useEffect(() => {
+    setLog(getDayLog(date));
+  }, [date]);
+
+  // Sync log whenever remote pull or external storage update occurs
+  useEffect(() => {
+    const handleUpdate = () => {
+      setLog(getDayLog(date));
+    };
+    window.addEventListener('dhikrly:salah-logs-updated', handleUpdate);
+    return () => window.removeEventListener('dhikrly:salah-logs-updated', handleUpdate);
+  }, [date]);
+
   const updatePrayer = useCallback((prayer: PrayerName, status: PrayerStatus) => {
     localRevision.current += 1;
     markLocalEdit('salah', date, `prayer:${prayer}`);
     setLog(prev => {
-      const next: DayLog = { ...prev, prayers: { ...prev.prayers, [prayer]: status } };
+      const next: DayLog = { ...prev, date, prayers: { ...prev.prayers, [prayer]: status } };
       saveDayLog(next);
       return next;
     });
@@ -30,7 +44,7 @@ export function useSalahLog(date: string) {
       const cycle: PrayerStatus[] = [null, 'prayed', 'jamah', 'delayed', 'missed'];
       const idx = cycle.indexOf(current);
       const next: PrayerStatus = cycle[(idx + 1) % cycle.length];
-      const updated: DayLog = { ...prev, prayers: { ...prev.prayers, [prayer]: next } };
+      const updated: DayLog = { ...prev, date, prayers: { ...prev.prayers, [prayer]: next } };
       saveDayLog(updated);
       return updated;
     });
@@ -40,7 +54,7 @@ export function useSalahLog(date: string) {
     localRevision.current += 1;
     markLocalEdit('salah', date, `sunnah:${key}`);
     setLog(prev => {
-      const updated: DayLog = { ...prev, sunnah: { ...prev.sunnah, [key]: !prev.sunnah[key] } };
+      const updated: DayLog = { ...prev, date, sunnah: { ...prev.sunnah, [key]: !prev.sunnah[key] } };
       saveDayLog(updated);
       return updated;
     });
@@ -50,7 +64,7 @@ export function useSalahLog(date: string) {
     localRevision.current += 1;
     markLocalEdit('salah', date, 'night:tahajjud');
     setLog(prev => {
-      const updated: DayLog = { ...prev, tahajjud: { ...prev.tahajjud, ...patch } };
+      const updated: DayLog = { ...prev, date, tahajjud: { ...prev.tahajjud, ...patch } };
       saveDayLog(updated);
       return updated;
     });
@@ -60,7 +74,7 @@ export function useSalahLog(date: string) {
     localRevision.current += 1;
     markLocalEdit('salah', date, `nafl:${key}`);
     setLog(prev => {
-      const updated: DayLog = { ...prev, nafl: { ...prev.nafl, [key]: !prev.nafl[key] } };
+      const updated: DayLog = { ...prev, date, nafl: { ...prev.nafl, [key]: !prev.nafl[key] } };
       saveDayLog(updated);
       return updated;
     });
