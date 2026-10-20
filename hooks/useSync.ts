@@ -12,6 +12,7 @@ import {
   mergeQuranTrackerData,
   type QuranTrackerData,
 } from '@/lib/quranTracker';
+import { mergeStreaks } from '@/lib/streak';
 import type { Dua, Streak } from '@/types';
 
 function isTableMissingError(err: unknown): boolean {
@@ -439,23 +440,16 @@ export function useSync({
         }
         save(STORAGE_KEY, mergedByDate);
 
-        // 2. Merge streak non-destructively (keep highest)
+        // 2. Merge streak non-destructively (sanitize and keep authentic values)
         const localStreak = load<Streak>(STREAK_KEY, {
           current: 0,
           best: 0,
           lastComplete: '',
         });
-        let mergedStreak: Streak = localStreak;
-        if (remote.streak) {
-          mergedStreak = {
-            current: Math.max(localStreak.current, remote.streak.current),
-            best: Math.max(localStreak.best, remote.streak.best),
-            lastComplete:
-              remote.streak.lastComplete > localStreak.lastComplete
-                ? remote.streak.lastComplete
-                : localStreak.lastComplete,
-          };
-          save(STREAK_KEY, mergedStreak);
+        const mergedStreak = mergeStreaks(localStreak, remote.streak, today);
+        save(STREAK_KEY, mergedStreak);
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new Event('dhikrly:adhkar-updated'));
         }
 
         // 3. Merge custom duas without losing ANY remote duas
@@ -773,17 +767,10 @@ export function useSync({
 
       // Streak merge
       const localStreak = load<Streak>(STREAK_KEY, streak);
-      let mergedStreak: Streak = localStreak;
-      if (remote.streak) {
-        mergedStreak = {
-          current: Math.max(localStreak.current, remote.streak.current),
-          best: Math.max(localStreak.best, remote.streak.best),
-          lastComplete:
-            remote.streak.lastComplete > localStreak.lastComplete
-              ? remote.streak.lastComplete
-              : localStreak.lastComplete,
-        };
-        save(STREAK_KEY, mergedStreak);
+      const mergedStreak = mergeStreaks(localStreak, remote.streak, today);
+      save(STREAK_KEY, mergedStreak);
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('dhikrly:adhkar-updated'));
       }
 
       // Custom Duas merge

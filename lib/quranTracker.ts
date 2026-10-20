@@ -249,14 +249,19 @@ export function computeQuranStats(data?: QuranTrackerData, daysRange = 30): Qura
   const ayahsByDate: Record<string, number> = {};
 
   for (const log of current.logs) {
-    totalAyahsFromLogs += log.ayahsCount;
-    ayahsByDate[log.date] = (ayahsByDate[log.date] || 0) + log.ayahsCount;
+    if (!log) continue;
+    const sNum = Number(log.surahNumber);
+    const prog = surahProgressMap[sNum];
+    if (!prog) continue;
 
-    if (!surahProgressMap[log.surahNumber].completed) {
-      surahProgressMap[log.surahNumber].maxAyahRead = Math.max(
-        surahProgressMap[log.surahNumber].maxAyahRead,
-        log.toAyah,
-      );
+    const count = Number(log.ayahsCount) || 0;
+    totalAyahsFromLogs += count;
+    if (log.date) {
+      ayahsByDate[log.date] = (ayahsByDate[log.date] || 0) + count;
+    }
+
+    if (!prog.completed) {
+      prog.maxAyahRead = Math.max(prog.maxAyahRead, Number(log.toAyah) || 0);
     }
   }
 
@@ -317,7 +322,7 @@ export function mergeQuranTrackerData(
   }
 
   const mergedLogs = [...logsMap.values()].sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    (a, b) => new Date(b?.createdAt || 0).getTime() - new Date(a?.createdAt || 0).getTime(),
   );
 
   return {

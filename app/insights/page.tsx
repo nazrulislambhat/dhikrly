@@ -44,7 +44,10 @@ import {
 import AppShell from '@/components/AppShell';
 import QuranTrackerModal from '@/components/QuranTrackerModal';
 import { load, save, SETTINGS_KEY } from '@/lib/storage';
-import { computeDayScore, getRecentLogs, isPrayed } from '@/lib/salahStorage';
+import { computeDayScore, getRecentLogs, isPrayed, saveAllLogs, emptyDay } from '@/lib/salahStorage';
+import { formatSafeDate } from '@/lib/dates';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase, hasSupabaseConfig } from '@/lib/supabase';
 import {
   ALL_SURAHS,
   TOTAL_QURAN_AYAHS,
@@ -65,6 +68,10 @@ type InsightTab = 'overview' | 'quran' | 'prayers' | 'milestones';
 type SurahFilter = 'all' | 'completed' | 'remaining';
 
 export default function InsightsPage() {
+  const [mounted, setMounted] = useState<boolean>(false);
+  const [dataVersion, setDataVersion] = useState<number>(0);
+  const { user } = useAuth();
+
   const [dark, setDark] = useState<boolean>(
     () => load<{ dark: boolean }>(SETTINGS_KEY, { dark: false }).dark,
   );
@@ -83,17 +90,62 @@ export default function InsightsPage() {
   );
 
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
     document.documentElement.classList.toggle('dark', dark);
   }, [dark]);
 
-  // Listen to Quran tracker updates across windows / components
+  // Listen to Quran tracker & Salah & Adhkar updates across windows / components
   useEffect(() => {
     const handleUpdate = () => {
+      setDataVersion((v) => v + 1);
       setQuranTrackerData(getQuranTrackerData());
     };
     window.addEventListener('dhikrly:quran-tracker-updated', handleUpdate);
-    return () => window.removeEventListener('dhikrly:quran-tracker-updated', handleUpdate);
+    window.addEventListener('dhikrly:salah-logs-updated', handleUpdate);
+    window.addEventListener('dhikrly:adhkar-updated', handleUpdate);
+    return () => {
+      window.removeEventListener('dhikrly:quran-tracker-updated', handleUpdate);
+      window.removeEventListener('dhikrly:salah-logs-updated', handleUpdate);
+      window.removeEventListener('dhikrly:adhkar-updated', handleUpdate);
+    };
   }, []);
+
+  // Sync latest account data from Supabase if logged in
+  useEffect(() => {
+    if (!user || !hasSupabaseConfig) return;
+    let cancelled = false;
+
+    async function pullAccountData() {
+      try {
+        const { data: rows, error } = await supabase
+          .from('salah_progress')
+          .select('date, log')
+          .eq('user_id', user!.id)
+          .order('date', { ascending: false })
+          .limit(365);
+
+        if (!error && rows && rows.length > 0 && !cancelled) {
+          const dict: Record<string, DayLog> = {};
+          for (const row of rows) {
+            if (row.date && row.log && typeof row.log === 'object') {
+              dict[row.date] = { ...emptyDay(row.date), ...(row.log as Partial<DayLog>), date: row.date };
+            }
+          }
+          saveAllLogs(dict);
+        }
+      } catch (err) {
+        console.warn('Could not sync insights account data:', err);
+      }
+    }
+
+    void pullAccountData();
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
 
   const daysCount = parseInt(timeRange, 10);
 
@@ -134,11 +186,12 @@ export default function InsightsPage() {
       const score = Math.round(computeDayScore(log) * 100);
       totalScore += score;
 
-      const prayersArr = Object.entries(log.prayers) as [PrayerName, string | null][];
+      const prayersArr = Object.entries(log.prayers ?? {}) as [PrayerName, string | null][];
       let dayFard = 0;
       let dayJamah = 0;
 
       prayersArr.forEach(([pName, status]) => {
+        if (!pName || !prayerFrequencies[pName]) return;
         if (!status || status === 'missed') {
           prayerFrequencies[pName].missed += 1;
         } else {
@@ -156,19 +209,20 @@ export default function InsightsPage() {
         }
       });
 
-      if (isPrayed(log.prayers.fajr)) fajrOnTime += 1;
+      if (log.prayers && isPrayed(log.prayers.fajr)) fajrOnTime += 1;
       if (log.tahajjud?.prayed) totalTahajjud += 1;
 
       const sunnahDay = Object.values(log.sunnah ?? {}).filter(Boolean).length;
       totalSunnah += sunnahDay;
 
-      const dateObj = new Date(`${log.date}T12:00:00`);
+      const label = formatSafeDate(log.date, {
+        month: 'short',
+        day: 'numeric',
+      }, log.date);
+
       return {
         date: log.date,
-        label: dateObj.toLocaleDateString('en-US', {
-          month: 'short',
-          day: 'numeric',
-        }),
+        label,
         score,
         fard: dayFard,
         jamah: dayJamah,
@@ -255,7 +309,7 @@ export default function InsightsPage() {
       consistencyScore: avgScore,
       insightsList: insights,
     };
-  }, [daysCount]);
+  }, [daysCount, dataVersion]);
 
   // Compute Quran stats
   const quranStats: QuranStats = useMemo(() => {
@@ -273,7 +327,7 @@ export default function InsightsPage() {
     const totalFardPrayed = logs.reduce((acc, l) => {
       return (
         acc +
-        (Object.values(l.prayers).filter((s) => s && s !== 'missed').length || 0)
+        (Object.values(l.prayers ?? {}).filter((s) => s && s !== 'missed').length || 0)
       );
     }, 0);
 
@@ -510,10 +564,10 @@ export default function InsightsPage() {
                         {quranStats.khatmProgressPct}% Completed
                       </span>
                     </div>
-                    <h3 className="mt-1 text-lg font-extrabold text-[var(--app-ink)]">
+                    <h3 suppressHydrationWarning className="mt-1 text-lg font-extrabold text-[var(--app-ink)]">
                       {quranStats.completedSurahsCount} of 114 Surahs Completed
                     </h3>
-                    <p className="mt-0.5 text-xs text-[var(--app-muted)]">
+                    <p suppressHydrationWarning className="mt-0.5 text-xs text-[var(--app-muted)]">
                       {quranStats.totalAyahsRead.toLocaleString()} Ayahs read across{' '}
                       {quranTrackerData.logs.length} logged sessions. Syncs safely with Supabase.
                     </p>
@@ -676,65 +730,69 @@ export default function InsightsPage() {
               </div>
 
               <div className="h-64 w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={trendData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                    <defs>
-                      <linearGradient id="scoreGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop
-                          offset="5%"
-                          stopColor={dark ? '#34d399' : '#059669'}
-                          stopOpacity={0.4}
-                        />
-                        <stop
-                          offset="95%"
-                          stopColor={dark ? '#34d399' : '#059669'}
-                          stopOpacity={0}
-                        />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid
-                      strokeDasharray="3 3"
-                      stroke={dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}
-                    />
-                    <XAxis
-                      dataKey="label"
-                      stroke={dark ? '#78716c' : '#a8a29e'}
-                      fontSize={11}
-                      tickLine={false}
-                    />
-                    <YAxis
-                      stroke={dark ? '#78716c' : '#a8a29e'}
-                      fontSize={11}
-                      domain={[0, 100]}
-                      tickLine={false}
-                    />
-                    <Tooltip
-                      content={({ active, payload }) => {
-                        if (!active || !payload?.length) return null;
-                        const data = payload[0].payload;
-                        return (
-                          <div className="rounded-xl border border-[var(--app-line)] bg-[var(--app-surface)] p-3 shadow-lg dark:bg-[#14211e]">
-                            <p className="text-xs font-bold text-[var(--app-ink)]">{data.label}</p>
-                            <p className="text-sm font-extrabold text-emerald-700 dark:text-emerald-300">
-                              {data.score}% Spiritual Completion
-                            </p>
-                            <p className="text-[11px] text-[var(--app-muted)] mt-1">
-                              {data.fard}/5 Farḍ · {data.jamah} Jamā‘ah · {data.sunnah} Sunnah
-                            </p>
-                          </div>
-                        );
-                      }}
-                    />
-                    <Area
-                      type="monotone"
-                      dataKey="score"
-                      stroke={dark ? '#34d399' : '#059669'}
-                      strokeWidth={2.5}
-                      fillOpacity={1}
-                      fill="url(#scoreGradient)"
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
+                {mounted ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={trendData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                      <defs>
+                        <linearGradient id="scoreGradient" x1="0" y1="0" x2="0" y2="1">
+                          <stop
+                            offset="5%"
+                            stopColor={dark ? '#34d399' : '#059669'}
+                            stopOpacity={0.4}
+                          />
+                          <stop
+                            offset="95%"
+                            stopColor={dark ? '#34d399' : '#059669'}
+                            stopOpacity={0}
+                          />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid
+                        strokeDasharray="3 3"
+                        stroke={dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}
+                      />
+                      <XAxis
+                        dataKey="label"
+                        stroke={dark ? '#78716c' : '#a8a29e'}
+                        fontSize={11}
+                        tickLine={false}
+                      />
+                      <YAxis
+                        stroke={dark ? '#78716c' : '#a8a29e'}
+                        fontSize={11}
+                        domain={[0, 100]}
+                        tickLine={false}
+                      />
+                      <Tooltip
+                        content={({ active, payload }) => {
+                          if (!active || !payload?.length) return null;
+                          const data = payload[0].payload;
+                          return (
+                            <div className="rounded-xl border border-[var(--app-line)] bg-[var(--app-surface)] p-3 shadow-lg dark:bg-[#14211e]">
+                              <p className="text-xs font-bold text-[var(--app-ink)]">{data.label}</p>
+                              <p className="text-sm font-extrabold text-emerald-700 dark:text-emerald-300">
+                                {data.score}% Spiritual Completion
+                              </p>
+                              <p className="text-[11px] text-[var(--app-muted)] mt-1">
+                                {data.fard}/5 Farḍ · {data.jamah} Jamā‘ah · {data.sunnah} Sunnah
+                              </p>
+                            </div>
+                          );
+                        }}
+                      />
+                      <Area
+                        type="monotone"
+                        dataKey="score"
+                        stroke={dark ? '#34d399' : '#059669'}
+                        strokeWidth={2.5}
+                        fillOpacity={1}
+                        fill="url(#scoreGradient)"
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="h-full w-full rounded-2xl bg-black/5 dark:bg-white/5 animate-pulse" />
+                )}
               </div>
             </section>
           </>
@@ -798,7 +856,7 @@ export default function InsightsPage() {
                   <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--app-muted)]">
                     Total Ayahs Read
                   </span>
-                  <div className="mt-1 text-2xl sm:text-3xl font-extrabold text-[var(--app-ink)]">
+                  <div suppressHydrationWarning className="mt-1 text-2xl sm:text-3xl font-extrabold text-[var(--app-ink)]">
                     {quranStats.totalAyahsRead.toLocaleString()}
                   </div>
                   <p className="text-[11px] text-[var(--app-muted)]">
@@ -863,58 +921,61 @@ export default function InsightsPage() {
               </div>
 
               <div className="h-64 w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={quranStats.dailyTrend}
-                    margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
-                  >
-                    <CartesianGrid
-                      strokeDasharray="3 3"
-                      stroke={dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}
-                    />
-                    <XAxis
-                      dataKey="date"
-                      stroke={dark ? '#78716c' : '#a8a29e'}
-                      fontSize={11}
-                      tickLine={false}
-                      tickFormatter={(val) => {
-                        const d = new Date(`${val}T12:00:00`);
-                        return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                      }}
-                    />
-                    <YAxis
-                      stroke={dark ? '#78716c' : '#a8a29e'}
-                      fontSize={11}
-                      tickLine={false}
-                    />
-                    <Tooltip
-                      content={({ active, payload }) => {
-                        if (!active || !payload?.length) return null;
-                        const d = payload[0].payload;
-                        const dateObj = new Date(`${d.date}T12:00:00`);
-                        return (
-                          <div className="rounded-xl border border-[var(--app-line)] bg-[var(--app-surface)] p-3 shadow-lg dark:bg-[#14211e]">
-                            <p className="text-xs font-bold text-[var(--app-ink)]">
-                              {dateObj.toLocaleDateString('en-US', {
-                                weekday: 'short',
-                                month: 'short',
-                                day: 'numeric',
-                              })}
-                            </p>
-                            <p className="text-sm font-extrabold text-emerald-700 dark:text-emerald-300 mt-1">
-                              {d.ayahs} Ayahs Read
-                            </p>
-                          </div>
-                        );
-                      }}
-                    />
-                    <Bar
-                      dataKey="ayahs"
-                      fill={dark ? '#34d399' : '#059669'}
-                      radius={[4, 4, 0, 0]}
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
+                {mounted ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
+                      data={quranStats.dailyTrend}
+                      margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                    >
+                      <CartesianGrid
+                        strokeDasharray="3 3"
+                        stroke={dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}
+                      />
+                      <XAxis
+                        dataKey="date"
+                        stroke={dark ? '#78716c' : '#a8a29e'}
+                        fontSize={11}
+                        tickLine={false}
+                        tickFormatter={(val) =>
+                          formatSafeDate(String(val), { month: 'short', day: 'numeric' }, String(val))
+                        }
+                      />
+                      <YAxis
+                        stroke={dark ? '#78716c' : '#a8a29e'}
+                        fontSize={11}
+                        tickLine={false}
+                      />
+                      <Tooltip
+                        content={({ active, payload }) => {
+                          if (!active || !payload?.length) return null;
+                          const d = payload[0].payload;
+                          const dateLabel = formatSafeDate(d?.date, {
+                            weekday: 'short',
+                            month: 'short',
+                            day: 'numeric',
+                          });
+                          return (
+                            <div className="rounded-xl border border-[var(--app-line)] bg-[var(--app-surface)] p-3 shadow-lg dark:bg-[#14211e]">
+                              <p className="text-xs font-bold text-[var(--app-ink)]">
+                                {dateLabel}
+                              </p>
+                              <p className="text-sm font-extrabold text-emerald-700 dark:text-emerald-300 mt-1">
+                                {d.ayahs} Ayahs Read
+                              </p>
+                            </div>
+                          );
+                        }}
+                      />
+                      <Bar
+                        dataKey="ayahs"
+                        fill={dark ? '#34d399' : '#059669'}
+                        radius={[4, 4, 0, 0]}
+                      />
+                    </BarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="h-full w-full rounded-2xl bg-black/5 dark:bg-white/5 animate-pulse" />
+                )}
               </div>
             </section>
 
@@ -1131,89 +1192,93 @@ export default function InsightsPage() {
                   </p>
 
                   <div className="h-60 w-full">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart
-                        data={prayerStats}
-                        margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
-                      >
-                        <CartesianGrid
-                          strokeDasharray="3 3"
-                          stroke={dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}
-                        />
-                        <XAxis
-                          dataKey="prayer"
-                          stroke={dark ? '#78716c' : '#a8a29e'}
-                          fontSize={11}
-                          tickLine={false}
-                        />
-                        <YAxis
-                          stroke={dark ? '#78716c' : '#a8a29e'}
-                          fontSize={11}
-                          domain={[0, 100]}
-                          tickLine={false}
-                        />
-                        <Tooltip
-                          content={({ active, payload }) => {
-                            if (!active || !payload?.length) return null;
-                            const d = payload[0].payload;
-                            return (
-                              <div className="rounded-xl border border-[var(--app-line)] bg-[var(--app-surface)] p-3 shadow-lg dark:bg-[#14211e]">
-                                <p className="text-xs font-bold text-[var(--app-ink)]">
-                                  {d.prayer}
-                                </p>
-                                <p className="text-xs text-emerald-600 font-semibold">
-                                  Prayed: {d.prayed}%
-                                </p>
-                                <p className="text-xs text-purple-600 font-semibold">
-                                  Jamā‘ah: {d.jamah}%
-                                </p>
-                                <p className="text-xs text-amber-600 font-semibold">
-                                  Delayed: {d.delayed}%
-                                </p>
-                                <p className="text-xs text-red-500 font-semibold">
-                                  Missed: {d.missed}%
-                                </p>
-                              </div>
-                            );
-                          }}
-                        />
-                        <Legend
-                          verticalAlign="top"
-                          height={36}
-                          formatter={(val) => (
-                            <span className="text-xs font-medium capitalize">{val}</span>
-                          )}
-                        />
-                        <Bar
-                          dataKey="jamah"
-                          stackId="a"
-                          fill="#8b5cf6"
-                          name="Jamā‘ah"
-                          radius={[0, 0, 0, 0]}
-                        />
-                        <Bar
-                          dataKey="prayed"
-                          stackId="a"
-                          fill="#10b981"
-                          name="Prayed"
-                          radius={[0, 0, 0, 0]}
-                        />
-                        <Bar
-                          dataKey="delayed"
-                          stackId="a"
-                          fill="#f59e0b"
-                          name="Delayed"
-                          radius={[0, 0, 0, 0]}
-                        />
-                        <Bar
-                          dataKey="missed"
-                          stackId="a"
-                          fill="#ef4444"
-                          name="Missed"
-                          radius={[4, 4, 0, 0]}
-                        />
-                      </BarChart>
-                    </ResponsiveContainer>
+                    {mounted ? (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart
+                          data={prayerStats}
+                          margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                        >
+                          <CartesianGrid
+                            strokeDasharray="3 3"
+                            stroke={dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}
+                          />
+                          <XAxis
+                            dataKey="prayer"
+                            stroke={dark ? '#78716c' : '#a8a29e'}
+                            fontSize={11}
+                            tickLine={false}
+                          />
+                          <YAxis
+                            stroke={dark ? '#78716c' : '#a8a29e'}
+                            fontSize={11}
+                            domain={[0, 100]}
+                            tickLine={false}
+                          />
+                          <Tooltip
+                            content={({ active, payload }) => {
+                              if (!active || !payload?.length) return null;
+                              const d = payload[0].payload;
+                              return (
+                                <div className="rounded-xl border border-[var(--app-line)] bg-[var(--app-surface)] p-3 shadow-lg dark:bg-[#14211e]">
+                                  <p className="text-xs font-bold text-[var(--app-ink)]">
+                                    {d.prayer}
+                                  </p>
+                                  <p className="text-xs text-emerald-600 font-semibold">
+                                    Prayed: {d.prayed}%
+                                  </p>
+                                  <p className="text-xs text-purple-600 font-semibold">
+                                    Jamā‘ah: {d.jamah}%
+                                  </p>
+                                  <p className="text-xs text-amber-600 font-semibold">
+                                    Delayed: {d.delayed}%
+                                  </p>
+                                  <p className="text-xs text-red-500 font-semibold">
+                                    Missed: {d.missed}%
+                                  </p>
+                                </div>
+                              );
+                            }}
+                          />
+                          <Legend
+                            verticalAlign="top"
+                            height={36}
+                            formatter={(val) => (
+                              <span className="text-xs font-medium capitalize">{val}</span>
+                            )}
+                          />
+                          <Bar
+                            dataKey="jamah"
+                            stackId="a"
+                            fill="#8b5cf6"
+                            name="Jamā‘ah"
+                            radius={[0, 0, 0, 0]}
+                          />
+                          <Bar
+                            dataKey="prayed"
+                            stackId="a"
+                            fill="#10b981"
+                            name="Prayed"
+                            radius={[0, 0, 0, 0]}
+                          />
+                          <Bar
+                            dataKey="delayed"
+                            stackId="a"
+                            fill="#f59e0b"
+                            name="Delayed"
+                            radius={[0, 0, 0, 0]}
+                          />
+                          <Bar
+                            dataKey="missed"
+                            stackId="a"
+                            fill="#ef4444"
+                            name="Missed"
+                            radius={[4, 4, 0, 0]}
+                          />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    ) : (
+                      <div className="h-full w-full rounded-2xl bg-black/5 dark:bg-white/5 animate-pulse" />
+                    )}
                   </div>
                 </div>
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import {
   Area,
   AreaChart,
@@ -15,53 +15,66 @@ import {
 } from 'recharts';
 import {
   ChartColumnIncreasing,
-  HandHeart,
   Lightbulb,
   MoonStar,
   Sunrise,
   TrendingUp,
 } from 'lucide-react';
 import { getRecentLogs, computeDayScore, isPrayed } from '@/lib/salahStorage';
+import { formatSafeDate } from '@/lib/dates';
 import type { WeekBar } from '@/types/salah';
 
 interface InsightsDashboardProps { dark: boolean; }
 
 export default function InsightsDashboard({ dark }: InsightsDashboardProps) {
+  const [mounted, setMounted] = useState(false);
+  const [dataVersion, setDataVersion] = useState(0);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    const onUpdate = () => setDataVersion((v) => v + 1);
+    window.addEventListener('dhikrly:salah-logs-updated', onUpdate);
+    return () => window.removeEventListener('dhikrly:salah-logs-updated', onUpdate);
+  }, []);
+
   const { weekBars, monthTrend, insights, stats } = useMemo(() => {
     const logs30 = getRecentLogs(30);
     const logs7  = getRecentLogs(7);
 
     // Week bars
-    const weekBars: WeekBar[] = logs7.map(log => {
-      const prayers = Object.values(log.prayers);
-      const fard = prayers.filter(p => isPrayed(p)).length;
-      const jamah = prayers.filter(p => p === 'jamah').length;
-      const sunnah = Object.values(log.sunnah).filter(Boolean).length;
-      const d = new Date(log.date + 'T12:00:00');
+    const weekBars: WeekBar[] = logs7.map((log) => {
+      const prayers = Object.values(log.prayers ?? {});
+      const fard = prayers.filter((p) => isPrayed(p)).length;
+      const jamah = prayers.filter((p) => p === 'jamah').length;
+      const sunnah = Object.values(log.sunnah ?? {}).filter(Boolean).length;
+      const label = formatSafeDate(log.date, { weekday: 'short' }, log.date);
       return {
-        label: d.toLocaleDateString('en-US', { weekday: 'short' }),
+        label,
         date: log.date,
         fard, sunnah, jamah,
       };
     });
+
     const monthTrend = logs30.map((log) => ({
-      label: new Date(`${log.date}T12:00:00`).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+      label: formatSafeDate(log.date, { month: 'short', day: 'numeric' }, log.date),
       score: Math.round(computeDayScore(log) * 100),
     }));
 
     // Stats
     const avg30 = logs30.reduce((s, l) => s + computeDayScore(l), 0) / 30;
     const avg7  = logs7.reduce((s, l) => s + computeDayScore(l), 0) / 7;
-    const perfect30 = logs30.filter(l => computeDayScore(l) === 1).length;
+    const perfect30 = logs30.filter((l) => computeDayScore(l) === 1).length;
 
-    const fajrOnTime30 = logs30.filter(l => isPrayed(l.prayers.fajr)).length;
-
-    const tahajjudDays = logs30.filter(l => l.tahajjud.prayed).length;
+    const fajrOnTime30 = logs30.filter((l) => l.prayers && isPrayed(l.prayers.fajr)).length;
+    const tahajjudDays = logs30.filter((l) => l.tahajjud?.prayed).length;
 
     // Fajr rate this vs last week
-    const fajrThisWeek = logs7.filter(l => isPrayed(l.prayers.fajr)).length;
+    const fajrThisWeek = logs7.filter((l) => l.prayers && isPrayed(l.prayers.fajr)).length;
     const prevWeek = getRecentLogs(14).slice(0, 7);
-    const fajrLastWeek = prevWeek.filter(l => isPrayed(l.prayers.fajr)).length;
+    const fajrLastWeek = prevWeek.filter((l) => l.prayers && isPrayed(l.prayers.fajr)).length;
 
     const insights = [];
 
@@ -100,15 +113,6 @@ export default function InsightsDashboard({ dark }: InsightsDashboardProps) {
       });
     }
 
-    if (avg7 < avg30 * 0.85) {
-      insights.push({
-        id: 'trend-down',
-        Icon: HandHeart,
-        text: "Your prayer rate dipped this week — let's get back on track",
-        type: 'tip',
-      });
-    }
-
     if (perfect30 > 0) {
       insights.push({
         id: 'perfect',
@@ -124,7 +128,7 @@ export default function InsightsDashboard({ dark }: InsightsDashboardProps) {
       insights,
       stats: { avg30, avg7, perfect30, fajrOnTime30 },
     };
-  }, []);
+  }, [dataVersion]);
 
   const card = dark ? 'bg-white/[0.04] border-white/[0.07]' : 'bg-white border-[var(--app-line)] shadow-sm';
   const muted = dark ? 'text-stone-400' : 'text-stone-500';
@@ -132,14 +136,14 @@ export default function InsightsDashboard({ dark }: InsightsDashboardProps) {
   return (
     <div className="space-y-4">
       {/* Stats row */}
-      <div className="grid grid-cols-3 gap-2">
+      <div suppressHydrationWarning className="grid grid-cols-3 gap-2">
         {[
           { label: '30d avg',  value: `${Math.round(stats.avg30 * 100)}%`, accent: dark ? 'text-emerald-300' : 'text-emerald-800' },
           { label: 'This week', value: `${Math.round(stats.avg7 * 100)}%`, accent: dark ? 'text-emerald-400' : 'text-emerald-600' },
           { label: 'Perfect days', value: stats.perfect30, accent: dark ? 'text-violet-400' : 'text-violet-600' },
-        ].map(s => (
-          <div key={s.label} className={`rounded-2xl border px-3 py-4 text-center ${card}`}>
-            <div className={`text-xl font-light leading-none ${s.accent}`}>{s.value}</div>
+        ].map((s) => (
+          <div key={s.label} suppressHydrationWarning className={`rounded-2xl border px-3 py-4 text-center ${card}`}>
+            <div suppressHydrationWarning className={`text-xl font-light leading-none ${s.accent}`}>{s.value}</div>
             <div className={`mt-1 text-[9px] uppercase tracking-widest ${muted}`}>{s.label}</div>
           </div>
         ))}
@@ -156,36 +160,42 @@ export default function InsightsDashboard({ dark }: InsightsDashboardProps) {
             <ChartColumnIncreasing className="h-4 w-4" />
           </span>
         </div>
-        <ResponsiveContainer width="100%" height={160}>
-          <BarChart data={weekBars} barGap={2} barCategoryGap="20%">
-            <XAxis dataKey="label" tick={{ fontSize: 10, fill: dark ? '#a8b8ae' : '#71827c' }} axisLine={false} tickLine={false} />
-            <YAxis domain={[0, 5]} hide />
-            <Tooltip
-              contentStyle={{
-                background: dark ? '#14211e' : '#fff',
-                border: dark ? '1px solid rgba(255,255,255,0.08)' : '1px solid #e7ece8',
-                borderRadius: 12,
-                fontSize: 11,
-                color: dark ? '#edf6f2' : '#14221e',
-              }}
-              cursor={{ fill: dark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)' }}
-            />
-            <Bar dataKey="fard" name="Fard" maxBarSize={24} radius={[4, 4, 0, 0]}>
-              {weekBars.map((entry, i) => (
-                <Cell
-                  key={i}
-                  fill={
-                    entry.fard === 5
-                      ? '#10b981'
-                      : entry.fard >= 3
-                        ? '#8bbf9c'
-                        : dark ? 'rgba(255,255,255,0.12)' : '#e7ece8'
-                  }
+        <div className="h-40 w-full">
+          {mounted ? (
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={weekBars} barGap={2} barCategoryGap="20%">
+                <XAxis dataKey="label" tick={{ fontSize: 10, fill: dark ? '#a8b8ae' : '#71827c' }} axisLine={false} tickLine={false} />
+                <YAxis domain={[0, 5]} hide />
+                <Tooltip
+                  contentStyle={{
+                    background: dark ? '#14211e' : '#fff',
+                    border: dark ? '1px solid rgba(255,255,255,0.08)' : '1px solid #e7ece8',
+                    borderRadius: 12,
+                    fontSize: 11,
+                    color: dark ? '#edf6f2' : '#14221e',
+                  }}
+                  cursor={{ fill: dark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)' }}
                 />
-              ))}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
+                <Bar dataKey="fard" name="Fard" maxBarSize={24} radius={[4, 4, 0, 0]}>
+                  {weekBars.map((entry, i) => (
+                    <Cell
+                      key={i}
+                      fill={
+                        entry.fard === 5
+                          ? '#10b981'
+                          : entry.fard >= 3
+                            ? '#8bbf9c'
+                            : dark ? 'rgba(255,255,255,0.12)' : '#e7ece8'
+                      }
+                    />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="h-full w-full rounded-2xl bg-black/5 dark:bg-white/5 animate-pulse" />
+          )}
+        </div>
       </div>
 
       <div className={`rounded-2xl border p-4 sm:p-5 ${card}`}>
@@ -198,31 +208,37 @@ export default function InsightsDashboard({ dark }: InsightsDashboardProps) {
             <TrendingUp className="h-4 w-4" />
           </span>
         </div>
-        <ResponsiveContainer width="100%" height={170}>
-          <AreaChart data={monthTrend} margin={{ top: 8, right: 4, left: -24, bottom: 0 }}>
-            <defs>
-              <linearGradient id="prayerTrendFill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={dark ? '#74c69d' : '#287750'} stopOpacity={0.3} />
-                <stop offset="100%" stopColor={dark ? '#74c69d' : '#287750'} stopOpacity={0} />
-              </linearGradient>
-            </defs>
-            <CartesianGrid vertical={false} stroke={dark ? '#ffffff12' : '#e7ece8'} strokeDasharray="4 5" />
-            <XAxis dataKey="label" tick={{ fontSize: 9, fill: dark ? '#a8b8ae' : '#71827c' }} axisLine={false} tickLine={false} interval={6} />
-            <YAxis domain={[0, 100]} ticks={[0, 50, 100]} tick={{ fontSize: 9, fill: dark ? '#a8b8ae' : '#71827c' }} axisLine={false} tickLine={false} />
-            <Tooltip
-              formatter={(value) => [`${value}%`, 'Prayers completed']}
-              contentStyle={{ background: dark ? '#14211e' : '#fff', border: `1px solid ${dark ? '#ffffff20' : '#e7ece8'}`, borderRadius: 12, fontSize: 11 }}
-            />
-            <Area type="monotone" dataKey="score" stroke={dark ? '#74c69d' : '#287750'} strokeWidth={2.5} fill="url(#prayerTrendFill)" activeDot={{ r: 4 }} />
-          </AreaChart>
-        </ResponsiveContainer>
+        <div className="h-44 w-full">
+          {mounted ? (
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={monthTrend} margin={{ top: 8, right: 4, left: -24, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="prayerTrendFill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={dark ? '#74c69d' : '#287750'} stopOpacity={0.3} />
+                    <stop offset="100%" stopColor={dark ? '#74c69d' : '#287750'} stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid vertical={false} stroke={dark ? '#ffffff12' : '#e7ece8'} strokeDasharray="4 5" />
+                <XAxis dataKey="label" tick={{ fontSize: 9, fill: dark ? '#a8b8ae' : '#71827c' }} axisLine={false} tickLine={false} interval={6} />
+                <YAxis domain={[0, 100]} ticks={[0, 50, 100]} tick={{ fontSize: 9, fill: dark ? '#a8b8ae' : '#71827c' }} axisLine={false} tickLine={false} />
+                <Tooltip
+                  formatter={(value) => [`${value}%`, 'Prayers completed']}
+                  contentStyle={{ background: dark ? '#14211e' : '#fff', border: `1px solid ${dark ? '#ffffff20' : '#e7ece8'}`, borderRadius: 12, fontSize: 11 }}
+                />
+                <Area type="monotone" dataKey="score" stroke={dark ? '#74c69d' : '#287750'} strokeWidth={2.5} fill="url(#prayerTrendFill)" activeDot={{ r: 4 }} />
+              </AreaChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="h-full w-full rounded-2xl bg-black/5 dark:bg-white/5 animate-pulse" />
+          )}
+        </div>
       </div>
 
       {/* Insights */}
       <div className={`rounded-2xl border p-4 ${card}`}>
         <p className={`mb-3 text-[10px] uppercase tracking-widest ${muted}`}>Insights</p>
         <div className="space-y-2.5">
-          {insights.map(ins => (
+          {insights.map((ins) => (
             <div key={ins.id} className={`flex gap-3 rounded-xl border px-3 py-2.5 ${
               ins.type === 'positive'
                 ? dark ? 'border-emerald-500/20 bg-emerald-500/[0.07]' : 'border-emerald-200/60 bg-emerald-50/60'

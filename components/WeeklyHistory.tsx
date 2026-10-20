@@ -23,6 +23,13 @@ export default function WeeklyHistory({
 
   const today = getTodayKey();
 
+  const [dataVersion, setDataVersion] = useState(0);
+  useEffect(() => {
+    const onUpdate = () => setDataVersion((v) => v + 1);
+    window.addEventListener('dhikrly:adhkar-updated', onUpdate);
+    return () => window.removeEventListener('dhikrly:adhkar-updated', onUpdate);
+  }, []);
+
   const history: HistoryDay[] = useMemo(() => {
     const allData = mounted
       ? load<Record<string, Record<string, boolean>>>(STORAGE_KEY, {})
@@ -38,7 +45,7 @@ export default function WeeklyHistory({
         isToday: key === today,
       };
     });
-  }, [mounted, today, total]);
+  }, [mounted, today, total, dataVersion]);
 
   const card = dark
     ? 'bg-white/[0.04] border-white/[0.07]'

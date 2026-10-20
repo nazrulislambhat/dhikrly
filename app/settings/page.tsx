@@ -474,7 +474,7 @@ export default function SettingsPage() {
                     Under Active Development
                   </span>
                   {isPro && proStatus.expiresAt && (
-                    <span className="text-xs text-[var(--app-muted)]">
+                    <span suppressHydrationWarning className="text-xs text-[var(--app-muted)]">
                       Renews / Valid until {new Date(proStatus.expiresAt).toLocaleDateString()}
                     </span>
                   )}
