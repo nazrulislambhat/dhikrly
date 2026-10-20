@@ -24,8 +24,31 @@ export const getGregorianDate = (): string =>
   });
 
 export const formatDateLabel = (key: string): string => {
-  const d = new Date(key + 'T12:00:00');
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  if (!key) return '';
+  try {
+    const iso = key.includes('T') ? key : `${key}T12:00:00`;
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return key;
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  } catch {
+    return key;
+  }
+};
+
+export const formatSafeDate = (
+  key: string | undefined | null,
+  options?: Intl.DateTimeFormatOptions,
+  fallback = '',
+): string => {
+  if (!key) return fallback;
+  try {
+    const iso = key.includes('T') ? key : `${key}T12:00:00`;
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return fallback || key;
+    return d.toLocaleDateString('en-US', options ?? { month: 'short', day: 'numeric' });
+  } catch {
+    return fallback || key;
+  }
 };
 
 /** Returns date keys for the last N days (oldest → newest), excluding today. */

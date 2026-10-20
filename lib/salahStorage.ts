@@ -53,8 +53,20 @@ export function saveDayLog(log: DayLog): void {
   const all = getAllLogs();
   all[log.date] = log;
   const keys = Object.keys(all).sort();
-  if (keys.length > 120) keys.slice(0, keys.length - 120).forEach(k => delete all[k]);
+  if (keys.length > 400) keys.slice(0, keys.length - 400).forEach(k => delete all[k]);
   saveSalah(LOG_KEY, all);
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event('dhikrly:salah-logs-updated'));
+  }
+}
+
+export function saveAllLogs(logs: Record<string, DayLog>): void {
+  const keys = Object.keys(logs).sort();
+  if (keys.length > 400) keys.slice(0, keys.length - 400).forEach(k => delete logs[k]);
+  saveSalah(LOG_KEY, logs);
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event('dhikrly:salah-logs-updated'));
+  }
 }
 
 export const DEFAULT_SALAH_SETTINGS: SalahSettings = {

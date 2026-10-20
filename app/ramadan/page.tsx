@@ -228,11 +228,11 @@ export default function RamadanPage() {
                   {isFastingHours ? 'Fasting Time Right Now' : 'Iftar / Night Hours'}
                 </span>
                 <div className="mt-1 flex items-baseline gap-2">
-                  <span className="text-3xl sm:text-4xl font-extrabold text-[var(--app-ink)]">
+                  <span suppressHydrationWarning className="text-3xl sm:text-4xl font-extrabold text-[var(--app-ink)]">
                     {countdownText}
                   </span>
                 </div>
-                <p className="mt-0.5 text-xs text-[var(--app-muted)]">{countdownSub}</p>
+                <p suppressHydrationWarning className="mt-0.5 text-xs text-[var(--app-muted)]">{countdownSub}</p>
               </div>
             </div>
 
@@ -242,7 +242,7 @@ export default function RamadanPage() {
                 <span className="flex items-center justify-center gap-1 text-[11px] font-bold text-[var(--app-muted)]">
                   <Sunrise className="h-3.5 w-3.5 text-amber-500" /> Suhoor Ends (Fajr)
                 </span>
-                <span className="text-base font-extrabold text-[var(--app-ink)] mt-0.5 block">
+                <span suppressHydrationWarning className="text-base font-extrabold text-[var(--app-ink)] mt-0.5 block">
                   {times?.fajr.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) ?? '--:--'}
                 </span>
               </div>
@@ -250,7 +250,7 @@ export default function RamadanPage() {
                 <span className="flex items-center justify-center gap-1 text-[11px] font-bold text-[var(--app-muted)]">
                   <Sunset className="h-3.5 w-3.5 text-orange-500" /> Iftar (Maghrib)
                 </span>
-                <span className="text-base font-extrabold text-emerald-700 dark:text-emerald-300 mt-0.5 block">
+                <span suppressHydrationWarning className="text-base font-extrabold text-emerald-700 dark:text-emerald-300 mt-0.5 block">
                   {times?.maghrib.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) ?? '--:--'}
                 </span>
               </div>
