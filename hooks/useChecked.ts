@@ -16,9 +16,12 @@ export function useChecked(totalDuas: number) {
   });
 
   useEffect(() => {
-    const all = pruneOldEntries(STORAGE_KEY, 90);
+    const all = pruneOldEntries(STORAGE_KEY, 365);
     all[today] = checked;
     save(STORAGE_KEY, all);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('dhikrly:adhkar-updated'));
+    }
   }, [checked, today]);
 
   const toggle = useCallback(
@@ -70,6 +73,9 @@ export function useChecked(totalDuas: number) {
       });
       all[dayKey] = dayChecked;
       save(STORAGE_KEY, all);
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('dhikrly:adhkar-updated'));
+      }
     },
     []
   );

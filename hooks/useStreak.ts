@@ -1,24 +1,38 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { load, save, STREAK_KEY } from '@/lib/storage';
 import { getTodayKey } from '@/lib/dates';
+import { sanitizeStreak, DEFAULT_STREAK } from '@/lib/streak';
 import type { Streak } from '@/types';
-
-const DEFAULT_STREAK: Streak = { current: 0, best: 0, lastComplete: '' };
 
 export function useStreak(done: number, total: number) {
   const today = getTodayKey();
-  const [streak, setStreak] = useState<Streak>(DEFAULT_STREAK);
+  const [streak, setStreakState] = useState<Streak>(() => {
+    const loaded = load<Streak>(STREAK_KEY, DEFAULT_STREAK);
+    return sanitizeStreak(loaded, today);
+  });
   const prevDone = useRef(done);
 
+  // Load and sanitize on mount / day change
   useEffect(() => {
-    setStreak(load<Streak>(STREAK_KEY, DEFAULT_STREAK));
-  }, []);
+    const loaded = load<Streak>(STREAK_KEY, DEFAULT_STREAK);
+    setStreakState(sanitizeStreak(loaded, today));
+  }, [today]);
+
+  // Dynamically react to sync updates from Supabase or storage updates
+  useEffect(() => {
+    const handleUpdate = () => {
+      const loaded = load<Streak>(STREAK_KEY, DEFAULT_STREAK);
+      setStreakState(sanitizeStreak(loaded, today));
+    };
+    window.addEventListener('dhikrly:adhkar-updated', handleUpdate);
+    return () => window.removeEventListener('dhikrly:adhkar-updated', handleUpdate);
+  }, [today]);
 
   useEffect(() => {
     if (done === total && total > 0 && prevDone.current < total) {
-      setStreak((s) => {
+      setStreakState((s) => {
         if (s.lastComplete === today) return s;
         const yesterday = new Date(Date.now() - 86_400_000)
           .toISOString()
@@ -33,5 +47,14 @@ export function useStreak(done: number, total: number) {
     prevDone.current = done;
   }, [done, total, today]);
 
-  return streak;
+  const setStreak = useCallback(
+    (newStreak: Streak) => {
+      const sanitized = sanitizeStreak(newStreak, today);
+      setStreakState(sanitized);
+      save(STREAK_KEY, sanitized);
+    },
+    [today],
+  );
+
+  return Object.assign(streak, { setStreak });
 }

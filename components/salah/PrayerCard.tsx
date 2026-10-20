@@ -152,12 +152,12 @@ export default function PrayerCard({
           </div>
 
           {/* Automatic calculation window */}
-          <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
-            <span className={`font-bold ${dark ? 'text-emerald-300' : 'text-emerald-800'}`}>
+          <div suppressHydrationWarning className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+            <span suppressHydrationWarning className={`font-bold ${dark ? 'text-emerald-300' : 'text-emerald-800'}`}>
               Start: {time ? formatTime(time, timezone) : '—'}
             </span>
             {endTime && (
-              <span className={`font-medium ${dark ? 'text-stone-400' : 'text-stone-500'}`}>
+              <span suppressHydrationWarning className={`font-medium ${dark ? 'text-stone-400' : 'text-stone-500'}`}>
                 End: {formatTime(endTime, timezone)}
                 {endLabel && <span className="opacity-75"> ({endLabel})</span>}
               </span>

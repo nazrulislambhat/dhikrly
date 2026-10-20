@@ -284,7 +284,7 @@ export default function QadaPage() {
 
               <div className="flex items-center justify-between pt-1 border-t border-[var(--app-line)]">
                 <span className="text-[var(--app-muted)]">Target Completion:</span>
-                <strong className="text-emerald-700 dark:text-emerald-300">
+                <strong suppressHydrationWarning className="text-emerald-700 dark:text-emerald-300">
                   {projectedDateStr}
                 </strong>
               </div>

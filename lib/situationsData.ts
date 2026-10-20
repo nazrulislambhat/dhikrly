@@ -30,6 +30,8 @@ export interface SituationalDua {
   virtue: string;
   actionTip: string;
   frequencies: number[];
+  audioUrl?: string;
+  reciter?: string;
 }
 
 export const EMOTION_TAGS: { key: EmotionCategory | 'all'; label: string; emoji: string }[] = [

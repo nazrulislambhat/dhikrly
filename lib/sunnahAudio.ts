@@ -13,6 +13,7 @@ import {
   registerMediaActionHandlers,
 } from './mediaSession';
 import type { SunnahItem } from './sunnahData';
+import { findArabicVoice, getVoiceGender } from './duaAudio';
 
 class SunnahAudioEngine {
   private ctx: AudioContext | null = null;
@@ -124,8 +125,11 @@ class SunnahAudioEngine {
         window.speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance(item.arabicText);
         utterance.lang = 'ar-SA';
-        utterance.rate = 0.85 * this.playbackRate;
-        utterance.pitch = 1.0;
+        const gender = getVoiceGender();
+        const voice = findArabicVoice(gender);
+        if (voice) utterance.voice = voice;
+        utterance.pitch = gender === 'male' ? 0.82 : 1.15;
+        utterance.rate = (gender === 'male' ? 0.80 : 0.85) * this.playbackRate;
         utterance.volume = Math.min(1.0, this.volume * 1.1);
         utterance.onend = () => {
           // If repeat enabled and speech finishes, loop

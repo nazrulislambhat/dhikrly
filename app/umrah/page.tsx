@@ -39,6 +39,7 @@ import {
   stopBackgroundAudioKeepAlive,
   registerMediaActionHandlers,
 } from '@/lib/mediaSession';
+import { speakArabicText } from '@/lib/duaAudio';
 
 export default function UmrahPage() {
   const [dark, setDark] = useState<boolean>(
@@ -179,14 +180,8 @@ export default function UmrahPage() {
         osc.stop(now + idx * 0.45 + 1.85);
       });
 
-      // Voice recitation via speech synthesis if available
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance(TALBIYAH.arabic);
-        utterance.lang = 'ar-SA';
-        utterance.rate = 0.8;
-        window.speechSynthesis.speak(utterance);
-      }
+      // Voice recitation via speech synthesis with male voice default
+      speakArabicText(TALBIYAH.arabic);
 
       const totalDuration = freqs.length * 450 + 2000;
 
