@@ -448,7 +448,7 @@ export default function SettingsPage() {
           </section>
 
           {/* Dhikrly Pro Membership Card */}
-          <section
+          {/* <section
             className={`relative overflow-hidden rounded-3xl border p-5 sm:p-6 transition-all ${
               dark
                 ? 'border-amber-500/30 bg-gradient-to-br from-[#1b2b23] via-[#15241e] to-[#121c17]'
@@ -538,7 +538,7 @@ export default function SettingsPage() {
                 </button>
               </div>
             </div>
-          </section>
+          </section> */}
 
           {/* Settings Grid */}
           <div className="grid gap-6 min-[840px]:grid-cols-2 min-[840px]:items-start">
