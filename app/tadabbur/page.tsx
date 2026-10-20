@@ -15,6 +15,7 @@ import {
   RotateCcw,
   Search,
   Sparkles,
+  User,
   Volume2,
 } from 'lucide-react';
 import AppShell from '@/components/AppShell';
@@ -27,12 +28,12 @@ import {
   type EmotionCategory,
 } from '@/lib/situationsData';
 import {
-  updateMediaMetadata,
-  setMediaPlaybackState,
-  startBackgroundAudioKeepAlive,
-  stopBackgroundAudioKeepAlive,
-  registerMediaActionHandlers,
-} from '@/lib/mediaSession';
+  playDuaAudio as playDuaAudioEngine,
+  stopDuaAudio as stopDuaAudioEngine,
+  getVoiceGender,
+  setVoiceGender,
+  type VoiceGender,
+} from '@/lib/duaAudio';
 
 export default function TadabburPage() {
   const [dark, setDark] = useState<boolean>(
@@ -45,12 +46,31 @@ export default function TadabburPage() {
 
   // Audio Playback State
   const [activeAudioId, setActiveAudioId] = useState<string | null>(null);
-  const audioCtxRef = useRef<AudioContext | null>(null);
-  const audioTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [voiceGender, setVoiceGenderState] = useState<VoiceGender>(() => getVoiceGender());
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', dark);
   }, [dark]);
+
+  useEffect(() => {
+    const handleGenderChange = (e: Event) => {
+      const customEvent = e as CustomEvent<VoiceGender>;
+      if (customEvent.detail) {
+        setVoiceGenderState(customEvent.detail);
+      }
+    };
+    window.addEventListener('dhikrly_voice_gender_changed', handleGenderChange);
+    return () => {
+      window.removeEventListener('dhikrly_voice_gender_changed', handleGenderChange);
+      stopDuaAudioEngine();
+    };
+  }, []);
+
+  const handleVoiceChange = (gender: VoiceGender) => {
+    setVoiceGender(gender);
+    setVoiceGenderState(gender);
+    playCheck();
+  };
 
   const handleCopy = (dua: SituationalDua) => {
     const text = `${dua.title}\n\n${dua.arabicText}\n\n${dua.transliteration}\n\n“${dua.translation}”\n\nVirtue: ${dua.virtue}\nSource: ${dua.hadithReference}`;
@@ -66,94 +86,19 @@ export default function TadabburPage() {
       return;
     }
 
-    try {
-      if (typeof window === 'undefined') return;
-
-      if (!audioCtxRef.current) {
-        const AudioCtxClass =
-          window.AudioContext ||
-          (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-        audioCtxRef.current = new AudioCtxClass();
-      }
-
-      if (audioCtxRef.current.state === 'suspended') {
-        audioCtxRef.current.resume();
-      }
-
-      setActiveAudioId(dua.id);
-      startBackgroundAudioKeepAlive();
-
-      // Configure MediaSession for lockscreen
-      updateMediaMetadata({
-        title: dua.title,
-        artist: `${dua.emotionLabel} · ${dua.hadithReference}`,
-        album: 'Prophetic Situational Du‘ās · Dhikrly',
-        artwork: [
-          { src: '/icon-192.png', sizes: '192x192', type: 'image/png' },
-          { src: '/icon-512.png', sizes: '512x512', type: 'image/png' },
-        ],
-      });
-      setMediaPlaybackState('playing');
-
-      registerMediaActionHandlers({
-        onPlay: () => playDuaAudio(dua),
-        onPause: stopAudio,
-        onStop: stopAudio,
-      });
-
-      // Harmonic sacred melody
-      const freqs = dua.frequencies;
-      const ctx = audioCtxRef.current;
-      const now = ctx.currentTime;
-
-      freqs.forEach((freq, idx) => {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(freq, now + idx * 0.35);
-
-        gain.gain.setValueAtTime(0, now + idx * 0.35);
-        gain.gain.linearRampToValueAtTime(0.24, now + idx * 0.35 + 0.05);
-        gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.35 + 1.5);
-
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-
-        osc.start(now + idx * 0.35);
-        osc.stop(now + idx * 0.35 + 1.55);
-      });
-
-      // Also speak the Arabic supplication if supported
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance(dua.arabicText);
-        utterance.lang = 'ar-SA';
-        utterance.rate = 0.82;
-        window.speechSynthesis.speak(utterance);
-      }
-
-      const totalDurationMs = freqs.length * 350 + 1600;
-
-      if (audioTimerRef.current) clearTimeout(audioTimerRef.current);
-      audioTimerRef.current = setTimeout(() => {
-        setActiveAudioId(null);
-        setMediaPlaybackState('none');
-        stopBackgroundAudioKeepAlive();
-      }, totalDurationMs);
-    } catch {
-      // Audio fallback
-    }
+    setActiveAudioId(dua.id);
+    playDuaAudioEngine(dua, {
+      gender: voiceGender,
+      onStart: () => setActiveAudioId(dua.id),
+      onEnd: () => setActiveAudioId(null),
+    }).catch(() => {
+      setActiveAudioId(null);
+    });
   };
 
   const stopAudio = () => {
-    if (audioTimerRef.current) clearTimeout(audioTimerRef.current);
-    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-    }
+    stopDuaAudioEngine();
     setActiveAudioId(null);
-    setMediaPlaybackState('none');
-    stopBackgroundAudioKeepAlive();
   };
 
   const filteredDuas = useMemo(() => {
@@ -176,20 +121,54 @@ export default function TadabburPage() {
 
   return (
     <AppShell active="tadabbur" dark={dark} onToggleDark={() => setDark((v) => !v)}>
-      <div className="mx-auto w-[min(calc(100%-2rem),72rem)] px-2 py-6 sm:py-8 lg:px-4">
+      <div className="mx-auto w-full max-w-6xl px-3 sm:px-4 lg:px-6 py-6 sm:py-8">
         {/* Header */}
-        <header className="mb-6">
-          <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-300">
-            <Sparkles className="h-3.5 w-3.5" />
-            <span>DAILY TADABBUR & SITUATION-BASED DU‘Ā FINDER</span>
+        <header className="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-300">
+              <Sparkles className="h-3.5 w-3.5" />
+              <span>DAILY TADABBUR & SITUATION-BASED DU‘Ā FINDER</span>
+            </div>
+            <h1 className="mt-2 text-2xl sm:text-4xl font-extrabold tracking-tight text-[var(--app-ink)]">
+              What is your heart carrying today?
+            </h1>
+            <p className="mt-1 text-xs sm:text-sm text-[var(--app-muted)] max-w-2xl leading-relaxed">
+              Filter authentic prophetic supplications by your current emotional state or life moment.
+              Listen to authentic male-cadenced Arabic recitation (with male and female voice options).
+            </p>
           </div>
-          <h1 className="mt-2 text-3xl font-extrabold tracking-tight sm:text-4xl text-[var(--app-ink)]">
-            What is your heart carrying today?
-          </h1>
-          <p className="mt-1 text-sm text-[var(--app-muted)] max-w-2xl">
-            Filter authentic prophetic supplications by your current emotional state or life moment.
-            Find instant solace, hear the audio recitation, and read practical Sunnah action steps.
-          </p>
+
+          {/* Voice Gender Switcher */}
+          <div className="flex items-center gap-1.5 rounded-2xl border border-[var(--app-line)] bg-[var(--app-surface)] p-1.5 shadow-xs self-start md:self-auto shrink-0">
+            <span className="text-[11px] text-[var(--app-muted)] px-2 font-bold flex items-center gap-1">
+              <Volume2 className="h-3.5 w-3.5 text-emerald-700 dark:text-emerald-400" />
+              <span>Voice:</span>
+            </span>
+            <button
+              type="button"
+              onClick={() => handleVoiceChange('male')}
+              className={`flex items-center gap-1 rounded-xl px-2.5 py-1 text-xs font-bold transition-all ${
+                voiceGender === 'male'
+                  ? 'bg-emerald-800 text-white dark:bg-emerald-400 dark:text-emerald-950 shadow-xs'
+                  : 'text-[var(--app-muted)] hover:text-[var(--app-ink)]'
+              }`}
+              title="Authentic male reciter voice (default on mobile)"
+            >
+              <span>♂ Male</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleVoiceChange('female')}
+              className={`flex items-center gap-1 rounded-xl px-2.5 py-1 text-xs font-bold transition-all ${
+                voiceGender === 'female'
+                  ? 'bg-emerald-800 text-white dark:bg-emerald-400 dark:text-emerald-950 shadow-xs'
+                  : 'text-[var(--app-muted)] hover:text-[var(--app-ink)]'
+              }`}
+              title="Female voice option"
+            >
+              <span>♀ Female</span>
+            </button>
+          </div>
         </header>
 
         {/* ── DAILY TADABBUR SPOTLIGHT BANNER ── */}
@@ -292,7 +271,7 @@ export default function TadabburPage() {
               >
                 {/* Top: Mood Badge & Action buttons */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 dark:bg-emerald-500/10 px-3 py-1 text-xs font-extrabold text-emerald-800 dark:text-emerald-300">
                       <span>{dua.emotionEmoji}</span>
                       <span>{dua.emotionLabel}</span>
@@ -302,7 +281,7 @@ export default function TadabburPage() {
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 shrink-0">
                     <button
                       type="button"
                       onClick={() => playDuaAudio(dua)}
