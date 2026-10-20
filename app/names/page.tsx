@@ -36,6 +36,7 @@ import {
   stopBackgroundAudioKeepAlive,
   registerMediaActionHandlers,
 } from '@/lib/mediaSession';
+import { speakArabicText } from '@/lib/duaAudio';
 
 export default function NamesPage() {
   const [dark, setDark] = useState<boolean>(
@@ -150,14 +151,8 @@ export default function NamesPage() {
         osc.stop(now + idx * 0.28 + 1.25);
       });
 
-      // Also speak the Arabic name if SpeechSynthesis is supported
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance(item.nameAr);
-        utterance.lang = 'ar-SA';
-        utterance.rate = 0.85;
-        window.speechSynthesis.speak(utterance);
-      }
+      // Also speak the Arabic name with configured voice (male baritone default)
+      speakArabicText(item.nameAr);
 
       const totalDurationMs = freqs.length * 300 + 1200;
 

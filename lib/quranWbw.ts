@@ -71,20 +71,15 @@ export async function fetchVerseWords(
   }
 }
 
+import { speakArabicText } from '@/lib/duaAudio';
+
 let activeWordAudio: HTMLAudioElement | null = null;
 
 export function playWordAudio(audioUrl?: string, wordText?: string): void {
   if (!audioUrl) {
-    // Fallback to speech synthesis if available
-    if (wordText && typeof window !== 'undefined' && 'speechSynthesis' in window) {
-      try {
-        const utter = new SpeechSynthesisUtterance(wordText);
-        utter.lang = 'ar-SA';
-        utter.rate = 0.85;
-        window.speechSynthesis.speak(utter);
-      } catch {
-        // ignore
-      }
+    // Fallback to speech synthesis using male reciter voice
+    if (wordText) {
+      speakArabicText(wordText);
     }
     return;
   }
