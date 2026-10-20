@@ -262,7 +262,7 @@ export default function AppShell({
           </nav>
 
           <div className="flex items-center gap-2">
-            <button
+            {/* <button
               type="button"
               onClick={() => setShowProModal(true)}
               className={`flex min-h-9 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-xl px-3 text-xs font-bold transition-all hover:scale-105 active:scale-95 ${
@@ -273,7 +273,7 @@ export default function AppShell({
             >
               <Crown className="h-3.5 w-3.5 text-amber-500" />
               <span>{isPro ? 'Pro Active' : 'Get Pro'}</span>
-            </button>
+            </button> */}
 
             <Link
               href="/settings"
