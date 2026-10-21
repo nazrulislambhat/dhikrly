@@ -75,7 +75,6 @@ const moreDrawerItems = [
   { href: '/ambient', label: 'Ambient Focus', desc: 'Islamic soundscapes & dhikr breathing', section: 'ambient', Icon: Headphones },
   { href: '/insights', label: 'Spiritual Insights', desc: 'Daily prayer trends & spiritual habits', section: 'insights', Icon: LineChart },
   { href: '/adhkar', label: 'Adhkār Library', desc: 'Fortress of the Muslim authentic collection', section: 'adhkar', Icon: Sparkles },
-  { href: '/pro', label: 'Dhikrly Pro Plans', desc: 'AI Hifdh coach, cloud sync & student waqf', section: 'pro', Icon: Crown },
   { href: '/pipeline', label: 'Engineering Pipeline', desc: 'Native apps (iOS, Android, Mac) & backend plan', section: 'pipeline', Icon: Layers },
   { href: '/tech', label: 'Tech Stack & APIs', desc: 'Open-source libraries, APIs, and architecture', section: 'tech', Icon: Cpu },
   { href: '/settings', label: 'Settings & Profile', desc: 'Account sync, calculation methods & sound', section: 'settings', Icon: UserRound },
@@ -311,7 +310,7 @@ export default function AppShell({
               <span className="text-lg font-extrabold tracking-tight text-[var(--app-ink)]">Dhikrly</span>
             </Link>
             <span className={`mr-3 text-xs hidden sm:inline ${muted}`}>A little, every day</span>
-            <button
+            {/* <button
               type="button"
               onClick={() => setShowProModal(true)}
               className={`mr-2 inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-extrabold shadow-xs transition-transform active:scale-95 ${
@@ -322,7 +321,7 @@ export default function AppShell({
             >
               <Crown className="h-3 w-3 text-amber-500" />
               <span>PRO</span>
-            </button>
+            </button> */}
             <button
               type="button"
               className="grid h-10 w-10 place-items-center rounded-full border border-[var(--app-line)] bg-[var(--app-surface)] text-lg text-emerald-800 dark:text-emerald-200 shadow-xs"
