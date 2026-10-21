@@ -277,11 +277,11 @@ export default function TechStackPage() {
 
                 <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 pt-2">
                   <Link
-                    href="/pro"
-                    className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-amber-600 via-amber-500 to-emerald-700 px-5 py-3 text-xs font-black text-white shadow-lg shadow-amber-900/15 hover:brightness-110 active:scale-95 transition-all no-underline"
+                    href="/pipeline"
+                    className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-700 via-emerald-600 to-teal-700 px-5 py-3 text-xs font-black text-white shadow-lg shadow-emerald-900/15 hover:brightness-110 active:scale-95 transition-all no-underline"
                   >
-                    <Crown className="h-4 w-4" />
-                    <span>View Pro Feature Pipeline</span>
+                    <Layers className="h-4 w-4" />
+                    <span>View Engineering Pipeline</span>
                     <ArrowRight className="h-3.5 w-3.5" />
                   </Link>
 
@@ -528,10 +528,10 @@ export default function TechStackPage() {
 
             <div className="flex items-center gap-3">
               <Link
-                href="/pro"
+                href="/pipeline"
                 className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-800 px-4 py-2.5 text-xs font-bold text-white hover:bg-emerald-700 dark:bg-emerald-400 dark:text-emerald-950 no-underline"
               >
-                <span>View Pro Roadmap</span>
+                <span>View Engineering Pipeline</span>
                 <ArrowRight className="h-3.5 w-3.5" />
               </Link>
             </div>

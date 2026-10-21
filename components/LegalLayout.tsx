@@ -141,12 +141,6 @@ export default function LegalLayout({
                 Tech & APIs
               </Link>
               <Link
-                href="/pro"
-                className="transition-colors text-amber-600 dark:text-amber-400 font-bold hover:underline"
-              >
-                Pro Roadmap
-              </Link>
-              <Link
                 href="/"
                 className="transition-colors hover:text-[var(--app-ink)]"
               >
