@@ -782,12 +782,6 @@ export default function DuasTracker() {
               Tech & APIs
             </Link>
             <Link
-              href="/pro"
-              className={`transition-colors text-amber-600 dark:text-amber-400 font-bold hover:underline`}
-            >
-              Pro Pipeline
-            </Link>
-            <Link
               href="/contact"
               className={`transition-colors ${dark ? 'hover:text-stone-500' : 'hover:text-stone-600'}`}
             >

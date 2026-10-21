@@ -244,14 +244,6 @@ export default function EngineeringPipelinePage() {
 
                 <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5 sm:gap-3 pt-2">
                   <Link
-                    href="/pro"
-                    className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-amber-600 via-amber-500 to-emerald-700 px-4 sm:px-5 py-2.5 sm:py-3 text-xs font-black text-white shadow-lg shadow-amber-900/15 hover:brightness-110 active:scale-95 transition-all no-underline"
-                  >
-                    <Crown className="h-4 w-4 shrink-0" />
-                    <span>View Pro Features & Pricing</span>
-                  </Link>
-
-                  <Link
                     href="/tech"
                     className="inline-flex items-center gap-2 rounded-2xl border border-emerald-500/40 bg-emerald-500/10 px-4 sm:px-5 py-2.5 sm:py-3 text-xs font-bold text-emerald-800 dark:text-emerald-300 hover:bg-emerald-500/20 transition-colors no-underline"
                   >
@@ -590,17 +582,17 @@ export default function EngineeringPipelinePage() {
             <div className="flex items-center gap-3">
               <Sparkles className="h-5 w-5 text-emerald-600" />
               <div>
-                <p className="text-xs font-bold">Looking for Dhikrly Pro Membership & Pricing?</p>
-                <p className="text-[11px] text-[var(--app-muted)]">Explore the AI memorization coach, studio soundscapes, and student waqf sponsorship.</p>
+                <p className="text-xs font-bold">Have an architecture suggestion or security feedback?</p>
+                <p className="text-[11px] text-[var(--app-muted)]">We welcome contributions, code audits, and optimizations from the community.</p>
               </div>
             </div>
 
             <div className="flex items-center gap-3">
               <Link
-                href="/pro"
-                className="inline-flex items-center gap-1.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-stone-950 px-4 py-2.5 text-xs font-bold no-underline"
+                href="/tech"
+                className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-800 px-4 py-2.5 text-xs font-bold text-white hover:bg-emerald-700 dark:bg-emerald-400 dark:text-emerald-950 no-underline"
               >
-                <span>View Dhikrly Pro</span>
+                <span>Live Tech Stack & APIs</span>
                 <ArrowRight className="h-3.5 w-3.5" />
               </Link>
             </div>
