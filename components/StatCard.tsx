@@ -1,5 +1,6 @@
 'use client';
 
+import { BookOpen, CheckCircle2, Clock3, Flame, Sparkles } from 'lucide-react';
 import type { Accent } from '@/types';
 
 interface StatCardProps {
@@ -9,35 +10,69 @@ interface StatCardProps {
   accent: Accent;
 }
 
-const ACCENT_CLASSES: Record<Accent, { dark: string; light: string }> = {
-  gold: { dark: 'text-amber-400', light: 'text-amber-600' },
-  green: { dark: 'text-emerald-400', light: 'text-emerald-600' },
-  amber: { dark: 'text-orange-400', light: 'text-orange-500' },
-  purple: { dark: 'text-violet-400', light: 'text-violet-600' },
-  muted: { dark: 'text-stone-400', light: 'text-stone-500' },
-};
-
 export default function StatCard({ label, value, dark, accent }: StatCardProps) {
-  const cls = ACCENT_CLASSES[accent];
+  const getIcon = () => {
+    const l = label.toLowerCase();
+    if (l.includes('total')) return <BookOpen className="h-4 w-4" />;
+    if (l.includes('done')) return <CheckCircle2 className="h-4 w-4" />;
+    if (l.includes('pending')) return <Clock3 className="h-4 w-4" />;
+    if (l.includes('streak')) return <Flame className="h-4 w-4" />;
+    return <Sparkles className="h-4 w-4" />;
+  };
+
+  const getAccentStyles = () => {
+    switch (accent) {
+      case 'green':
+        return {
+          icon: dark ? 'text-emerald-400 bg-emerald-500/15' : 'text-emerald-700 bg-emerald-50',
+          val: dark ? 'text-emerald-300' : 'text-emerald-700',
+        };
+      case 'gold':
+      case 'amber':
+        return {
+          icon: dark ? 'text-amber-400 bg-amber-500/15' : 'text-amber-700 bg-amber-50',
+          val: dark ? 'text-amber-300' : 'text-amber-700',
+        };
+      case 'purple':
+        return {
+          icon: dark ? 'text-violet-400 bg-violet-500/15' : 'text-violet-700 bg-violet-50',
+          val: dark ? 'text-violet-300' : 'text-violet-700',
+        };
+      default:
+        return {
+          icon: dark ? 'text-stone-400 bg-white/5' : 'text-stone-600 bg-stone-100',
+          val: dark ? 'text-stone-200' : 'text-stone-800',
+        };
+    }
+  };
+
+  const styles = getAccentStyles();
+
   return (
     <div
-      className={`rounded-xl border px-3 py-3 text-center ${
+      className={`group relative overflow-hidden rounded-2xl border p-3.5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md ${
         dark
-          ? 'border-white/[0.07] bg-white/[0.04]'
-          : 'border-black/[0.07] bg-white shadow-sm'
+          ? 'border-white/[0.08] bg-[#111e1a]/90 backdrop-blur-md'
+          : 'border-stone-200/90 bg-white/95 shadow-xs'
       }`}
     >
-      <div
-        suppressHydrationWarning
-        className={`text-2xl font-light leading-none ${
-          dark ? cls.dark : cls.light
-        }`}
-      >
-        {value}
+      <div className="flex items-center justify-between gap-2">
+        <span
+          className={`grid h-8 w-8 place-items-center rounded-xl transition-transform group-hover:scale-105 ${styles.icon}`}
+          aria-hidden="true"
+        >
+          {getIcon()}
+        </span>
+        <span
+          suppressHydrationWarning
+          className={`font-serif text-2xl font-bold tracking-tight tabular-nums ${styles.val}`}
+        >
+          {value}
+        </span>
       </div>
       <div
-        className={`mt-1 text-[9px] uppercase tracking-widest ${
-          dark ? 'text-stone-600' : 'text-stone-400'
+        className={`mt-2 text-[10px] font-bold uppercase tracking-wider ${
+          dark ? 'text-stone-400' : 'text-stone-500'
         }`}
       >
         {label}
