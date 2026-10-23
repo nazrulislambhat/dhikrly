@@ -23,6 +23,8 @@ import {
   X,
   ArrowRight,
   Command,
+  Smartphone,
+  Download,
 } from 'lucide-react';
 
 interface CommandItem {
@@ -204,6 +206,15 @@ const COMMAND_ITEMS: CommandItem[] = [
     href: '/settings',
     Icon: UserRound,
     keywords: ['profile', 'login', 'sync', 'notifications', 'athan', 'method'],
+  },
+  {
+    id: 'download',
+    title: 'Download App & Install PWA',
+    subtitle: 'iOS, Android & macOS coming soon · Instant PWA live now',
+    category: 'Account',
+    href: '/download',
+    Icon: Smartphone,
+    keywords: ['download', 'install', 'ios', 'android', 'mac', 'macos', 'pwa', 'iphone', 'playstore', 'appstore'],
   },
 ];
 

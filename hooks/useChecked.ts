@@ -6,9 +6,18 @@ import { getTodayKey } from '@/lib/dates';
 import { playCheck, playUncheck, playComplete } from '@/lib/sounds';
 import { markLocalEdit } from '@/lib/localEdits';
 
-export function useChecked(totalDuas: number) {
+export interface UseCheckedOptions {
+  onCompleteAll?: () => void;
+}
+
+export function useChecked(totalDuas: number, options?: UseCheckedOptions) {
   const today = getTodayKey();
   const localRevision = useRef(0);
+  const onCompleteAllRef = useRef(options?.onCompleteAll);
+
+  useEffect(() => {
+    onCompleteAllRef.current = options?.onCompleteAll;
+  }, [options?.onCompleteAll]);
 
   const [checked, setChecked] = useState<Record<string, boolean>>({});
   const isLoaded = useRef(false);
@@ -36,17 +45,18 @@ export function useChecked(totalDuas: number) {
       setChecked((prev) => {
         const wasChecked = !!prev[id];
         const next = { ...prev, [id]: !wasChecked };
+        const newDone = Object.values(next).filter(Boolean).length;
 
-        if (soundEnabled) {
-          // Play completion fanfare if this toggle completes all duas
-          const newDone = Object.values(next).filter(Boolean).length;
-          if (!wasChecked && newDone === totalDuas && totalDuas > 0) {
+        if (!wasChecked && newDone === totalDuas && totalDuas > 0) {
+          // Trigger celebration callback only when an active user tap completes the last remaining adhkar
+          onCompleteAllRef.current?.();
+          if (soundEnabled) {
             // slight delay so the check animation renders first
             setTimeout(playComplete, 80);
-          } else {
-            if (wasChecked) playUncheck();
-            else playCheck();
           }
+        } else if (soundEnabled) {
+          if (wasChecked) playUncheck();
+          else playCheck();
         }
 
         return next;

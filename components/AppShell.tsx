@@ -25,6 +25,8 @@ import {
   UserRound,
   X,
   Command,
+  Smartphone,
+  Download,
 } from 'lucide-react';
 
 import { useServiceWorker } from '@/hooks/useServiceWorker';
@@ -45,6 +47,8 @@ export type AppSection =
   | 'ambient'
   | 'insights'
   | 'settings'
+  | 'download'
+  | 'books'
   | (string & {});
 
 interface AppShellProps {
@@ -107,6 +111,7 @@ const HUB_CATEGORIES: HubCategory[] = [
       { href: '/ambient', label: 'Ambient Focus', desc: 'Islamic soundscapes & dhikr breathing', section: 'ambient', Icon: Headphones },
       { href: '/insights', label: 'Spiritual Insights', desc: 'Daily trends, consistency & habit streaks', section: 'insights', Icon: LineChart },
       { href: '/settings', label: 'Settings & Cloud Sync', desc: 'Calculation methods, sounds & backup', section: 'settings', Icon: UserRound },
+      { href: '/download', label: 'Download & Apps', desc: 'iOS, Android, macOS & Instant PWA', section: 'download', Icon: Smartphone, badge: 'PWA' },
     ],
   },
 ];
@@ -368,6 +373,20 @@ export default function AppShell({
           {/* Right Action Controls */}
           <div className="flex items-center gap-2">
             <Link
+              href="/download"
+              aria-label="Download Apps & PWA"
+              title="Get Dhikrly on iOS, Android, macOS or PWA"
+              className={`flex min-h-9 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-xl border border-[var(--app-line)] px-3 text-xs font-bold transition-all hover:bg-dhikr-500/10 cursor-pointer ${
+                active === 'download'
+                  ? 'bg-dhikr-50 text-dhikr-800 dark:bg-dhikr-500/15 dark:text-dhikr-200'
+                  : muted
+              }`}
+            >
+              <Smartphone className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
+              <span className="hidden xl:inline">Get App</span>
+            </Link>
+
+            <Link
               href="/settings"
               aria-label="Settings and Profile"
               title="Settings & Profile"
@@ -409,6 +428,16 @@ export default function AppShell({
             </Link>
 
             <div className="flex items-center gap-2">
+              {/* Download Link in Mobile Header */}
+              <Link
+                href="/download"
+                className="grid h-9 w-9 place-items-center rounded-full border border-[var(--app-line)] bg-[var(--app-surface)] text-sakinah-500 hover:text-sakinah-900 dark:hover:text-sakinah-100 shadow-xs cursor-pointer"
+                aria-label="Download app & install PWA"
+                title="Get App"
+              >
+                <Smartphone className="h-4 w-4 text-primary" />
+              </Link>
+
               {/* Quick Search in Mobile Header */}
               <button
                 type="button"
