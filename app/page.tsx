@@ -607,7 +607,7 @@ export default function DuasTracker() {
 
               <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
                 {/* Left: Inspiring Headline & Context */}
-                <div className="max-w-xl">
+                <div>
                   <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-400/15 px-3 py-1 text-[11px] font-extrabold uppercase tracking-wider text-emerald-100">
                     <Sparkles className="h-3 w-3 text-amber-300" />
                     <span>{timeGreeting.title}</span>
