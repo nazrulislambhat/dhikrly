@@ -225,7 +225,7 @@ export default function FiqhBooksPage() {
 
             {/* Expandable How to Study Sunni Fiqh Roadmap */}
             {expandedRoadmap && (
-              <div className="mt-6 pt-6 border-t border-border space-y-4 animate-fade-in">
+              <div className="mt-6 pt-6 border-t border-border space-y-4">
                 <h3 className="text-sm font-bold text-ink uppercase tracking-wider flex items-center gap-2">
                   <Sparkles className="h-4 w-4 text-primary" />
                   <span>The Traditional Four-Stage Sunni Curriculum Roadmap</span>
