@@ -226,36 +226,73 @@ export default function DuasTracker() {
     }
   }, []);
 
-  /* ── Contextual Time-of-Day Greeting ── */
+  /* ── Contextual Time-of-Day Spiritual Atmosphere ── */
   const timeGreeting = useMemo(() => {
     const hour = new Date().getHours();
+    if (hour < 5) {
+      return {
+        period: 'tahajjud',
+        arabic: 'قِيَامُ اللَّيْلِ وَالسَّكِينَة',
+        title: 'Night of Intimacy & Tahajjud',
+        desc: 'The third of the night: a sacred time when supplications find immediate answer.',
+        cta: 'Begin Night Adhkār',
+        filterTarget: 'all',
+        gradient: dark
+          ? 'from-[#051712] via-[#09221a] to-[#04100c]'
+          : 'from-[#063327] via-[#084534] to-[#0a4e3c]',
+      };
+    }
     if (hour < 12) {
       return {
-        arabic: 'صَبَاحُ الخَيْر',
+        period: 'morning',
+        arabic: 'صَبَاحُ الخَيْرِ وَالبَرَكَة',
         title: 'Morning of Grace & Barakah',
-        desc: 'Begin your day with conscious remembrance and quiet presence.',
+        desc: 'Begin your day with authentic morning protection, gratitude, and tranquil presence.',
+        cta: 'Start Morning Adhkār',
+        filterTarget: 'athkar',
+        gradient: dark
+          ? 'from-[#07241b] via-[#0d362a] to-[#092219]'
+          : 'from-[#064e3b] via-[#065f46] to-[#0d6e53]',
       };
     }
     if (hour < 17) {
       return {
-        arabic: 'مَسَاءُ الخَيْر',
-        title: 'Midday Peace & Focus',
-        desc: 'Pause amidst daily routines to re-center your heart on what matters.',
+        period: 'midday',
+        arabic: 'سَكِينَةُ الظَّهِيرَة',
+        title: 'Midday Calm & Focus',
+        desc: 'Pause amidst daily routines to re-center your heart on what truly matters.',
+        cta: 'Continue Daily Adhkār',
+        filterTarget: 'all',
+        gradient: dark
+          ? 'from-[#08221a] via-[#0c3126] to-[#071c14]'
+          : 'from-[#075340] via-[#09664f] to-[#085a46]',
       };
     }
     if (hour < 21) {
       return {
-        arabic: 'مَسَاءُ السَّكِينَة',
-        title: 'Evening Reflection & Calm',
-        desc: 'Wind down your day with the evening athkār and protection duas.',
+        period: 'evening',
+        arabic: 'مَسَاءُ الحِمَايَةِ وَالأَمَان',
+        title: 'Evening Protection & Peace',
+        desc: 'Wind down your day with the evening fortress athkār and authentic prophetic supplications.',
+        cta: 'Start Evening Adhkār',
+        filterTarget: 'athkar',
+        gradient: dark
+          ? 'from-[#0a231b] via-[#122e23] to-[#071711]'
+          : 'from-[#084c3b] via-[#0d5945] to-[#126852]',
       };
     }
     return {
+      period: 'night',
       arabic: 'لَيْلَةٌ مُبَارَكَة',
       title: 'Night of Peace & Gratitude',
-      desc: 'Reflect upon the day’s blessings and entrust your night to Allah.',
+      desc: 'Reflect upon the day’s blessings and entrust your night and sleep to the Almighty.',
+      cta: 'Read Bedtime Du‘ās',
+      filterTarget: 'athkar',
+      gradient: dark
+        ? 'from-[#04140f] via-[#071f17] to-[#030d0a]'
+        : 'from-[#063b2d] via-[#074b3a] to-[#063327]',
     };
-  }, []);
+  }, [dark]);
 
   /* ── Dark mode + sound persistence ── */
   useEffect(() => {
@@ -502,44 +539,49 @@ export default function DuasTracker() {
           {/* ── Hero Sanctuary Dashboard ── */}
           <div className="mb-8">
             <section
-              className={`relative overflow-hidden rounded-3xl border p-6 sm:p-8 text-white shadow-2xl transition-all ${
+              className={`relative overflow-hidden rounded-3xl border p-6 sm:p-9 text-white shadow-2xl transition-all ${
                 dark
-                  ? 'border-emerald-500/25 bg-[radial-gradient(ellipse_at_85%_20%,rgb(66_201_158/18%),transparent_55%),linear-gradient(135deg,#0a2720,#0d382c_65%,#08201a)]'
-                  : 'border-emerald-800 bg-[radial-gradient(ellipse_at_85%_20%,rgb(125_236_193/28%),transparent_55%),linear-gradient(135deg,#064e3b,#086049_65%,#0f765e)]'
+                  ? `border-emerald-500/25 bg-gradient-to-br ${timeGreeting.gradient}`
+                  : `border-emerald-800 bg-gradient-to-br ${timeGreeting.gradient}`
               }`}
               aria-label="Daily Remembrance Sanctuary"
             >
-              {/* Subtle Ambient Islamic Geometric Accent */}
+              {/* Subtle Ambient Islamic Geometric Motif */}
               <div
-                className="pointer-events-none absolute -bottom-10 right-10 hidden lg:block opacity-15"
+                className="pointer-events-none absolute -bottom-10 right-8 hidden lg:block opacity-10 select-none"
                 aria-hidden="true"
               >
-                <svg viewBox="0 0 180 150" className="h-44 w-52" fill="none">
+                <svg viewBox="0 0 200 200" className="h-56 w-56" fill="none">
+                  {/* Islamic 8-Point Rosette & Arch */}
+                  <circle cx="100" cy="100" r="90" stroke="currentColor" strokeWidth="2" strokeDasharray="4 4" />
                   <path
-                    d="M30 132V73h120v59M24 132h132M41 72c0-22 18-40 49-40s49 18 49 40M90 32V15m-5 4h10M35 73V41l8-13 8 13v32m86 0V41l8-13 8 13v32M80 132V98a10 10 0 0 1 20 0v34"
+                    d="M100 10 L125 75 L190 100 L125 125 L100 190 L75 125 L10 100 L75 75 Z"
                     stroke="currentColor"
-                    strokeWidth="4"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
+                    strokeWidth="2.5"
                   />
-                  <path d="M68 73c0-12 10-22 22-22s22 10 22 22" stroke="currentColor" strokeWidth="3" />
+                  <path
+                    d="M36 36 L164 36 L164 164 L36 164 Z"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    transform="rotate(45 100 100)"
+                  />
                 </svg>
               </div>
 
               <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
                 {/* Left: Inspiring Headline & Context */}
                 <div className="max-w-xl">
-                  <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-400/15 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-emerald-100">
+                  <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-400/15 px-3 py-1 text-[11px] font-extrabold uppercase tracking-wider text-emerald-100">
                     <Sparkles className="h-3 w-3 text-amber-300" />
                     <span>{timeGreeting.title}</span>
                   </div>
 
-                  <h1 className="mt-3 font-serif text-3xl sm:text-4xl font-extrabold tracking-tight text-white leading-tight">
+                  <h1 className="mt-3 font-editorial text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white leading-[1.15]">
                     Make room for what matters.
                   </h1>
 
                   <p
-                    className="mt-1 font-arabic text-xl sm:text-2xl text-emerald-200/90 font-normal"
+                    className="mt-1 font-quran text-xl sm:text-2xl text-emerald-200/90 font-normal"
                     dir="rtl"
                     lang="ar"
                     translate="no"
@@ -549,28 +591,48 @@ export default function DuasTracker() {
 
                   <p className="mt-2 text-xs sm:text-sm text-emerald-100/80 leading-relaxed max-w-md">
                     {done === total && total > 0
-                      ? 'Alḥamdulillāh! All daily remembrances completed today. May Allah accept your devotion.'
+                      ? 'Alḥamdulillāh! All daily remembrances completed today. May Allah accept your devotion and bless your time.'
                       : done > 0
-                        ? `${done} of ${total} remembrances completed today. Steadiness over speed — keep going at your own pace.`
+                        ? `${done} of ${total} remembrances completed. Steadiness over speed — take each sacred moment with presence.`
                         : timeGreeting.desc}
                   </p>
 
-                  {/* Highlights Bar: Streak + Quick Actions */}
-                  <div className="mt-4 flex flex-wrap items-center gap-2">
-                    <div className="inline-flex items-center gap-1.5 rounded-xl border border-amber-400/30 bg-amber-400/15 px-3 py-1.5 text-xs font-bold text-amber-200">
+                  {/* Highlights Bar: Streak + Quick Action CTA */}
+                  <div className="mt-5 flex flex-wrap items-center gap-2.5">
+                    {/* Guided CTA Button */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (timeGreeting.filterTarget && timeGreeting.filterTarget !== 'all') {
+                          setFilter(timeGreeting.filterTarget);
+                        }
+                        const el = document.getElementById('daily-adhkar');
+                        if (el) el.scrollIntoView({ behavior: 'smooth' });
+                      }}
+                      className="tap-bounce inline-flex items-center gap-2 rounded-2xl bg-white px-4 py-2 text-xs font-extrabold text-emerald-950 shadow-md hover:bg-emerald-50 dark:bg-emerald-300 dark:text-emerald-950 dark:hover:bg-emerald-200"
+                    >
+                      <span>
+                        {done === total && total > 0
+                          ? 'Review Today’s Adhkār'
+                          : timeGreeting.cta}
+                      </span>
+                      <ArrowRight className="h-3.5 w-3.5" />
+                    </button>
+
+                    <div className="inline-flex items-center gap-1.5 rounded-2xl border border-amber-400/30 bg-amber-400/15 px-3 py-2 text-xs font-bold text-amber-200">
                       <Flame className="h-4 w-4 text-amber-300 fill-amber-300/30" />
                       <span>{streak.current}d Streak</span>
                       <span className="opacity-60 font-normal text-[10px]">• Best: {streak.best}d</span>
                     </div>
 
-                    <div className="inline-flex items-center gap-1.5 rounded-xl border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-semibold text-emerald-100">
+                    <div className="inline-flex items-center gap-1.5 rounded-2xl border border-white/15 bg-white/10 px-3 py-2 text-xs font-semibold text-emerald-100">
                       <CheckCircle2 className="h-3.5 w-3.5 text-emerald-300" />
                       <span>{done} / {total} Done</span>
                     </div>
                   </div>
                 </div>
 
-                {/* Right: Circular Radial Progress Ring */}
+                {/* Right: Circular Radial Progress Dial */}
                 <div className="flex items-center gap-5 shrink-0 self-center md:self-auto">
                   <div
                     className="relative grid h-28 w-28 place-items-center sm:h-32 sm:w-32"
@@ -587,7 +649,11 @@ export default function DuasTracker() {
                       />
                       <circle
                         suppressHydrationWarning
-                        className="fill-none stroke-emerald-300 stroke-[7px] [stroke-linecap:round] transition-all duration-700 ease-out"
+                        className={`fill-none stroke-[7px] [stroke-linecap:round] transition-all duration-700 ease-out ${
+                          pct === 100
+                            ? 'stroke-amber-300 shadow-[0_0_20px_rgba(251,191,36,0.6)]'
+                            : 'stroke-emerald-300'
+                        }`}
                         cx="50"
                         cy="50"
                         r="42"
@@ -598,11 +664,11 @@ export default function DuasTracker() {
                       />
                     </svg>
                     <div className="grid justify-items-center text-center">
-                      <strong suppressHydrationWarning className="text-2xl sm:text-3xl font-extrabold tracking-tight">
+                      <strong suppressHydrationWarning className="font-display text-2xl sm:text-3xl font-extrabold tracking-tight">
                         {pct}%
                       </strong>
-                      <span className="text-[10px] font-medium uppercase tracking-wider text-emerald-100/75">
-                        Complete
+                      <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-100/75">
+                        {pct === 100 ? 'Completed' : 'Today'}
                       </span>
                     </div>
                   </div>
@@ -618,14 +684,16 @@ export default function DuasTracker() {
                 href: '#daily-adhkar',
                 Icon: Sparkles,
                 title: 'Daily Adhkār',
-                desc: `${done} of ${total} done`,
+                desc: `${done} of ${total} finished`,
+                badge: pct === 100 ? '100% Done' : `${pending} left`,
                 active: true,
               },
               {
                 href: '/salah',
                 Icon: Clock3,
                 title: 'Ṣalāh Times',
-                desc: nextPrayerInfo ? `Next: ${nextPrayerInfo.name}` : 'Prayer schedule',
+                desc: nextPrayerInfo ? `Next: ${nextPrayerInfo.name} ${nextPrayerInfo.timeStr}` : 'Prayer schedule',
+                badge: 'Azan alerts',
                 active: false,
               },
               {
@@ -633,6 +701,7 @@ export default function DuasTracker() {
                 Icon: BookOpen,
                 title: 'Noble Qur’an',
                 desc: 'Read & listen',
+                badge: '114 Surahs',
                 active: false,
               },
               {
@@ -640,28 +709,29 @@ export default function DuasTracker() {
                 Icon: CircleDot,
                 title: 'Tasbīḥ Counter',
                 desc: 'Digital subḥah',
+                badge: 'Post-Salah',
                 active: false,
               },
             ].map((pillar) => (
               <Link
                 key={pillar.title}
                 href={pillar.href}
-                className={`group flex items-center gap-3 rounded-2xl border p-3.5 no-underline transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md ${
+                className={`group flex items-center gap-3 rounded-2xl border p-3.5 no-underline transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg ${
                   pillar.active
                     ? dark
                       ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-200 shadow-xs'
-                      : 'border-emerald-700/30 bg-emerald-50/80 text-emerald-900 shadow-xs'
+                      : 'border-emerald-700/30 bg-emerald-50/80 text-emerald-950 shadow-xs'
                     : dark
-                      ? 'border-white/[0.08] bg-[#111e1a]/90 hover:border-emerald-500/30 text-stone-200'
-                      : 'border-stone-200/90 bg-white hover:border-emerald-500/30 text-stone-800 shadow-xs'
+                      ? 'border-white/[0.08] bg-[#0c1814]/90 hover:border-emerald-500/30 text-stone-200'
+                      : 'border-emerald-950/[0.07] bg-white hover:border-emerald-600/30 text-stone-800 shadow-xs'
                 }`}
               >
                 <span
                   className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl transition-transform group-hover:scale-105 ${
                     pillar.active
                       ? dark
-                        ? 'bg-emerald-500/20 text-emerald-300'
-                        : 'bg-emerald-800 text-white'
+                        ? 'bg-emerald-500/25 text-emerald-300'
+                        : 'bg-emerald-800 text-white shadow-xs'
                       : dark
                         ? 'bg-white/5 text-emerald-400'
                         : 'bg-emerald-50 text-emerald-800'
@@ -670,8 +740,8 @@ export default function DuasTracker() {
                   <pillar.Icon className="h-5 w-5" />
                 </span>
                 <div className="min-w-0 flex-1">
-                  <div className="truncate text-xs font-bold leading-tight">{pillar.title}</div>
-                  <div className="truncate text-[10px] text-stone-400 dark:text-stone-400 mt-0.5">
+                  <div className="truncate text-xs font-extrabold leading-tight">{pillar.title}</div>
+                  <div className="truncate text-[10px] text-stone-400 mt-0.5">
                     {pillar.desc}
                   </div>
                 </div>
@@ -733,10 +803,10 @@ export default function DuasTracker() {
                       value={search}
                       onChange={(e) => setSearch(e.target.value)}
                       aria-label="Search remembrances"
-                      className={`h-10 w-full rounded-2xl border pl-10 pr-9 text-xs outline-none transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 ${
+                      className={`h-11 w-full rounded-2xl border pl-10 pr-9 text-xs outline-none transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 ${
                         dark
-                          ? 'border-white/[0.08] bg-[#111e1a] text-stone-100 placeholder-stone-500'
-                          : 'border-stone-200 bg-white text-stone-800 placeholder-stone-400 shadow-xs'
+                          ? 'border-white/[0.08] bg-[#0c1814] text-stone-100 placeholder-stone-500'
+                          : 'border-emerald-950/[0.08] bg-white text-stone-800 placeholder-stone-400 shadow-xs'
                       }`}
                     />
                     {search && (
@@ -755,12 +825,12 @@ export default function DuasTracker() {
                     type="button"
                     onClick={() => setPriOnly((p) => !p)}
                     aria-pressed={priOnly}
-                    className={`inline-flex h-10 items-center gap-1.5 rounded-2xl border px-3.5 text-xs font-bold transition-all active:scale-95 ${
+                    className={`tap-bounce inline-flex h-11 items-center gap-1.5 rounded-2xl border px-3.5 text-xs font-bold transition-all ${
                       priOnly
-                        ? 'border-amber-400/50 bg-amber-400/15 text-amber-700 dark:text-amber-300'
+                        ? 'border-amber-400/50 bg-amber-400/20 text-amber-800 dark:text-amber-300 shadow-xs'
                         : dark
-                          ? 'border-white/[0.08] bg-[#111e1a] text-stone-400 hover:text-stone-200'
-                          : 'border-stone-200 bg-white text-stone-600 hover:text-stone-900 shadow-xs'
+                          ? 'border-white/[0.08] bg-[#0c1814] text-stone-400 hover:text-stone-200'
+                          : 'border-emerald-950/[0.08] bg-white text-stone-600 hover:text-stone-900 shadow-xs'
                     }`}
                   >
                     <Star
@@ -773,7 +843,7 @@ export default function DuasTracker() {
                   <button
                     type="button"
                     onClick={() => setActiveModal('addDua')}
-                    className="inline-flex h-10 items-center gap-1.5 rounded-2xl border border-emerald-600/30 bg-emerald-50 px-3.5 text-xs font-bold text-emerald-800 transition hover:bg-emerald-100 active:scale-95 dark:border-emerald-500/30 dark:bg-emerald-500/15 dark:text-emerald-300"
+                    className="tap-bounce inline-flex h-11 items-center gap-1.5 rounded-2xl border border-emerald-600/30 bg-emerald-50 px-4 text-xs font-bold text-emerald-900 transition hover:bg-emerald-100 dark:border-emerald-500/30 dark:bg-emerald-500/15 dark:text-emerald-300 shadow-xs"
                   >
                     <Plus className="h-3.5 w-3.5" aria-hidden="true" />
                     <span>Add Custom</span>
@@ -791,22 +861,22 @@ export default function DuasTracker() {
                         key={key}
                         onClick={() => setFilter(key)}
                         aria-pressed={active}
-                        className={`inline-flex min-h-8 shrink-0 items-center gap-2 rounded-xl px-3.5 text-xs font-bold transition-all ${
+                        className={`tap-bounce inline-flex min-h-8 shrink-0 items-center gap-2 rounded-xl px-3.5 text-xs font-bold transition-all ${
                           active
-                            ? 'bg-emerald-800 text-white dark:bg-emerald-500 dark:text-emerald-950 shadow-xs'
+                            ? 'bg-emerald-800 text-white dark:bg-emerald-500 dark:text-emerald-950 shadow-sm'
                             : dark
-                              ? 'border border-white/[0.08] bg-[#111e1a] text-stone-400 hover:text-stone-200'
-                              : 'border border-stone-200 bg-white text-stone-600 hover:text-stone-900 shadow-xs'
+                              ? 'border border-white/[0.08] bg-[#0c1814] text-stone-400 hover:text-stone-200'
+                              : 'border border-emerald-950/[0.08] bg-white text-stone-600 hover:text-stone-900 shadow-xs'
                         }`}
                       >
                         <span>{label}</span>
                         <span
-                          className={`rounded-full px-1.5 py-0.2 text-[10px] tabular-nums ${
+                          className={`rounded-full px-1.5 py-0.2 text-[10px] tabular-nums font-mono ${
                             active
                               ? 'bg-white/20 text-white dark:bg-black/20 dark:text-emerald-950'
                               : dark
                                 ? 'bg-white/5 text-stone-400'
-                                : 'bg-stone-100 text-stone-500'
+                                : 'bg-stone-100 text-stone-600'
                           }`}
                         >
                           {catDone(key)}/{count}
@@ -881,31 +951,39 @@ export default function DuasTracker() {
 
               {/* Today's Progress Card */}
               <section
-                className={`rounded-2xl border p-4.5 transition-all ${
+                className={`rounded-3xl border p-5 transition-all ${
                   dark
-                    ? 'border-white/[0.08] bg-[#111e1a]/90 backdrop-blur-md'
-                    : 'border-stone-200/90 bg-white shadow-xs'
+                    ? 'border-white/[0.08] bg-[#0c1814]/90 backdrop-blur-md'
+                    : 'border-emerald-950/[0.07] bg-white shadow-xs'
                 }`}
               >
                 <div className="flex items-center justify-between text-xs font-bold">
-                  <span className="text-[var(--app-ink)]">Today&apos;s Goal</span>
+                  <span className="text-[var(--app-ink)]">Today&apos;s Devotion Goal</span>
                   <span
                     suppressHydrationWarning
-                    className="font-mono text-sm text-emerald-700 dark:text-emerald-300 font-bold"
+                    className="font-mono text-sm text-emerald-700 dark:text-emerald-300 font-extrabold"
                   >
                     {pct}%
                   </span>
                 </div>
-                <div className="my-2.5">
+                <div className="my-3">
                   <ProgressBar pct={pct} dark={dark} />
+                </div>
+                {/* Milestone indicators */}
+                <div className="flex items-center justify-between text-[10px] text-stone-400 font-mono mb-2">
+                  <span>Start</span>
+                  <span>25%</span>
+                  <span>50%</span>
+                  <span>75%</span>
+                  <span className={pct === 100 ? 'text-amber-500 font-bold' : ''}>100%</span>
                 </div>
                 <p
                   suppressHydrationWarning
-                  className="text-[11px] text-stone-500 dark:text-stone-400"
+                  className="text-[11px] text-stone-500 dark:text-stone-400 leading-relaxed"
                 >
                   {done === total && total > 0
                     ? '✨ All daily duas finished. BarakAllahu feek!'
-                    : `${done} of ${total} finished · ${pending} remaining`}
+                    : `${done} of ${total} finished · ${pending} remaining for today`}
                 </p>
               </section>
 
@@ -919,19 +997,19 @@ export default function DuasTracker() {
 
               {/* Activity Heatmap Accordion */}
               <div
-                className={`overflow-hidden rounded-2xl border transition-all ${
-                  dark ? 'border-white/[0.08] bg-[#111e1a]/90' : 'border-stone-200/90 bg-white shadow-xs'
+                className={`overflow-hidden rounded-3xl border transition-all ${
+                  dark ? 'border-white/[0.08] bg-[#0c1814]/90' : 'border-emerald-950/[0.07] bg-white shadow-xs'
                 }`}
               >
                 <button
                   type="button"
                   onClick={() => setShowHeatmap((v) => !v)}
                   aria-expanded={showHeatmap}
-                  className="flex min-h-12 w-full items-center justify-between px-4 text-xs font-bold text-[var(--app-ink)]"
+                  className="flex min-h-12 w-full items-center justify-between px-4 text-xs font-bold text-[var(--app-ink)] hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
                 >
                   <span>{showHeatmap ? 'Hide 365-Day Activity Map' : 'View 365-Day Activity Map'}</span>
                   <span
-                    className="grid h-6 w-6 place-items-center rounded-lg bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
+                    className="grid h-6 w-6 place-items-center rounded-lg bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-bold"
                     aria-hidden="true"
                   >
                     {showHeatmap ? '−' : '+'}

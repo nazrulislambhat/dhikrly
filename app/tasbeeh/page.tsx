@@ -427,52 +427,56 @@ export default function TasbeehPage() {
           </div>
 
           {/* Giant Tactile Tap Circle Button */}
-          <div className="relative my-4 select-none touch-manipulation">
+          <div className="relative my-5 select-none touch-manipulation">
             {/* SVG Circular Progress Ring */}
-            <svg className="h-72 w-72 -rotate-90 transform" viewBox="0 0 260 260">
-              {/* Background Ring */}
+            <svg className="h-80 w-80 -rotate-90 transform drop-shadow-md" viewBox="0 0 260 260">
+              {/* Background Track Ring */}
               <circle
                 cx="130"
                 cy="130"
                 r={radius}
-                className="stroke-stone-200 dark:stroke-stone-800"
+                className="stroke-stone-200/80 dark:stroke-white/10"
                 strokeWidth="8"
                 fill="none"
               />
-              {/* Progress Ring */}
+              {/* Animated Progress Ring */}
               {target > 0 && (
                 <circle
                   cx="130"
                   cy="130"
                   r={radius}
-                  className="stroke-emerald-600 dark:stroke-emerald-400 transition-all duration-150"
+                  className="stroke-emerald-500 dark:stroke-emerald-400 transition-all duration-200 [stroke-linecap:round]"
                   strokeWidth="10"
                   strokeDasharray={circumference}
                   strokeDashoffset={strokeDashoffset}
-                  strokeLinecap="round"
                   fill="none"
+                  style={{
+                    filter: progressRatio === 1 ? 'drop-shadow(0 0 8px rgba(52,211,153,0.8))' : 'none',
+                  }}
                 />
               )}
             </svg>
 
-            {/* Inner Tap Circle */}
+            {/* Inner Tap Circle Dial */}
             <button
               type="button"
               onClick={handleIncrement}
-              className={`absolute inset-4 rounded-full flex flex-col items-center justify-center transition-all active:scale-95 shadow-xl ${
+              className={`tap-bounce absolute inset-5 rounded-full flex flex-col items-center justify-center transition-all shadow-2xl active:scale-95 ${
                 completedCelebration
-                  ? 'bg-gradient-to-tr from-amber-500 to-emerald-500 text-white animate-bounce'
-                  : 'bg-gradient-to-tr from-emerald-800 to-teal-700 text-white hover:from-emerald-700 hover:to-teal-600 dark:from-emerald-600 dark:to-teal-500'
+                  ? 'bg-gradient-to-tr from-amber-500 via-emerald-500 to-teal-400 text-white animate-bounce shadow-amber-500/40'
+                  : 'bg-gradient-to-br from-emerald-700 via-emerald-800 to-teal-900 text-white hover:from-emerald-600 hover:to-teal-800 dark:from-emerald-600 dark:via-emerald-700 dark:to-teal-600 dark:shadow-emerald-950/60'
               }`}
-              aria-label="Tap to count dhikr"
+              aria-label="Tap to count dhikr (or press Spacebar)"
             >
-              <span className="text-5xl sm:text-6xl font-extrabold tracking-tight font-ui">
+              <span className="font-display text-6xl sm:text-7xl font-extrabold tracking-tight tabular-nums drop-shadow-sm">
                 {count}
               </span>
               <span className="mt-1 text-xs uppercase tracking-widest opacity-80 font-bold">
                 {target > 0 ? `of ${target}` : 'Free Count'}
               </span>
-              <span className="mt-2 text-[10px] opacity-60">Tap anywhere</span>
+              <span className="mt-2 text-[10px] uppercase tracking-wider opacity-60 font-semibold">
+                Tap anywhere or press Space
+              </span>
             </button>
           </div>
 
