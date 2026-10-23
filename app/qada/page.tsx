@@ -163,7 +163,7 @@ export default function QadaPage() {
         {/* Wizard Modal */}
         {showWizard && (
           <div
-            className="fixed inset-0 z-[90] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
+            className="fixed inset-0 z-[90] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
             onClick={(e) => e.target === e.currentTarget && setShowWizard(false)}
           >
             <div className="w-full max-w-md rounded-3xl border border-[var(--app-line)] bg-[var(--app-surface)] p-6 shadow-2xl">
