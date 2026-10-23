@@ -431,7 +431,7 @@ export default function SalahPage() {
                       : 'Before Fajr'}
                   </p>
                   <p
-                    className={`mt-1 font-serif text-2xl font-semibold ${dark ? 'text-stone-50' : 'text-emerald-950'}`}
+                    className={`mt-1 font-serif text-2xl font-semibold ${dark ? 'text-white' : 'text-emerald-950'}`}
                   >
                     {next.charAt(0).toUpperCase() + next.slice(1)} is next
                   </p>
