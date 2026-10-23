@@ -8,10 +8,7 @@ import type { Streak } from '@/types';
 
 export function useStreak(done: number, total: number) {
   const today = getTodayKey();
-  const [streak, setStreakState] = useState<Streak>(() => {
-    const loaded = load<Streak>(STREAK_KEY, DEFAULT_STREAK);
-    return sanitizeStreak(loaded, today);
-  });
+  const [streak, setStreakState] = useState<Streak>(DEFAULT_STREAK);
   const prevDone = useRef(done);
 
   // Load and sanitize on mount / day change

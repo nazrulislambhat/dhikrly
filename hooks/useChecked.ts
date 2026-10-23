@@ -10,12 +10,17 @@ export function useChecked(totalDuas: number) {
   const today = getTodayKey();
   const localRevision = useRef(0);
 
-  const [checked, setChecked] = useState<Record<string, boolean>>(() => {
-    const all = load<Record<string, Record<string, boolean>>>(STORAGE_KEY, {});
-    return all[today] ?? {};
-  });
+  const [checked, setChecked] = useState<Record<string, boolean>>({});
+  const isLoaded = useRef(false);
 
   useEffect(() => {
+    const all = load<Record<string, Record<string, boolean>>>(STORAGE_KEY, {});
+    setChecked(all[today] ?? {});
+    isLoaded.current = true;
+  }, [today]);
+
+  useEffect(() => {
+    if (!isLoaded.current) return;
     const all = pruneOldEntries(STORAGE_KEY, 365);
     all[today] = checked;
     save(STORAGE_KEY, all);

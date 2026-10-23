@@ -86,25 +86,13 @@ type Modal = 'notifications' | 'addDua' | 'missedDay' | 'auth' | null;
   ───────────────────────────────────────────── */
 export default function DuasTracker() {
   /* ── Settings ── */
-  const [dark, setDark] = useState<boolean>(
-    () =>
-      load<{ dark: boolean; sound: boolean }>(SETTINGS_KEY, {
-        dark: false,
-        sound: true,
-      }).dark,
-  );
-  const [soundEnabled, setSoundEnabled] = useState<boolean>(
-    () =>
-      load<{ dark: boolean; sound: boolean }>(SETTINGS_KEY, {
-        dark: false,
-        sound: true,
-      }).sound ?? true,
-  );
+  const [mounted, setMounted] = useState<boolean>(false);
+  const [dark, setDark] = useState<boolean>(false);
+  const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
+  const isLoaded = useRef<boolean>(false);
 
   /* ── Custom duas ── */
-  const [customDuas, setCustomDuas] = useState<Dua[]>(() =>
-    load<Dua[]>(CUSTOM_DUAS_KEY, []),
-  );
+  const [customDuas, setCustomDuas] = useState<Dua[]>([]);
   const allDuas = useMemo<Dua[]>(
     () => [...BASE_DUAS, ...customDuas],
     [customDuas],
@@ -226,9 +214,23 @@ export default function DuasTracker() {
     }
   }, []);
 
+  /* ── Mount effect: Load saved preferences safely on client ── */
+  useEffect(() => {
+    setMounted(true);
+    const saved = load<{ dark: boolean; sound: boolean }>(SETTINGS_KEY, {
+      dark: false,
+      sound: true,
+    });
+    setDark(saved.dark);
+    setSoundEnabled(saved.sound ?? true);
+    const custom = load<Dua[]>(CUSTOM_DUAS_KEY, []);
+    if (custom.length > 0) setCustomDuas(custom);
+    isLoaded.current = true;
+  }, []);
+
   /* ── Contextual Time-of-Day Spiritual Atmosphere ── */
   const timeGreeting = useMemo(() => {
-    const hour = new Date().getHours();
+    const hour = mounted ? new Date().getHours() : 12;
     if (hour < 5) {
       return {
         period: 'tahajjud',
@@ -296,6 +298,7 @@ export default function DuasTracker() {
 
   /* ── Dark mode + sound persistence ── */
   useEffect(() => {
+    if (!isLoaded.current) return;
     save(SETTINGS_KEY, { dark, sound: soundEnabled });
     document.documentElement.classList.toggle('dark', dark);
   }, [dark, soundEnabled]);
@@ -442,9 +445,9 @@ export default function DuasTracker() {
                 }`}
               >
                 <span className="text-amber-500 dark:text-amber-400">🌙</span>
-                <span>{getHijriDate()}</span>
+                <span suppressHydrationWarning>{getHijriDate()}</span>
                 <span className="opacity-40">•</span>
-                <span className="text-[11px] font-medium opacity-80">{getGregorianDate()}</span>
+                <span suppressHydrationWarning className="text-[11px] font-medium opacity-80">{getGregorianDate()}</span>
               </div>
 
               {nextPrayerInfo && (

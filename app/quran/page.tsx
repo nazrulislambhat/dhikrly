@@ -223,7 +223,7 @@ export default function QuranPage() {
   const [repeatModalOpen, setRepeatModalOpen] = useState<boolean>(false);
 
   const visibleChapter =
-    chapter?.surah.number === settings.surah &&
+    chapter?.surah?.number === settings.surah &&
     chapter.translation === settings.translation &&
     chapter.reciter === settings.reciter &&
     chapter.arabicScript === 'indopak'
@@ -253,7 +253,9 @@ export default function QuranPage() {
   useEffect(() => {
     setMounted(true);
     const cached = load<ChapterCache | null>(QURAN_CACHE_KEY, null);
-    if (cached) setChapter(cached);
+    if (cached && cached.surah && typeof cached.surah.number === 'number') {
+      setChapter(cached);
+    }
     const savedBookmarks = load<QuranBookmark[]>(QURAN_BOOKMARKS_KEY, []);
     if (savedBookmarks.length > 0) {
       setBookmarks(savedBookmarks);
@@ -441,7 +443,7 @@ export default function QuranPage() {
         console.error('Could not load the selected Quran surah:', error);
         const cached = load<ChapterCache | null>(QURAN_CACHE_KEY, null);
         if (
-          cached?.surah.number === settings.surah &&
+          cached?.surah?.number === settings.surah &&
           cached.translation === settings.translation &&
           cached.reciter === settings.reciter &&
           cached.arabicScript === 'indopak'
@@ -499,23 +501,25 @@ export default function QuranPage() {
           pageData.indopak.map((ayah) => [ayah.verse_key, ayah.text_indopak]),
         );
         const verses = arabic.ayahs.map((ayah, index) => {
-          const indopakText = indopakByVerse.get(
-            `${ayah.surah.number}:${ayah.numberInSurah}`,
-          );
-          if (!indopakText) {
-            throw new Error(
-              `Indo-Pak Arabic text is unavailable for ${ayah.surah.number}:${ayah.numberInSurah}.`,
-            );
-          }
+          const ayahSurahNum =
+            ayah.surah?.number ??
+            (pageData.indopak[index]?.verse_key
+              ? Number(pageData.indopak[index].verse_key.split(':')[0])
+              : settings.surah);
+          const surahMeta =
+            surahs.find((s) => s.number === ayahSurahNum) ?? ayah.surah;
+          const indopakText =
+            indopakByVerse.get(`${ayahSurahNum}:${ayah.numberInSurah}`) ||
+            ayah.text;
           return {
             number: ayah.numberInSurah,
             arabic: indopakText,
             translation: translated.ayahs[index]?.text ?? '',
             audio: recitation.ayahs[index]?.audio,
             page: ayah.page ?? mushafPageNumber,
-            surahNumber: ayah.surah.number,
-            surahName: ayah.surah.englishName,
-            surahArabicName: ayah.surah.name,
+            surahNumber: ayahSurahNum,
+            surahName: surahMeta?.englishName ?? ayah.surah?.englishName ?? '',
+            surahArabicName: surahMeta?.name ?? ayah.surah?.name ?? '',
             globalNumber: ayah.number,
           };
         });
@@ -653,7 +657,7 @@ export default function QuranPage() {
     if (
       jumpToAyah === null ||
       !visibleChapter ||
-      visibleChapter.surah.number !== jumpToAyah.surah
+      visibleChapter.surah?.number !== jumpToAyah.surah
     ) {
       return;
     }
@@ -702,7 +706,9 @@ export default function QuranPage() {
         const surah = Number(current?.target.getAttribute('data-surah'));
         if (current && Number.isInteger(ayah)) {
           recordRead({
-            surah: Number.isInteger(surah) ? surah : visibleChapter.surah.number,
+            surah: Number.isInteger(surah)
+              ? surah
+              : (visibleChapter.surah?.number ?? settings.surah),
             ayah,
           });
         }
@@ -1751,13 +1757,13 @@ export default function QuranPage() {
               {visibleChapter && settings.viewMode === 'reader' && (
                 <div className={`mb-4 rounded-2xl border p-5 text-center sm:p-7 ${card}`}>
                   <p className={`text-xs uppercase tracking-[0.12em] ${muted}`}>
-                    Surah {visibleChapter.surah.number} · {visibleChapter.surah.revelationType} · {visibleChapter.surah.numberOfAyahs} verses
+                    Surah {visibleChapter.surah?.number ?? settings.surah} · {visibleChapter.surah?.revelationType ?? ''} · {visibleChapter.surah?.numberOfAyahs ?? ''} verses
                   </p>
                   <h2 className="mt-2 font-arabic text-3xl" dir="rtl" lang="ar">
-                    {visibleChapter.surah.name}
+                    {visibleChapter.surah?.name ?? ''}
                   </h2>
                   <p className={`mt-1 text-sm ${muted}`}>
-                    {visibleChapter.surah.englishName} · {visibleChapter.surah.englishNameTranslation}
+                    {visibleChapter.surah?.englishName ?? ''} · {visibleChapter.surah?.englishNameTranslation ?? ''}
                   </p>
                   <button
                     type="button"
