@@ -124,10 +124,10 @@ describe('mergeLocalMasjids (Zero Data Loss)', () => {
 
   it('does not merge distinct mosques even if both had generic placeholder IDs', () => {
     const local: LocalMasjidItem[] = [
-      { id: 'masjid_1', name: 'Mosque 1', timings: { fajr: { azanTime: '05:00', iqamahTime: '05:30' } } },
+      { id: 'masjid_1', name: 'Mosque 1', updatedAt: '2026-10-20T10:00:00Z', timings: { fajr: { azanTime: '05:00', iqamahTime: '05:30' } } },
     ];
     const remote: LocalMasjidItem[] = [
-      { id: 'masjid_1', name: 'Mosque 2', timings: { fajr: { azanTime: '05:15', iqamahTime: '05:45' } } },
+      { id: 'masjid_1', name: 'Mosque 2', updatedAt: '2026-10-20T10:00:00Z', timings: { fajr: { azanTime: '05:15', iqamahTime: '05:45' } } },
     ];
     const result = mergeLocalMasjids(local, remote);
     expect(result.masjids).toHaveLength(2);

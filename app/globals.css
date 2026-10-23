@@ -1,23 +1,26 @@
-@import url('https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@400;500;600;700;800&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Scheherazade+New:wght@400;600;700&display=swap');
 
 @import 'tailwindcss';
 
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --font-serif: 'Plus Jakarta Sans', 'DM Sans', sans-serif;
-  --font-arabic: 'Amiri', 'Noto Naskh Arabic', 'Traditional Arabic', serif;
-  --font-ui: 'Plus Jakarta Sans', 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --color-gold-50: #fffbeb;
-  --color-gold-100: #fef3c7;
-  --color-gold-200: #fde68a;
-  --color-gold-300: #fcd34d;
-  --color-gold-400: #fbbf24;
+  --font-serif: 'Cormorant Garamond', 'Playfair Display', Georgia, serif;
+  --font-arabic: 'Scheherazade New', 'Amiri', 'Noto Naskh Arabic', 'Traditional Arabic', serif;
+  --font-ui: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-display: 'Plus Jakarta Sans', sans-serif;
+  
+  --color-gold-50: #fffdf5;
+  --color-gold-100: #fef7dc;
+  --color-gold-200: #fdeab8;
+  --color-gold-300: #fcd783;
+  --color-gold-400: #fbbf48;
   --color-gold-500: #f59e0b;
   --color-gold-600: #d97706;
   --color-gold-700: #b45309;
   --color-gold-800: #92400e;
   --color-gold-900: #78350f;
+  
   --color-amber-50: #eafbf5;
   --color-amber-100: #d2f6e9;
   --color-amber-200: #a9ecd5;
@@ -29,8 +32,9 @@
   --color-amber-800: #075d46;
   --color-amber-900: #064c3b;
   --color-amber-950: #032b23;
-  --color-stone-50: #f5f8f7;
-  --color-stone-100: #eaf0ee;
+  
+  --color-stone-50: #f7f9f7;
+  --color-stone-100: #ebf1ee;
   --color-stone-200: #d8e2df;
   --color-stone-300: #bdccc8;
   --color-stone-400: #8fa39d;
@@ -39,21 +43,28 @@
   --color-stone-700: #344640;
   --color-stone-800: #22332e;
   --color-stone-900: #14221e;
+  
   --radius-xl: 1.1rem;
   --radius-2xl: 1.4rem;
-  --shadow-sm: 0 2px 12px rgb(20 48 39 / 5%);
-  --shadow-md: 0 12px 32px rgb(20 48 39 / 8%);
-  --shadow-glow: 0 0 28px -4px rgba(16, 185, 129, 0.22);
-  --shadow-glow-gold: 0 0 28px -4px rgba(245, 158, 11, 0.28);
+  --radius-3xl: 1.75rem;
+  
+  --shadow-sm: 0 2px 8px rgb(6 78 59 / 4%);
+  --shadow-md: 0 8px 24px rgb(6 78 59 / 6%);
+  --shadow-lg: 0 16px 36px rgb(6 78 59 / 8%);
+  --shadow-glow: 0 0 32px -4px rgba(16, 185, 129, 0.28);
+  --shadow-glow-gold: 0 0 32px -4px rgba(245, 158, 11, 0.32);
 }
 
 @layer base {
   :root {
-    --app-accent: #16805a;
-    --app-secondary: #287750;
-    --app-bg: #f7f9f7;
+    --app-accent: #0f765e;
+    --app-secondary: #065f46;
+    --app-bg: #f8faf8;
     --app-surface: #ffffff;
-    --app-ink: #14221e;
+    --app-ink: #0f1c18;
+    --app-line: #e3ebe7;
+    --app-muted: #5f7068;
+    --app-gold: #d97706;
   }
 
   html {
@@ -68,6 +79,11 @@
     font-family: var(--font-ui);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'tnum';
+    background-image: 
+      radial-gradient(ellipse at 85% -10%, rgb(15 118 94 / 6%), transparent 42rem),
+      radial-gradient(ellipse at 15% 100%, rgb(245 158 11 / 3%), transparent 36rem);
+    background-attachment: fixed;
   }
 
   button,
@@ -87,20 +103,24 @@
     outline-offset: 3px;
   }
 
-  /* Arabic-specific reset */
+  /* Arabic typography baseline */
   [lang='ar'],
   [dir='rtl'] {
     font-family: var(--font-arabic);
-    line-height: 1.9;
+    line-height: 2.4;
+    text-rendering: optimizeLegibility;
   }
 }
 
 html.dark {
-  --app-bg: #0d1715;
-  --app-surface: #14211e;
-  --app-ink: #edf6f2;
-  --app-accent: #42c99e;
-  --app-secondary: #77ddbc;
+  --app-bg: #08120f;
+  --app-surface: #0e1c17;
+  --app-ink: #f0f7f4;
+  --app-accent: #34d399;
+  --app-secondary: #6ee7b7;
+  --app-line: rgba(52, 211, 153, 0.12);
+  --app-muted: #8ba59b;
+  --app-gold: #fbbf24;
   color-scheme: dark;
 }
 
@@ -108,21 +128,63 @@ html:not(.dark) {
   color-scheme: light;
 }
 
-/* App-wide layout and component refresh */
-:root {
-  --app-line: #e7ece8;
-  --app-muted: #7c8982;
+html.dark body {
+  background-image: 
+    radial-gradient(ellipse at 85% -10%, rgb(52 211 153 / 7%), transparent 44rem),
+    radial-gradient(ellipse at 15% 100%, rgb(245 158 11 / 4%), transparent 38rem);
 }
 
-html.dark {
-  --app-line: rgb(219 246 234 / 10%);
-  --app-muted: #8ba39a;
+/* ── Typography Utilities ── */
+.font-quran {
+  font-family: var(--font-arabic);
+  line-height: 2.6;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: 'cv02', 'cv03';
 }
 
-body {
-  background-image: radial-gradient(ellipse at 82% 0%, rgb(22 128 90 / 4%), transparent 34rem);
+.font-editorial {
+  font-family: var(--font-serif);
+  letter-spacing: -0.01em;
 }
 
+/* ── Glassmorphism & Surface Tokens ── */
+.glass-sanctuary {
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+/* ── Micro-Interactions & Tap Effects ── */
+.tap-bounce {
+  transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.15s ease;
+}
+
+.tap-bounce:active {
+  transform: scale(0.96);
+}
+
+/* ── Soundwave animation for audio reciting ── */
+@keyframes soundwave {
+  0%, 100% {
+    height: 6px;
+  }
+  50% {
+    height: 18px;
+  }
+}
+
+.animate-soundwave-1 {
+  animation: soundwave 0.8s ease-in-out infinite;
+}
+
+.animate-soundwave-2 {
+  animation: soundwave 0.8s ease-in-out 0.2s infinite;
+}
+
+.animate-soundwave-3 {
+  animation: soundwave 0.8s ease-in-out 0.4s infinite;
+}
+
+/* ── Mushaf Page Turns ── */
 @keyframes mushaf-page-turn-next {
   from {
     opacity: 0.55;
@@ -169,7 +231,7 @@ body {
 }
 
 .animate-fade-in {
-  animation: fade-in 0.25s ease-out forwards;
+  animation: fade-in 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 @keyframes shimmer {
@@ -209,7 +271,7 @@ body {
   );
 }
 
-/* â”€â”€ Scrollbar styling â”€â”€ */
+/* ── Scrollbar styling ── */
 @media (min-width: 768px) {
   ::-webkit-scrollbar {
     width: 6px;
@@ -221,24 +283,24 @@ body {
   }
 
   ::-webkit-scrollbar-thumb {
-    background: rgba(120, 113, 108, 0.3);
+    background: rgba(120, 113, 108, 0.25);
     border-radius: 99px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: rgba(120, 113, 108, 0.5);
+    background: rgba(120, 113, 108, 0.45);
   }
 
   .dark ::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.12);
   }
 
   .dark ::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.24);
   }
 }
 
-/* â”€â”€ Time input styling â”€â”€ */
+/* ── Time input styling ── */
 input[type='time']::-webkit-calendar-picker-indicator {
   opacity: 0.5;
   cursor: pointer;
@@ -251,7 +313,12 @@ input[type='time']::-webkit-calendar-picker-indicator {
 
 /* ── Selection colour ── */
 ::selection {
-  background: rgb(24 183 131 / 22%);
+  background: rgb(15 118 94 / 24%);
+  color: inherit;
+}
+
+.dark ::selection {
+  background: rgb(52 211 153 / 30%);
   color: inherit;
 }
 
@@ -270,7 +337,7 @@ input[type='time']::-webkit-calendar-picker-indicator {
   transform-origin: center;
 }
 
-/* â”€â”€ Print styles (PDF export window) â”€â”€ */
+/* ── Print styles (PDF export window) ── */
 @media print {
   * {
     -webkit-print-color-adjust: exact;

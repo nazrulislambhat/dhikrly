@@ -30,13 +30,12 @@ describe('duaAudio service', () => {
     mockStorage = new MockStorage();
     // @ts-expect-error Mocking global localStorage
     globalThis.localStorage = mockStorage;
-    // @ts-expect-error Mocking global window
     globalThis.window = {
       localStorage: mockStorage,
       dispatchEvent: () => true,
       addEventListener: () => {},
       removeEventListener: () => {},
-    };
+    } as unknown as Window & typeof globalThis;
     // @ts-expect-error Mocking global CustomEvent
     globalThis.CustomEvent = class CustomEvent {
       detail: unknown;
