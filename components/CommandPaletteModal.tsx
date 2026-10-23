@@ -140,6 +140,15 @@ const COMMAND_ITEMS: CommandItem[] = [
     Icon: HeartHandshake,
     keywords: ['hadith', 'prophet', 'lifestyle', 'habits', 'sunan'],
   },
+  {
+    id: 'books',
+    title: 'Sunni Fiqh Library & Books',
+    subtitle: 'Recommended books across the 4 Madhhabs & where to buy',
+    category: 'Heart',
+    href: '/books',
+    Icon: BookOpen,
+    keywords: ['books', 'fiqh', 'hanafi', 'shafii', 'maliki', 'hanbali', 'madhhab', 'jurisprudence', 'library', 'buy'],
+  },
 
   // Seasons & Obligation
   {

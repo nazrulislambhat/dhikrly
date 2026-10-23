@@ -81,6 +81,7 @@ const HUB_CATEGORIES: HubCategory[] = [
       { href: '/tadabbur', label: 'Situational Du‘ā', desc: 'Du‘ās for anxiety, grief & life situations', section: 'tadabbur', Icon: BookOpen },
       { href: '/sunnah', label: 'Daily Sunnah Player', desc: 'Revive prophetic daily habits & audio', section: 'sunnah', Icon: HeartHandshake },
       { href: '/adhkar', label: 'Adhkār Library', desc: 'Authentic Ḥiṣn al-Muslim collection', section: 'adhkar', Icon: Sparkles },
+      { href: '/books', label: 'Sunni Fiqh Library', desc: 'Recommended books across 4 Madhhabs & where to buy', section: 'books', Icon: BookOpen, badge: 'New' },
     ],
   },
   {
