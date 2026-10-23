@@ -168,7 +168,7 @@ export default function InsightsDashboard({ dark }: InsightsDashboardProps) {
                 <YAxis domain={[0, 5]} hide />
                 <Tooltip
                   contentStyle={{
-                    background: dark ? '#14211e' : '#fff',
+                    background: dark ? '#121815' : '#fff',
                     border: dark ? '1px solid rgba(255,255,255,0.08)' : '1px solid #e7ece8',
                     borderRadius: 12,
                     fontSize: 11,
@@ -223,7 +223,7 @@ export default function InsightsDashboard({ dark }: InsightsDashboardProps) {
                 <YAxis domain={[0, 100]} ticks={[0, 50, 100]} tick={{ fontSize: 9, fill: dark ? '#a8b8ae' : '#71827c' }} axisLine={false} tickLine={false} />
                 <Tooltip
                   formatter={(value) => [`${value}%`, 'Prayers completed']}
-                  contentStyle={{ background: dark ? '#14211e' : '#fff', border: `1px solid ${dark ? '#ffffff20' : '#e7ece8'}`, borderRadius: 12, fontSize: 11 }}
+                  contentStyle={{ background: dark ? '#121815' : '#fff', border: `1px solid ${dark ? '#ffffff20' : '#e7ece8'}`, borderRadius: 12, fontSize: 11 }}
                 />
                 <Area type="monotone" dataKey="score" stroke={dark ? '#74c69d' : '#287750'} strokeWidth={2.5} fill="url(#prayerTrendFill)" activeDot={{ r: 4 }} />
               </AreaChart>

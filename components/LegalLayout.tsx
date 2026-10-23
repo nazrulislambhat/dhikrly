@@ -42,9 +42,9 @@ export default function LegalLayout({
         <div className="mx-auto flex w-[min(calc(100%-2rem),72rem)] items-center justify-between px-2 lg:px-4 py-3.5">
           <Link
             href="/"
-            className="flex items-center gap-3 text-emerald-800 transition-opacity hover:opacity-80 dark:text-emerald-300"
+            className="flex items-center gap-3 text-primary transition-opacity hover:opacity-80"
           >
-            <span className="grid h-10 w-10 place-items-center rounded-2xl bg-emerald-800 text-xl font-bold text-white shadow-sm dark:bg-emerald-400 dark:text-emerald-950" aria-hidden="true">ذ</span>
+            <span className="grid h-10 w-10 place-items-center rounded-2xl bg-primary text-xl font-bold text-white shadow-sm" aria-hidden="true">ذ</span>
             <span>
               <span className="block text-xl font-extrabold tracking-tight text-[var(--app-ink)]">Dhikrly</span>
               <span className="hidden sm:block -mt-0.5 text-[10px] text-[var(--app-muted)]">A little, every day</span>
@@ -132,7 +132,7 @@ export default function LegalLayout({
                 className="inline-flex items-center gap-1.5 text-amber-700 dark:text-amber-400 font-bold transition-colors hover:opacity-80"
               >
                 <Coffee className="h-3.5 w-3.5 text-amber-500" />
-                <span>Buy Me A Coffee</span>
+                <span>Support Dhikrly</span>
               </a>
               <Link
                 href="/tech"

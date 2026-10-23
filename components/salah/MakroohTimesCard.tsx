@@ -23,9 +23,7 @@ export default function MakroohTimesCard({
   const { isMakrooh, activeInterval, minutesRemaining } = checkMakroohStatus(times, now);
   const intervals = getMakroohIntervals(times);
 
-  const cardBase = dark
-    ? 'border-white/[0.08] bg-[#14211e]/90 text-stone-200'
-    : 'border-stone-200/80 bg-white text-stone-800 shadow-xs';
+  const cardBase = 'border-border bg-surface text-ink shadow-xs';
 
   return (
     <div className={`rounded-2xl border p-4 transition-all ${cardBase}`}>

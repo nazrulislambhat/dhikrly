@@ -6,7 +6,7 @@ export default function AmbientLoading() {
       <PageHeaderSkeleton />
 
       {/* Main Visualizer & Master Play Skeleton */}
-      <div className="mb-8 rounded-3xl border border-[var(--app-line)] bg-[var(--app-surface)] p-6 sm:p-8 dark:bg-[#14211e]">
+      <div className="mb-8 rounded-3xl border border-[var(--app-line)] bg-[var(--app-surface)] p-6 sm:p-8">
         <Skeleton className="mb-6 h-36 sm:h-48 w-full rounded-2xl" />
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
@@ -25,7 +25,7 @@ export default function AmbientLoading() {
         {[1, 2, 3, 4, 5, 6].map((i) => (
           <div
             key={i}
-            className="rounded-3xl border border-[var(--app-line)] bg-[var(--app-surface)] p-5 dark:bg-[#14211e]"
+            className="rounded-3xl border border-[var(--app-line)] bg-[var(--app-surface)] p-5"
           >
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">

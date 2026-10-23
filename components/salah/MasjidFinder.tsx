@@ -146,11 +146,11 @@ export default function MasjidFinder({ location, dark, onSelectLocalMasjid }: Ma
             </span>
           );
         })}
-        <div className={`absolute bottom-3 left-3 inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-[11px] font-medium shadow-sm backdrop-blur ${dark ? 'border-white/10 bg-[#14211e]/90 text-stone-200' : 'border-white/70 bg-white/90 text-stone-700'}`}>
-          <span className="h-2 w-2 rounded-full bg-emerald-700 dark:bg-emerald-300" />
+        <div className="absolute bottom-3 left-3 inline-flex items-center gap-2 rounded-xl border border-border bg-surface/90 text-ink px-3 py-2 text-[11px] font-medium shadow-sm backdrop-blur">
+          <span className="h-2 w-2 rounded-full bg-primary" />
           {masjids.length ? `${masjids.length} places · within 3 km` : location ? 'Your area · 3 km radius' : 'Set your location to explore'}
         </div>
-        <span className={`absolute right-3 top-3 grid h-9 w-9 place-items-center rounded-xl shadow-sm ${dark ? 'bg-[#14211e]/90 text-emerald-200' : 'bg-white/90 text-emerald-800'}`} aria-hidden="true">
+        <span className="absolute right-3 top-3 grid h-9 w-9 place-items-center rounded-xl shadow-sm border border-border bg-surface/90 text-primary" aria-hidden="true">
           <Navigation className="h-4 w-4" />
         </span>
       </div>

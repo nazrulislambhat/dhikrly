@@ -232,11 +232,11 @@ export default function DailyTodoWidget() {
   const allCompleted = totalCount > 0 && completedCount === totalCount;
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-[var(--app-line)] bg-[var(--app-surface)] p-4 shadow-sm transition-all dark:bg-[#14211e]">
+    <div className="overflow-hidden rounded-2xl border border-[var(--app-line)] bg-[var(--app-surface)] p-4 shadow-sm transition-all">
       {/* Header */}
       <div className="flex items-center justify-between gap-2 pb-3 border-b border-[var(--app-line)]">
         <div className="flex items-center gap-2">
-          <span className="grid h-7 w-7 place-items-center rounded-lg bg-emerald-500/15 text-emerald-800 dark:text-emerald-300">
+          <span className="grid h-7 w-7 place-items-center rounded-lg bg-primary-light text-primary">
             <CalendarCheck className="h-4 w-4" />
           </span>
           <div>
@@ -267,7 +267,7 @@ export default function DailyTodoWidget() {
           <span className="font-semibold text-[11px] text-[var(--app-muted)]">
             Today&apos;s Progress
           </span>
-          <span suppressHydrationWarning className="font-mono font-bold text-emerald-700 dark:text-emerald-300">
+          <span suppressHydrationWarning className="font-mono font-bold text-primary">
             {completedCount} / {totalCount} ({progressPct}%)
           </span>
         </div>
@@ -276,8 +276,8 @@ export default function DailyTodoWidget() {
             suppressHydrationWarning
             className={`h-full rounded-full transition-all duration-300 ease-out ${
               allCompleted
-                ? 'bg-gradient-to-r from-emerald-500 to-amber-400'
-                : 'bg-emerald-600 dark:bg-emerald-400'
+                ? 'bg-gradient-to-r from-primary to-link'
+                : 'bg-primary'
             }`}
             style={{ width: `${progressPct}%` }}
           />
@@ -286,8 +286,8 @@ export default function DailyTodoWidget() {
 
       {/* All Done Celebration Badge */}
       {allCompleted && (
-        <div className="mb-3 flex items-center gap-2 rounded-xl border border-amber-400/30 bg-amber-400/10 p-2.5 text-xs font-bold text-amber-900 dark:text-amber-200 animate-in fade-in duration-200">
-          <Sparkles className="h-4 w-4 shrink-0 text-amber-500" />
+        <div className="mb-3 flex items-center gap-2 rounded-xl border border-link/30 bg-link-light p-2.5 text-xs font-bold text-link animate-in fade-in duration-200">
+          <Sparkles className="h-4 w-4 shrink-0 text-link" />
           <span>Māshā’Allāh! All daily spiritual goals completed today.</span>
         </div>
       )}
@@ -300,7 +300,7 @@ export default function DailyTodoWidget() {
               key={item.id}
               className={`group flex items-center justify-between gap-2.5 rounded-xl px-2.5 py-2 transition-colors ${
                 item.completed
-                  ? 'bg-emerald-500/10 text-emerald-950 dark:text-emerald-200 font-medium'
+                  ? 'bg-primary-light text-primary font-medium'
                   : 'hover:bg-black/5 dark:hover:bg-white/5 text-[var(--app-ink)]'
               }`}
             >
@@ -312,8 +312,8 @@ export default function DailyTodoWidget() {
                 <span
                   className={`grid h-4 w-4 shrink-0 place-items-center rounded-md border transition-all ${
                     item.completed
-                      ? 'border-emerald-600 bg-emerald-600 text-white dark:border-emerald-400 dark:bg-emerald-400 dark:text-emerald-950'
-                      : 'border-stone-400/60 dark:border-stone-500/60'
+                      ? 'border-primary bg-primary text-white'
+                      : 'border-border'
                   }`}
                 >
                   {item.completed && <Check className="h-3 w-3 stroke-[3]" />}
@@ -333,7 +333,7 @@ export default function DailyTodoWidget() {
                 {item.linkHref && !item.completed && (
                   <Link
                     href={item.linkHref}
-                    className="text-[10px] text-emerald-700 dark:text-emerald-400 font-semibold opacity-75 hover:opacity-100 hover:underline"
+                    className="text-[10px] text-link font-semibold opacity-85 hover:opacity-100 hover:underline"
                   >
                     Go &rarr;
                   </Link>
@@ -369,7 +369,7 @@ export default function DailyTodoWidget() {
             />
             <button
               type="submit"
-              className="rounded-xl bg-emerald-800 px-3 py-1.5 text-xs font-bold text-white hover:bg-emerald-700 dark:bg-emerald-400 dark:text-emerald-950"
+              className="rounded-xl bg-primary px-3 py-1.5 text-xs font-bold text-white hover:bg-primary-hover"
             >
               Add
             </button>

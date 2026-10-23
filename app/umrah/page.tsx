@@ -218,7 +218,7 @@ export default function UmrahPage() {
     setTimeout(() => setCopiedText(false), 2000);
   };
 
-  const cardClass = `rounded-3xl border border-[var(--app-line)] bg-[var(--app-surface)] shadow-xs dark:bg-[#14211e]`;
+  const cardClass = `rounded-3xl border border-[var(--app-line)] bg-[var(--app-surface)] shadow-xs`;
 
   return (
     <AppShell active="umrah" dark={dark} onToggleDark={() => setDark((v) => !v)}>

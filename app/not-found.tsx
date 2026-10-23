@@ -82,7 +82,7 @@ export default function NotFoundPage() {
         <div className="mt-6">
           <Link
             href="/"
-            className="inline-flex items-center gap-2 rounded-2xl bg-emerald-800 px-6 py-3 text-sm font-bold text-white shadow-md hover:bg-emerald-700 transition-all dark:bg-emerald-400 dark:text-emerald-950 dark:hover:bg-emerald-300"
+            className="inline-flex items-center gap-2 rounded-2xl bg-primary px-6 py-3 text-sm font-bold text-white shadow-md hover:bg-primary-hover transition-all"
           >
             <Home className="h-4 w-4" />
             <span>Return to Home</span>
@@ -97,14 +97,14 @@ export default function NotFoundPage() {
               <Link
                 key={item.href}
                 href={item.href}
-                className="group flex items-start gap-4 rounded-3xl border border-[var(--app-line)] bg-[var(--app-surface)] p-4 shadow-xs transition-all hover:border-emerald-500/30 hover:shadow-sm dark:bg-[#14211e]"
+                className="group flex items-start gap-4 rounded-3xl border border-[var(--app-line)] bg-[var(--app-surface)] p-4 shadow-xs transition-all hover:border-primary/40 hover:shadow-sm"
               >
-                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-emerald-50 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300">
+                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-primary-light text-primary">
                   <Icon className="h-5 w-5" />
                 </span>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center justify-between">
-                    <h2 className="text-sm font-bold text-[var(--app-ink)] group-hover:text-emerald-700 dark:group-hover:text-emerald-300 transition-colors">
+                    <h2 className="text-sm font-bold text-[var(--app-ink)] group-hover:text-primary transition-colors">
                       {item.title}
                     </h2>
                     <ArrowRight className="h-4 w-4 text-[var(--app-muted)] transition-transform group-hover:translate-x-1" />

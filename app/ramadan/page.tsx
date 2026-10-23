@@ -182,7 +182,7 @@ export default function RamadanPage() {
 
   const cardBase = dark
     ? 'bg-white/[0.03] border-white/[0.08] shadow-xs'
-    : 'bg-white border-stone-200/80 shadow-xs';
+    : 'bg-white border-sakinah-200/80 shadow-xs';
 
   return (
     <AppShell active="ramadan" dark={dark} onToggleDark={() => setDark((v) => !v)}>
@@ -190,7 +190,7 @@ export default function RamadanPage() {
         {/* Header */}
         <header className="mb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div>
-            <div className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-[11px] font-semibold text-emerald-800 dark:text-emerald-300">
+            <div className="inline-flex items-center gap-1.5 rounded-full border border-dhikr-500/20 bg-dhikr-500/10 px-2.5 py-1 text-[11px] font-semibold text-dhikr-800 dark:text-dhikr-300">
               <MoonStar className="h-3 w-3" />
               <span>RAMADAN KAREEM · رَمَضَانُ كَرِيم</span>
             </div>
@@ -203,7 +203,7 @@ export default function RamadanPage() {
           </div>
 
           <div className="rounded-2xl border border-[var(--app-line)] bg-white/40 dark:bg-white/[0.02] px-4 py-2.5 text-right">
-            <p className="font-arabic text-sm sm:text-base font-semibold text-emerald-800 dark:text-emerald-300" dir="rtl" lang="ar">
+            <p className="font-arabic text-sm sm:text-base font-semibold text-dhikr-800 dark:text-dhikr-300" dir="rtl" lang="ar">
               شَهْرُ رَمَضَانَ الَّذِي أُنزِلَ فِيهِ الْقُرْآنُ
             </p>
             <p className="text-[10px] text-[var(--app-muted)] mt-0.5">
@@ -216,8 +216,8 @@ export default function RamadanPage() {
         <div
           className={`mb-6 overflow-hidden rounded-3xl border transition-all ${
             dark
-              ? 'border-emerald-400/20 bg-gradient-to-br from-[#0e241e] via-[#101e1b] to-[#0c1614]'
-              : 'border-emerald-800/10 bg-gradient-to-br from-[#edf7f2] via-[#e5f4ec] to-[#dcf0e5] shadow-xs'
+              ? 'border-primary/25 bg-gradient-to-br from-[#0d1411] via-[#131d18] to-[#0a0f0d]'
+              : 'border-border bg-gradient-to-br from-primary-subtle via-brand-100 to-canvas shadow-xs'
           }`}
         >
           <div className="p-5 sm:p-6">
@@ -228,11 +228,11 @@ export default function RamadanPage() {
                   className={`grid h-14 w-14 sm:h-16 sm:w-16 shrink-0 place-items-center rounded-2xl border transition-all ${
                     isFastingHours
                       ? dark
-                        ? 'border-amber-400/30 bg-amber-400/10 text-amber-300'
-                        : 'border-amber-400/40 bg-amber-100 text-amber-800'
+                        ? 'border-noor-400/30 bg-noor-400/10 text-noor-300'
+                        : 'border-noor-400/40 bg-noor-100 text-noor-800'
                       : dark
-                        ? 'border-emerald-400/30 bg-emerald-400/10 text-emerald-300'
-                        : 'border-emerald-300/60 bg-emerald-100 text-emerald-800'
+                        ? 'border-dhikr-400/30 bg-dhikr-400/10 text-dhikr-300'
+                        : 'border-dhikr-300/60 bg-dhikr-100 text-dhikr-800'
                   }`}
                 >
                   {isFastingHours ? (
@@ -248,11 +248,11 @@ export default function RamadanPage() {
                       className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-bold tracking-wider uppercase ${
                         isFastingHours
                           ? dark
-                            ? 'bg-amber-400/15 text-amber-300'
-                            : 'bg-amber-100 text-amber-900'
+                            ? 'bg-noor-400/15 text-noor-300'
+                            : 'bg-noor-100 text-noor-900'
                           : dark
-                            ? 'bg-emerald-400/15 text-emerald-300'
-                            : 'bg-emerald-100 text-emerald-900'
+                            ? 'bg-dhikr-400/15 text-dhikr-300'
+                            : 'bg-dhikr-100 text-dhikr-900'
                       }`}
                     >
                       ● {isFastingHours ? 'Fasting Time Right Now' : 'Iftar / Night Hours'}
@@ -277,11 +277,11 @@ export default function RamadanPage() {
                   className={`rounded-2xl border px-3.5 py-2.5 text-center transition-all ${
                     dark
                       ? 'border-white/10 bg-white/5'
-                      : 'border-emerald-900/10 bg-white/80 shadow-2xs'
+                      : 'border-dhikr-900/10 bg-white/80 shadow-2xs'
                   }`}
                 >
                   <span className="flex items-center justify-center gap-1 text-[10px] font-bold uppercase tracking-wider text-[var(--app-muted)]">
-                    <Sunrise className="h-3 w-3 text-amber-500" /> Suḥūr Ends
+                    <Sunrise className="h-3 w-3 text-noor-500" /> Suḥūr Ends
                   </span>
                   <p
                     suppressHydrationWarning
@@ -295,15 +295,15 @@ export default function RamadanPage() {
                   className={`rounded-2xl border px-3.5 py-2.5 text-center transition-all ${
                     dark
                       ? 'border-white/10 bg-white/5'
-                      : 'border-emerald-900/10 bg-white/80 shadow-2xs'
+                      : 'border-dhikr-900/10 bg-white/80 shadow-2xs'
                   }`}
                 >
                   <span className="flex items-center justify-center gap-1 text-[10px] font-bold uppercase tracking-wider text-[var(--app-muted)]">
-                    <Sunset className="h-3 w-3 text-orange-500" /> Ifṭār Begins
+                    <Sunset className="h-3 w-3 text-noor-600" /> Ifṭār Begins
                   </span>
                   <p
                     suppressHydrationWarning
-                    className="mt-0.5 text-sm sm:text-base font-bold tabular-nums text-emerald-700 dark:text-emerald-300"
+                    className="mt-0.5 text-sm sm:text-base font-bold tabular-nums text-dhikr-700 dark:text-dhikr-300"
                   >
                     {times?.maghrib.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) ?? '--:--'}
                   </p>
@@ -316,7 +316,7 @@ export default function RamadanPage() {
               <div className="flex items-center gap-4 sm:gap-6">
                 <div className="flex items-center gap-1.5">
                   <span className="text-[var(--app-muted)]">Fasts:</span>
-                  <strong className="text-emerald-700 dark:text-emerald-300 font-bold">
+                  <strong className="text-dhikr-700 dark:text-dhikr-300 font-bold">
                     {totalFastedDays} / 30
                   </strong>
                 </div>
@@ -328,7 +328,7 @@ export default function RamadanPage() {
                 </div>
                 <div className="flex items-center gap-1.5">
                   <span className="text-[var(--app-muted)]">Khatmah:</span>
-                  <strong className="text-emerald-700 dark:text-emerald-300 font-bold">
+                  <strong className="text-dhikr-700 dark:text-dhikr-300 font-bold">
                     {khatmah.completedJuz.length}/30 ({khatmahPercentage}%)
                   </strong>
                 </div>
@@ -346,7 +346,7 @@ export default function RamadanPage() {
         {/* ── Segmented Navigation (Minified clean layout) ── */}
         <div
           className={`mb-6 flex rounded-2xl border p-1 ${
-            dark ? 'border-white/[0.08] bg-white/[0.03]' : 'border-stone-200 bg-stone-100/80'
+            dark ? 'border-white/[0.08] bg-white/[0.03]' : 'border-sakinah-200 bg-sakinah-100/80'
           }`}
         >
           {[
@@ -361,14 +361,14 @@ export default function RamadanPage() {
                 key={tab.id}
                 type="button"
                 onClick={() => setActiveSection(tab.id as ActiveSection)}
-                className={`flex min-h-10 flex-1 items-center justify-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold transition-all ${
+                className={`flex min-h-10 flex-1 items-center justify-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold transition-all cursor-pointer ${
                   isActive
                     ? dark
-                      ? 'bg-emerald-500/20 text-emerald-200 shadow-xs ring-1 ring-emerald-400/30'
-                      : 'bg-white text-emerald-900 shadow-sm'
+                      ? 'bg-dhikr-500/20 text-dhikr-200 shadow-xs ring-1 ring-dhikr-400/30'
+                      : 'bg-white text-dhikr-900 shadow-sm'
                     : dark
-                      ? 'text-stone-400 hover:text-stone-200'
-                      : 'text-stone-500 hover:text-stone-800'
+                      ? 'text-sakinah-400 hover:text-sakinah-200'
+                      : 'text-sakinah-500 hover:text-sakinah-800'
                 }`}
               >
                 <Icon className="h-3.5 w-3.5 shrink-0" />
@@ -377,11 +377,11 @@ export default function RamadanPage() {
                   className={`rounded-full px-1.5 py-0.2 text-[9px] font-bold ${
                     isActive
                       ? dark
-                        ? 'bg-emerald-400/20 text-emerald-300'
-                        : 'bg-emerald-100 text-emerald-800'
+                        ? 'bg-dhikr-400/20 text-dhikr-300'
+                        : 'bg-dhikr-100 text-dhikr-800'
                       : dark
-                        ? 'bg-white/10 text-stone-400'
-                        : 'bg-stone-200/80 text-stone-600'
+                        ? 'bg-white/10 text-sakinah-400'
+                        : 'bg-sakinah-200/80 text-sakinah-600'
                   }`}
                 >
                   {tab.badge}
@@ -405,14 +405,14 @@ export default function RamadanPage() {
               </div>
 
               <div className="flex items-center gap-3 text-xs">
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-0.5 font-bold text-emerald-800 dark:text-emerald-300">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-dhikr-500/10 px-2.5 py-0.5 font-bold text-dhikr-800 dark:text-dhikr-300">
                   <Check className="h-3 w-3" /> {totalFastedDays} Fasts
                 </span>
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-purple-500/10 px-2.5 py-0.5 font-bold text-purple-800 dark:text-purple-300">
                   <Moon className="h-3 w-3" /> {totalTarawihNights} Tarāwīḥ
                 </span>
                 {totalSadaqahDays > 0 && (
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 px-2.5 py-0.5 font-bold text-amber-800 dark:text-amber-300">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-noor-500/10 px-2.5 py-0.5 font-bold text-noor-800 dark:text-noor-300">
                     <Heart className="h-3 w-3" /> {totalSadaqahDays} Ṣadaqah
                   </span>
                 )}
@@ -436,35 +436,35 @@ export default function RamadanPage() {
                     className={`group relative flex flex-col justify-between p-2 sm:p-2.5 rounded-2xl border cursor-pointer transition-all active:scale-95 ${
                       isFasted
                         ? dark
-                          ? 'border-emerald-500/40 bg-emerald-500/15 shadow-2xs'
-                          : 'border-emerald-400 bg-emerald-50/80 shadow-2xs'
+                          ? 'border-dhikr-500/40 bg-dhikr-500/15 shadow-2xs'
+                          : 'border-dhikr-400 bg-dhikr-50/80 shadow-2xs'
                         : dark
-                          ? 'border-white/[0.07] bg-white/[0.02] hover:border-emerald-400/30 hover:bg-white/[0.04]'
-                          : 'border-stone-200/80 bg-stone-50/70 hover:border-emerald-300 hover:bg-stone-100/70'
-                    } ${isOddNight ? 'ring-1.5 ring-amber-400/60' : ''}`}
+                          ? 'border-white/[0.07] bg-white/[0.02] hover:border-dhikr-400/30 hover:bg-white/[0.04]'
+                          : 'border-sakinah-200/80 bg-sakinah-50/70 hover:border-dhikr-300 hover:bg-sakinah-100/70'
+                    } ${isOddNight ? 'ring-1.5 ring-noor-400/60' : ''}`}
                     title={`Day ${day}${isOddNight ? ' · Blessed Odd Night' : ''}`}
                   >
                     <div className="flex items-center justify-between w-full">
-                      <span className={`text-[11px] font-bold ${isFasted ? 'text-emerald-800 dark:text-emerald-300' : 'text-[var(--app-ink)]'}`}>
+                      <span className={`text-[11px] font-bold ${isFasted ? 'text-dhikr-800 dark:text-dhikr-300' : 'text-[var(--app-ink)]'}`}>
                         {day}
                       </span>
                       {isOddNight && (
-                        <span className="h-1.5 w-1.5 rounded-full bg-amber-400" title="Laylatul Qadr candidate night" />
+                        <span className="h-1.5 w-1.5 rounded-full bg-noor-400" title="Laylatul Qadr candidate night" />
                       )}
                     </div>
 
                     <div className="my-1.5 grid h-6 place-items-center">
                       {isFasted ? (
-                        <span className="grid h-5 w-5 place-items-center rounded-full bg-emerald-600 dark:bg-emerald-400 text-white dark:text-emerald-950 shadow-2xs">
+                        <span className="grid h-5 w-5 place-items-center rounded-full bg-dhikr-700 dark:bg-dhikr-400 text-white dark:text-dhikr-950 shadow-2xs">
                           <Check className="h-3 w-3 stroke-[3]" />
                         </span>
                       ) : (
-                        <span className="text-[10px] text-stone-300 dark:text-stone-600">○</span>
+                        <span className="text-[10px] text-sakinah-300 dark:text-sakinah-600">○</span>
                       )}
                     </div>
 
                     <div className="flex items-center justify-between w-full text-[9px]">
-                      <div className="flex items-center gap-0.5 text-stone-400 dark:text-stone-500">
+                      <div className="flex items-center gap-0.5 text-sakinah-400 dark:text-sakinah-500">
                         {isTarawih && <span title="Tarāwīḥ prayed">🌙</span>}
                         {isSadaqah && <span title="Ṣadaqah given">💛</span>}
                       </div>
@@ -476,7 +476,7 @@ export default function RamadanPage() {
                           setSelectedDay(day);
                           setShowDayModal(true);
                         }}
-                        className="rounded-md p-0.5 text-stone-400 hover:text-emerald-700 dark:hover:text-emerald-300 opacity-60 sm:opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="rounded-md p-0.5 text-sakinah-400 hover:text-dhikr-700 dark:hover:text-dhikr-300 opacity-60 sm:opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
                         title="Edit day deeds"
                         aria-label={`Edit Day ${day} deeds`}
                       >
@@ -491,10 +491,10 @@ export default function RamadanPage() {
             <div className="mt-4 pt-3 border-t border-[var(--app-line)] flex flex-wrap items-center justify-between gap-2 text-[11px] text-[var(--app-muted)]">
               <div className="flex items-center gap-3">
                 <span className="inline-flex items-center gap-1">
-                  <span className="h-2 w-2 rounded-full bg-emerald-500" /> Fasted
+                  <span className="h-2 w-2 rounded-full bg-dhikr-500" /> Fasted
                 </span>
                 <span className="inline-flex items-center gap-1">
-                  <span className="h-2 w-2 rounded-full ring-1 ring-amber-400" /> Last 10 Odd Nights (Laylatul Qadr)
+                  <span className="h-2 w-2 rounded-full ring-1 ring-noor-400" /> Last 10 Odd Nights (Laylatul Qadr)
                 </span>
                 <span className="inline-flex items-center gap-1">
                   <span>🌙</span> Tarāwīḥ
@@ -511,7 +511,7 @@ export default function RamadanPage() {
             <div className="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <div className="flex items-center gap-2">
-                  <BookOpen className="h-4 w-4 text-emerald-700 dark:text-emerald-400" />
+                  <BookOpen className="h-4 w-4 text-dhikr-700 dark:text-dhikr-400" />
                   <h2 className="text-base font-bold text-[var(--app-ink)]">
                     30-Day Qur’an Khatmah Planner
                   </h2>
@@ -522,7 +522,7 @@ export default function RamadanPage() {
               </div>
 
               <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-emerald-700 dark:text-emerald-300">
+                <span className="text-xs font-bold text-dhikr-700 dark:text-dhikr-300">
                   {khatmah.completedJuz.length} of 30 Juz ({khatmahPercentage}%)
                 </span>
               </div>
@@ -531,7 +531,7 @@ export default function RamadanPage() {
             {/* Sleek Minimal Progress Bar */}
             <div className="mb-4 h-2 w-full rounded-full bg-black/5 dark:bg-white/10 overflow-hidden">
               <div
-                className="h-full bg-emerald-600 dark:bg-emerald-400 rounded-full transition-all duration-300"
+                className="h-full bg-dhikr-600 dark:bg-dhikr-400 rounded-full transition-all duration-300"
                 style={{ width: `${khatmahPercentage}%` }}
               />
             </div>
@@ -545,19 +545,19 @@ export default function RamadanPage() {
                     key={juz}
                     type="button"
                     onClick={() => handleToggleJuz(juz)}
-                    className={`flex flex-col items-center justify-center p-2 rounded-xl border text-xs font-bold transition-all active:scale-95 ${
+                    className={`flex flex-col items-center justify-center p-2 rounded-xl border text-xs font-bold transition-all active:scale-95 cursor-pointer ${
                       isDone
                         ? dark
-                          ? 'border-emerald-500/40 bg-emerald-500/20 text-emerald-200 shadow-2xs'
-                          : 'border-emerald-400 bg-emerald-50 text-emerald-900 shadow-2xs'
+                          ? 'border-dhikr-500/40 bg-dhikr-500/20 text-dhikr-200 shadow-2xs'
+                          : 'border-dhikr-400 bg-dhikr-50 text-dhikr-900 shadow-2xs'
                         : dark
-                          ? 'border-white/[0.07] bg-white/[0.02] text-stone-400 hover:border-emerald-400/30 hover:text-stone-200'
-                          : 'border-stone-200/80 bg-stone-50/70 text-stone-500 hover:border-emerald-300 hover:text-stone-900'
+                          ? 'border-white/[0.07] bg-white/[0.02] text-sakinah-400 hover:border-dhikr-400/30 hover:text-sakinah-200'
+                          : 'border-sakinah-200/80 bg-sakinah-50/70 text-sakinah-500 hover:border-dhikr-300 hover:text-sakinah-900'
                     }`}
                   >
                     <span>Juz {juz}</span>
                     {isDone ? (
-                      <Check className="h-3 w-3 mt-0.5 text-emerald-600 dark:text-emerald-400" />
+                      <Check className="h-3 w-3 mt-0.5 text-dhikr-600 dark:text-dhikr-400" />
                     ) : (
                       <span className="text-[9px] opacity-40 mt-0.5">20p</span>
                     )}
@@ -573,7 +573,7 @@ export default function RamadanPage() {
               </span>
               <Link
                 href="/quran"
-                className="inline-flex items-center gap-1 font-bold text-emerald-700 dark:text-emerald-400 hover:underline shrink-0"
+                className="inline-flex items-center gap-1 font-bold text-dhikr-700 dark:text-dhikr-400 hover:underline shrink-0"
               >
                 <span>Open Qur’an Reader</span>
                 <span>→</span>
@@ -598,7 +598,7 @@ export default function RamadanPage() {
               {/* Filter Tabs */}
               <div
                 className={`flex flex-wrap gap-1 rounded-xl border p-1 ${
-                  dark ? 'border-white/[0.08] bg-white/[0.03]' : 'border-stone-200 bg-stone-100/70'
+                  dark ? 'border-white/[0.08] bg-white/[0.03]' : 'border-sakinah-200 bg-sakinah-100/70'
                 }`}
               >
                 {ASHRA_TABS.map((tab) => (
@@ -606,11 +606,11 @@ export default function RamadanPage() {
                     key={tab.id}
                     type="button"
                     onClick={() => setActiveDuaTab(tab.id)}
-                    className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition-all ${
+                    className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition-all cursor-pointer ${
                       activeDuaTab === tab.id
                         ? dark
-                          ? 'bg-emerald-500/20 text-emerald-200 shadow-xs'
-                          : 'bg-white text-emerald-900 shadow-xs'
+                          ? 'bg-dhikr-500/20 text-dhikr-200 shadow-xs'
+                          : 'bg-white text-dhikr-900 shadow-xs'
                         : 'text-[var(--app-muted)] hover:text-[var(--app-ink)]'
                     }`}
                   >
@@ -629,23 +629,23 @@ export default function RamadanPage() {
                     key={dua.id}
                     className={`rounded-2xl border p-4 sm:p-5 flex flex-col justify-between transition-all ${
                       dark
-                        ? 'border-white/[0.06] bg-white/[0.02] hover:border-emerald-500/30'
-                        : 'border-stone-200/70 bg-stone-50/50 hover:border-emerald-300'
+                        ? 'border-white/[0.06] bg-white/[0.02] hover:border-dhikr-500/30'
+                        : 'border-sakinah-200/70 bg-sakinah-50/50 hover:border-dhikr-300'
                     }`}
                   >
                     <div>
                       <div className="flex items-center justify-between mb-3">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-300 rounded-full bg-emerald-500/10 px-2 py-0.5">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-dhikr-800 dark:text-dhikr-300 rounded-full bg-dhikr-500/10 px-2 py-0.5">
                           {dua.title}
                         </span>
                         <button
                           type="button"
                           onClick={() => handleCopyDua(dua)}
-                          className="p-1.5 rounded-lg border border-[var(--app-line)] text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 transition-colors"
+                          className="p-1.5 rounded-lg border border-[var(--app-line)] text-sakinah-400 hover:text-sakinah-900 dark:hover:text-sakinah-100 transition-colors cursor-pointer"
                           title="Copy dua text"
                           aria-label="Copy dua text"
                         >
-                          {isCopied ? <Check className="h-3 w-3 text-emerald-600" /> : <Copy className="h-3 w-3" />}
+                          {isCopied ? <Check className="h-3 w-3 text-dhikr-600" /> : <Copy className="h-3 w-3" />}
                         </button>
                       </div>
 
@@ -657,7 +657,7 @@ export default function RamadanPage() {
                         {dua.ar}
                       </p>
 
-                      <p className="text-xs font-semibold text-emerald-800 dark:text-emerald-300 italic mb-2">
+                      <p className="text-xs font-semibold text-dhikr-800 dark:text-dhikr-300 italic mb-2">
                         {dua.transliteration}
                       </p>
 
@@ -680,9 +680,7 @@ export default function RamadanPage() {
         {/* ── Day Deeds Detail Modal ── */}
         {showDayModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
-            <div className={`w-full max-w-sm rounded-3xl border p-5 sm:p-6 shadow-2xl transition-all ${
-              dark ? 'border-white/10 bg-[#12201c]' : 'border-stone-200 bg-white'
-            }`}>
+            <div className="w-full max-w-sm rounded-3xl border border-border bg-surface p-5 sm:p-6 shadow-2xl transition-all">
               <div className="flex items-center justify-between mb-4 pb-3 border-b border-[var(--app-line)]">
                 <div>
                   <h3 className="text-base font-bold text-[var(--app-ink)]">
@@ -693,7 +691,7 @@ export default function RamadanPage() {
                 <button
                   type="button"
                   onClick={() => setShowDayModal(false)}
-                  className="rounded-full p-1 text-stone-400 hover:text-stone-900 dark:hover:text-stone-100"
+                  className="rounded-full p-1 text-sakinah-400 hover:text-sakinah-900 dark:hover:text-sakinah-100 cursor-pointer"
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -702,7 +700,7 @@ export default function RamadanPage() {
               <div className="space-y-3">
                 {/* Fasted */}
                 <label className={`flex items-center justify-between p-3 rounded-2xl border cursor-pointer transition ${
-                  dark ? 'border-white/10 bg-white/[0.02]' : 'border-stone-200 bg-stone-50'
+                  dark ? 'border-white/10 bg-white/[0.02]' : 'border-border bg-surface'
                 }`}>
                   <span className="text-xs font-bold text-[var(--app-ink)]">Observed Fast (Ṣawm)</span>
                   <input
@@ -712,13 +710,13 @@ export default function RamadanPage() {
                       const cur = trackerData[selectedDay] ?? { day: selectedDay, fasted: false, prayersCount: 5, tarawih: false, quranJuz: false, sadaqah: false };
                       handleSaveDayDetails({ ...cur, fasted: e.target.checked });
                     }}
-                    className="h-4 w-4 accent-emerald-600 rounded"
+                    className="h-4 w-4 accent-primary rounded cursor-pointer"
                   />
                 </label>
 
                 {/* Tarawih */}
                 <label className={`flex items-center justify-between p-3 rounded-2xl border cursor-pointer transition ${
-                  dark ? 'border-white/10 bg-white/[0.02]' : 'border-stone-200 bg-stone-50'
+                  dark ? 'border-white/10 bg-white/[0.02]' : 'border-border bg-surface'
                 }`}>
                   <span className="text-xs font-bold text-[var(--app-ink)]">Prayed Tarāwīḥ (Qiyām)</span>
                   <input
@@ -728,13 +726,13 @@ export default function RamadanPage() {
                       const cur = trackerData[selectedDay] ?? { day: selectedDay, fasted: false, prayersCount: 5, tarawih: false, quranJuz: false, sadaqah: false };
                       handleSaveDayDetails({ ...cur, tarawih: e.target.checked });
                     }}
-                    className="h-4 w-4 accent-emerald-600 rounded"
+                    className="h-4 w-4 accent-primary rounded cursor-pointer"
                   />
                 </label>
 
                 {/* Sadaqah */}
                 <label className={`flex items-center justify-between p-3 rounded-2xl border cursor-pointer transition ${
-                  dark ? 'border-white/10 bg-white/[0.02]' : 'border-stone-200 bg-stone-50'
+                  dark ? 'border-white/10 bg-white/[0.02]' : 'border-border bg-surface'
                 }`}>
                   <span className="text-xs font-bold text-[var(--app-ink)]">Gave Ṣadaqah (Charity)</span>
                   <input
@@ -744,13 +742,13 @@ export default function RamadanPage() {
                       const cur = trackerData[selectedDay] ?? { day: selectedDay, fasted: false, prayersCount: 5, tarawih: false, quranJuz: false, sadaqah: false };
                       handleSaveDayDetails({ ...cur, sadaqah: e.target.checked });
                     }}
-                    className="h-4 w-4 accent-emerald-600 rounded"
+                    className="h-4 w-4 accent-primary rounded cursor-pointer"
                   />
                 </label>
 
                 {/* Quran */}
                 <label className={`flex items-center justify-between p-3 rounded-2xl border cursor-pointer transition ${
-                  dark ? 'border-white/10 bg-white/[0.02]' : 'border-stone-200 bg-stone-50'
+                  dark ? 'border-white/10 bg-white/[0.02]' : 'border-border bg-surface'
                 }`}>
                   <span className="text-xs font-bold text-[var(--app-ink)]">Recited Daily Qur’an</span>
                   <input
@@ -760,7 +758,7 @@ export default function RamadanPage() {
                       const cur = trackerData[selectedDay] ?? { day: selectedDay, fasted: false, prayersCount: 5, tarawih: false, quranJuz: false, sadaqah: false };
                       handleSaveDayDetails({ ...cur, quranJuz: e.target.checked });
                     }}
-                    className="h-4 w-4 accent-emerald-600 rounded"
+                    className="h-4 w-4 accent-primary rounded cursor-pointer"
                   />
                 </label>
               </div>
@@ -769,7 +767,7 @@ export default function RamadanPage() {
                 <button
                   type="button"
                   onClick={() => setShowDayModal(false)}
-                  className="w-full rounded-2xl bg-emerald-700 py-2.5 text-xs font-bold text-white shadow-xs transition hover:bg-emerald-800 dark:bg-emerald-600 dark:hover:bg-emerald-500"
+                  className="w-full rounded-2xl bg-primary py-2.5 text-xs font-bold text-white shadow-xs transition hover:bg-primary-hover cursor-pointer"
                 >
                   Done
                 </button>

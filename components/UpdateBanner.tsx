@@ -57,11 +57,7 @@ export default function UpdateBanner({ dark }: UpdateBannerProps) {
       {/* ── Pill notification ── */}
       <div className="fixed left-1/2 top-4 z-[9990] -translate-x-1/2 animate-slide-down">
         <div
-          className={`flex items-center gap-3 rounded-full border px-4 py-2 shadow-2xl backdrop-blur-md transition-all ${
-            dark
-              ? 'border-emerald-400/20 bg-[#14211e]/95 text-stone-200'
-              : 'border-amber-300/50 bg-white/95 text-stone-700 shadow-amber-100/50'
-          }`}
+          className="flex items-center gap-3 rounded-full border border-border bg-surface/95 text-ink px-4 py-2 shadow-2xl backdrop-blur-md transition-all"
         >
           {isUpdating ? (
             /* Mini in-pill progress view */
@@ -198,9 +194,7 @@ export default function UpdateBanner({ dark }: UpdateBannerProps) {
           onClick={(e) => e.target === e.currentTarget && setShowModal(false)}
         >
           <div
-            className={`w-full max-w-md rounded-2xl border shadow-2xl ${
-              dark ? 'bg-[#14211e] border-white/10' : 'bg-white border-stone-200'
-            }`}
+            className="w-full max-w-md rounded-2xl border border-border bg-surface text-ink shadow-2xl"
           >
             {/* Modal header */}
             <div
