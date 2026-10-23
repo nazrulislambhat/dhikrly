@@ -127,20 +127,20 @@ export default function DuaCard({
 
   return (
     <article
-      className={`group relative rounded-[26px] border transition-all duration-300 ios-spring ${
+      className={`group relative rounded-3xl border transition-all duration-300 hover:shadow-xl ${
         checked
           ? dark
-            ? 'border-primary/40 bg-gradient-to-b from-primary/15 to-[#1c1c1e]/85 backdrop-blur-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.18),0_8px_30px_rgba(0,0,0,0.5)]'
-            : 'border-primary/35 bg-gradient-to-b from-primary-subtle to-white/90 backdrop-blur-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_8px_24px_rgba(27,122,75,0.06)]'
+            ? 'border-primary/40 bg-gradient-to-b from-primary/15 to-surface shadow-sm'
+            : 'border-primary/30 bg-gradient-to-b from-primary-subtle to-white shadow-sm'
           : dark
-            ? 'border-white/10 bg-[#1c1c1e]/75 backdrop-blur-2xl hover:border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_10px_32px_rgba(0,0,0,0.5)]'
-            : 'border-black/[0.06] bg-white/80 backdrop-blur-2xl hover:border-black/15 shadow-[inset_0_1px_0_rgba(255,255,255,0.7),0_4px_20px_-2px_rgba(0,0,0,0.03)]'
+            ? 'border-white/[0.08] bg-surface/90 hover:border-primary/40'
+            : 'border-border bg-white hover:border-primary/40 shadow-xs'
       }`}
     >
       {/* Decorative top accent highlight for priority or completed */}
       {dua.priority && (
         <div
-          className="absolute inset-x-8 top-0 h-0.5 rounded-full bg-gradient-to-r from-amber-400 via-emerald-400 to-amber-400 opacity-90"
+          className="absolute inset-x-8 top-0 h-0.5 rounded-full bg-gradient-to-r from-link via-primary to-link opacity-80"
           aria-hidden="true"
         />
       )}
@@ -211,7 +211,7 @@ export default function DuaCard({
             onClick={cycleFontSize}
             title={`Adjust Arabic font size (current: ${arabicFontSize})`}
             aria-label={`Adjust Arabic font size (current: ${arabicFontSize})`}
-            className="ios-press grid h-7 w-7 place-items-center rounded-full border border-[var(--app-border)] bg-black/[0.03] dark:bg-white/[0.06] hover:bg-black/[0.06] dark:hover:bg-white/10 text-muted hover:text-ink text-xs font-bold transition-all cursor-pointer shadow-xs"
+            className="grid h-7 w-7 place-items-center rounded-lg border border-border bg-surface text-muted hover:text-ink hover:border-primary/40 text-xs font-bold transition-all cursor-pointer"
           >
             <span className="text-[11px] font-serif">A±</span>
           </button>
@@ -222,10 +222,10 @@ export default function DuaCard({
             onClick={handleAudio}
             title={isPlaying ? 'Stop recitation' : 'Listen to authentic recitation'}
             aria-label={isPlaying ? 'Stop recitation' : 'Listen to authentic recitation'}
-            className={`ios-press flex h-7 items-center justify-center gap-1 rounded-full border px-2.5 transition-all cursor-pointer shadow-xs ${
+            className={`flex h-7 items-center justify-center gap-1 rounded-lg border px-2 transition-all cursor-pointer ${
               isPlaying
                 ? 'border-primary bg-primary text-primary-fg shadow-sm'
-                : 'border-[var(--app-border)] bg-black/[0.03] dark:bg-white/[0.06] text-muted hover:text-primary hover:border-primary/40'
+                : 'border-border bg-surface text-muted hover:text-primary hover:border-primary/40'
             }`}
           >
             {isPlaying ? (
@@ -248,10 +248,10 @@ export default function DuaCard({
             onClick={handleCopy}
             title={copied ? 'Copied to clipboard!' : 'Copy remembrance'}
             aria-label={copied ? 'Copied to clipboard' : 'Copy remembrance'}
-            className={`ios-press grid h-7 w-7 place-items-center rounded-full border transition-all cursor-pointer shadow-xs ${
+            className={`grid h-7 w-7 place-items-center rounded-lg border transition-all cursor-pointer ${
               copied
                 ? 'border-primary bg-primary text-primary-fg'
-                : 'border-[var(--app-border)] bg-black/[0.03] dark:bg-white/[0.06] text-muted hover:text-ink hover:border-primary/40'
+                : 'border-border bg-surface text-muted hover:text-ink hover:border-primary/40'
             }`}
           >
             {copied ? (
@@ -268,7 +268,7 @@ export default function DuaCard({
               onClick={() => onOpenFocus(dua)}
               title="Open in Khushū‘ Full-Screen Reciter"
               aria-label="Open in Khushū‘ Full-Screen Reciter"
-              className="ios-press grid h-7 w-7 place-items-center rounded-full border border-[var(--app-border)] bg-black/[0.03] dark:bg-white/[0.06] text-muted hover:text-primary hover:border-primary/40 transition-all cursor-pointer shadow-xs"
+              className="grid h-7 w-7 place-items-center rounded-lg border border-border bg-surface text-muted hover:text-primary hover:border-primary/40 transition-all cursor-pointer"
             >
               <Maximize2 className="h-3.5 w-3.5" />
             </button>
@@ -370,9 +370,9 @@ export default function DuaCard({
               onClick={handleBeadTap}
               title={`Tap to count (${tapCount}/${targetCount})`}
               aria-label={`Tap to count (${tapCount} of ${targetCount})`}
-              className="ios-press inline-flex items-center gap-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-400 hover:bg-amber-500/20 px-3.5 py-1.5 text-xs font-bold transition-all cursor-pointer shadow-xs"
+              className="tap-bounce inline-flex items-center gap-1.5 rounded-xl border border-link/40 bg-link-light text-link hover:text-link-hover px-3 py-1.5 text-xs font-bold transition-all cursor-pointer shadow-xs"
             >
-              <span className="grid h-4 w-4 place-items-center rounded-full bg-amber-500/25 text-[10px] font-extrabold">
+              <span className="grid h-4 w-4 place-items-center rounded-full bg-link/20 text-[10px] font-extrabold text-link">
                 {tapCount}
               </span>
               <span>Tap Bead ({targetCount - tapCount} left)</span>
@@ -384,11 +384,11 @@ export default function DuaCard({
             type="button"
             onClick={() => onToggle(dua.id, soundEnabled)}
             aria-label={checked ? 'Completed. Click to undo.' : 'Mark complete'}
-            className={`ios-press inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-bold transition-all shadow-xs cursor-pointer ${
+            className={`tap-bounce inline-flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold transition-all shadow-xs cursor-pointer ${
               checked
                 ? dark
                   ? 'bg-primary-light text-primary border border-primary/45 hover:bg-primary-light'
-                  : 'bg-primary text-white hover:bg-primary-hover shadow-md'
+                  : 'bg-primary text-white hover:bg-primary-hover'
                 : dark
                   ? 'border border-primary/35 bg-primary-subtle text-primary hover:bg-primary-light'
                   : 'border border-primary/25 bg-primary-subtle text-primary hover:bg-primary-light'
@@ -402,7 +402,7 @@ export default function DuaCard({
             ) : (
               <>
                 <span className="grid h-3.5 w-3.5 place-items-center rounded-full border border-current">
-                  <span className="h-1.5 w-1.5 rounded-full bg-current opacity-80" />
+                  <span className="h-1.5 w-1.5 rounded-full bg-current opacity-70" />
                 </span>
                 <span>{targetCount > 1 ? 'Complete All' : 'Mark Done'}</span>
               </>
