@@ -10,16 +10,7 @@
   --font-ui: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-display: 'Plus Jakarta Sans', sans-serif;
   
-  /* ── Dedicated App Brand Colors (Green Primary & Orange Link) ── */
-  --color-primary: var(--app-primary);
-  --color-primary-hover: var(--app-primary-hover);
-  --color-primary-light: var(--app-primary-light);
-  --color-primary-subtle: var(--app-primary-subtle);
-
-  --color-link: var(--app-link);
-  --color-link-hover: var(--app-link-hover);
-  --color-link-light: var(--app-link-light);
-
+  /* ── Dedicated 5-Color Brand System ── */
   --color-canvas: var(--app-bg);
   --color-surface: var(--app-surface);
   --color-surface-hover: var(--app-surface-hover);
@@ -27,90 +18,102 @@
   --color-ink: var(--app-ink);
   --color-muted: var(--app-muted);
 
-  /* Unified Aliases (Guarantees every component adheres to the green & orange brand system) */
-  --color-dhikr-50: var(--app-primary-subtle);
-  --color-dhikr-100: var(--app-primary-light);
-  --color-dhikr-200: var(--app-primary-light);
-  --color-dhikr-300: var(--app-primary);
-  --color-dhikr-400: var(--app-primary);
-  --color-dhikr-500: var(--app-primary);
-  --color-dhikr-600: var(--app-primary);
-  --color-dhikr-700: var(--app-primary);
-  --color-dhikr-800: var(--app-primary-hover);
-  --color-dhikr-900: var(--app-primary-hover);
-  --color-dhikr-950: var(--app-primary-hover);
+  --color-primary: var(--app-primary);
+  --color-primary-hover: var(--app-primary-hover);
+  --color-primary-light: var(--app-primary-light);
+  --color-primary-subtle: var(--app-primary-subtle);
+  --color-primary-fg: var(--app-primary-fg);
 
-  --color-brand-50: var(--app-primary-subtle);
-  --color-brand-100: var(--app-primary-light);
-  --color-brand-200: var(--app-primary-light);
-  --color-brand-300: var(--app-primary);
-  --color-brand-400: var(--app-primary);
-  --color-brand-500: var(--app-primary);
-  --color-brand-600: var(--app-primary);
-  --color-brand-700: var(--app-primary);
-  --color-brand-800: var(--app-primary-hover);
-  --color-brand-900: var(--app-primary-hover);
-  --color-brand-950: var(--app-primary-hover);
+  --color-link: var(--app-link);
+  --color-link-hover: var(--app-link-hover);
+  --color-link-light: var(--app-link-light);
+  --color-link-subtle: var(--app-link-subtle);
+  --color-link-fg: var(--app-link-fg);
 
-  --color-noor-50: var(--app-link-light);
-  --color-noor-100: var(--app-link-light);
-  --color-noor-200: var(--app-link-light);
-  --color-noor-300: var(--app-link);
-  --color-noor-400: var(--app-link);
-  --color-noor-500: var(--app-link);
-  --color-noor-600: var(--app-link);
-  --color-noor-700: var(--app-link-hover);
-  --color-noor-800: var(--app-link-hover);
-  --color-noor-900: var(--app-link-hover);
-  --color-noor-950: var(--app-link-hover);
+  /* Unified Aliases (High-contrast mappings guarantee existing components never break or lose contrast) */
+  --color-dhikr-50: var(--scale-green-50);
+  --color-dhikr-100: var(--scale-green-100);
+  --color-dhikr-200: var(--scale-green-200);
+  --color-dhikr-300: var(--scale-green-300);
+  --color-dhikr-400: var(--scale-green-400);
+  --color-dhikr-500: var(--scale-green-500);
+  --color-dhikr-600: var(--scale-green-600);
+  --color-dhikr-700: var(--scale-green-700);
+  --color-dhikr-800: var(--scale-green-800);
+  --color-dhikr-900: var(--scale-green-900);
+  --color-dhikr-950: var(--scale-green-950);
 
-  --color-sakinah-50: var(--app-bg);
-  --color-sakinah-100: var(--app-surface-hover);
-  --color-sakinah-200: var(--app-border);
-  --color-sakinah-300: var(--app-border);
-  --color-sakinah-400: var(--app-muted);
-  --color-sakinah-500: var(--app-muted);
-  --color-sakinah-600: var(--app-muted);
-  --color-sakinah-700: var(--app-ink);
-  --color-sakinah-800: var(--app-ink);
-  --color-sakinah-900: var(--app-ink);
-  --color-sakinah-950: var(--app-ink);
+  --color-brand-50: var(--scale-green-50);
+  --color-brand-100: var(--scale-green-100);
+  --color-brand-200: var(--scale-green-200);
+  --color-brand-300: var(--scale-green-300);
+  --color-brand-400: var(--scale-green-400);
+  --color-brand-500: var(--scale-green-500);
+  --color-brand-600: var(--scale-green-600);
+  --color-brand-700: var(--scale-green-700);
+  --color-brand-800: var(--scale-green-800);
+  --color-brand-900: var(--scale-green-900);
+  --color-brand-950: var(--scale-green-950);
 
-  --color-emerald-50: var(--app-primary-subtle);
-  --color-emerald-100: var(--app-primary-light);
-  --color-emerald-200: var(--app-primary-light);
-  --color-emerald-300: var(--app-primary);
-  --color-emerald-400: var(--app-primary);
-  --color-emerald-500: var(--app-primary);
-  --color-emerald-600: var(--app-primary);
-  --color-emerald-700: var(--app-primary);
-  --color-emerald-800: var(--app-primary-hover);
-  --color-emerald-900: var(--app-primary-hover);
-  --color-emerald-950: var(--app-primary-hover);
+  --color-emerald-50: var(--scale-green-50);
+  --color-emerald-100: var(--scale-green-100);
+  --color-emerald-200: var(--scale-green-200);
+  --color-emerald-300: var(--scale-green-300);
+  --color-emerald-400: var(--scale-green-400);
+  --color-emerald-500: var(--scale-green-500);
+  --color-emerald-600: var(--scale-green-600);
+  --color-emerald-700: var(--scale-green-700);
+  --color-emerald-800: var(--scale-green-800);
+  --color-emerald-900: var(--scale-green-900);
+  --color-emerald-950: var(--scale-green-950);
 
-  --color-stone-50: var(--app-bg);
-  --color-stone-100: var(--app-surface-hover);
-  --color-stone-200: var(--app-border);
-  --color-stone-300: var(--app-border);
-  --color-stone-400: var(--app-muted);
-  --color-stone-500: var(--app-muted);
-  --color-stone-600: var(--app-muted);
-  --color-stone-700: var(--app-ink);
-  --color-stone-800: var(--app-ink);
-  --color-stone-900: var(--app-ink);
-  --color-stone-950: var(--app-ink);
+  --color-sakinah-50: var(--scale-neutral-50);
+  --color-sakinah-100: var(--scale-neutral-100);
+  --color-sakinah-200: var(--scale-neutral-200);
+  --color-sakinah-300: var(--scale-neutral-300);
+  --color-sakinah-400: var(--scale-neutral-400);
+  --color-sakinah-500: var(--scale-neutral-500);
+  --color-sakinah-600: var(--scale-neutral-600);
+  --color-sakinah-700: var(--scale-neutral-700);
+  --color-sakinah-800: var(--scale-neutral-800);
+  --color-sakinah-900: var(--scale-neutral-900);
+  --color-sakinah-950: var(--scale-neutral-950);
 
-  --color-amber-50: var(--app-link-light);
-  --color-amber-100: var(--app-link-light);
-  --color-amber-200: var(--app-link-light);
-  --color-amber-300: var(--app-link);
-  --color-amber-400: var(--app-link);
-  --color-amber-500: var(--app-link);
-  --color-amber-600: var(--app-link);
-  --color-amber-700: var(--app-link-hover);
-  --color-amber-800: var(--app-link-hover);
-  --color-amber-900: var(--app-link-hover);
-  --color-amber-950: var(--app-link-hover);
+  --color-stone-50: var(--scale-neutral-50);
+  --color-stone-100: var(--scale-neutral-100);
+  --color-stone-200: var(--scale-neutral-200);
+  --color-stone-300: var(--scale-neutral-300);
+  --color-stone-400: var(--scale-neutral-400);
+  --color-stone-500: var(--scale-neutral-500);
+  --color-stone-600: var(--scale-neutral-600);
+  --color-stone-700: var(--scale-neutral-700);
+  --color-stone-800: var(--scale-neutral-800);
+  --color-stone-900: var(--scale-neutral-900);
+  --color-stone-950: var(--scale-neutral-950);
+
+  --color-noor-50: var(--scale-orange-50);
+  --color-noor-100: var(--scale-orange-100);
+  --color-noor-200: var(--scale-orange-200);
+  --color-noor-300: var(--scale-orange-300);
+  --color-noor-400: var(--scale-orange-400);
+  --color-noor-500: var(--scale-orange-500);
+  --color-noor-600: var(--scale-orange-600);
+  --color-noor-700: var(--scale-orange-700);
+  --color-noor-800: var(--scale-orange-800);
+  --color-noor-900: var(--scale-orange-900);
+  --color-noor-950: var(--scale-orange-950);
+
+  --color-amber-50: var(--scale-orange-50);
+  --color-amber-100: var(--scale-orange-100);
+  --color-amber-200: var(--scale-orange-200);
+  --color-amber-300: var(--scale-orange-300);
+  --color-amber-400: var(--scale-orange-400);
+  --color-amber-500: var(--scale-orange-500);
+  --color-amber-600: var(--scale-orange-600);
+  --color-amber-700: var(--scale-orange-700);
+  --color-amber-800: var(--scale-orange-800);
+  --color-amber-900: var(--scale-orange-900);
+  --color-amber-950: var(--scale-orange-950);
 
   --radius-xl: 1.1rem;
   --radius-2xl: 1.4rem;
@@ -125,25 +128,69 @@
 
 @layer base {
   :root {
-    /* ── App Specific Custom Colors ── */
-    /* Primary: Sanctuary Mosque Green */
-    --app-primary: #1b5e43;
-    --app-primary-hover: #144833;
-    --app-primary-light: #e8f4ee;
-    --app-primary-subtle: #f2f8f5;
-
-    /* Links & Accents: Minaret Lantern Warm Orange */
-    --app-link: #d96b14;
-    --app-link-hover: #b55309;
-    --app-link-light: #fef3e7;
-
-    /* Surfaces & Neutrals */
+    /* ── App Specific 5-Color System (Light Mode) ── */
+    /* 1. Canvas Background */
     --app-bg: #f8faf8;
+
+    /* 2. Surface & Panels */
     --app-surface: #ffffff;
     --app-surface-hover: #f1f5f2;
     --app-border: #e1e8e4;
+
+    /* 3. Text (Foreground) */
     --app-ink: #111a15;
     --app-muted: #5a6a62;
+
+    /* 4. Brand Green (Primary) */
+    --app-primary: #165a3e;
+    --app-primary-hover: #124731;
+    --app-primary-light: #e6f4ed;
+    --app-primary-subtle: #f0f7f3;
+    --app-primary-fg: #ffffff;
+
+    /* 5. Brand Orange (Links & Accents) */
+    --app-link: #c25708;
+    --app-link-hover: #9a4204;
+    --app-link-light: #fef3e7;
+    --app-link-subtle: #fff8f0;
+    --app-link-fg: #ffffff;
+
+    /* High-contrast scales (Light Mode) */
+    --scale-neutral-50: #f8faf8;
+    --scale-neutral-100: #f1f4f2;
+    --scale-neutral-200: #e2e7e4;
+    --scale-neutral-300: #cbcfcd;
+    --scale-neutral-400: #949b97;
+    --scale-neutral-500: #5a6a62;
+    --scale-neutral-600: #444f49;
+    --scale-neutral-700: #313a35;
+    --scale-neutral-800: #202723;
+    --scale-neutral-900: #111a15;
+    --scale-neutral-950: #0a0f0d;
+
+    --scale-green-50: #f0f7f3;
+    --scale-green-100: #e6f4ed;
+    --scale-green-200: #b9dec9;
+    --scale-green-300: #7ebf99;
+    --scale-green-400: #429d6d;
+    --scale-green-500: #1b5e43;
+    --scale-green-600: #165a3e;
+    --scale-green-700: #124731;
+    --scale-green-800: #0e3424;
+    --scale-green-900: #0a2419;
+    --scale-green-950: #05130d;
+
+    --scale-orange-50: #fff8f0;
+    --scale-orange-100: #fef3e7;
+    --scale-orange-200: #fcd9b0;
+    --scale-orange-300: #f9b56f;
+    --scale-orange-400: #ee842a;
+    --scale-orange-500: #d96b14;
+    --scale-orange-600: #c25708;
+    --scale-orange-700: #9a4204;
+    --scale-orange-800: #733002;
+    --scale-orange-900: #481d00;
+    --scale-orange-950: #2b1100;
 
     /* System Aliases */
     --app-accent: var(--app-primary);
@@ -153,24 +200,69 @@
   }
 
   html.dark {
-    /* Primary: Luminous Sacred Emerald Jewel (high contrast against obsidian) */
-    --app-primary: #10b981;
-    --app-primary-hover: #34d399;
-    --app-primary-light: rgba(16, 185, 129, 0.15);
-    --app-primary-subtle: rgba(16, 185, 129, 0.08);
-
-    /* Links & Accents: Radiant Minaret Sunset Orange */
-    --app-link: #fb923c;
-    --app-link-hover: #fed7aa;
-    --app-link-light: rgba(251, 146, 60, 0.15);
-
-    /* Obsidian Canvas & Sleek Slate Surfaces (Clean, deep, zero muddy green sludge) */
+    /* ── App Specific 5-Color System (Dark Mode - Obsidian Sanctuary) ── */
+    /* 1. Canvas Background */
     --app-bg: #0b0f0d;
+
+    /* 2. Surface & Panels */
     --app-surface: #121815;
     --app-surface-hover: #19221e;
-    --app-border: rgba(255, 255, 255, 0.09);
+    --app-border: rgba(255, 255, 255, 0.12);
+
+    /* 3. Text (Foreground) - Crisp, Radiant, AAA Contrast */
     --app-ink: #f3f4f6;
     --app-muted: #9ca3af;
+
+    /* 4. Brand Green (Primary) - Luminous Sacred Emerald Jewel */
+    --app-primary: #10b981;
+    --app-primary-hover: #34d399;
+    --app-primary-light: rgba(16, 185, 129, 0.16);
+    --app-primary-subtle: rgba(16, 185, 129, 0.08);
+    --app-primary-fg: #021a10;
+
+    /* 5. Brand Orange (Links & Accents) - Radiant Sunset Orange */
+    --app-link: #fb923c;
+    --app-link-hover: #fed7aa;
+    --app-link-light: rgba(251, 146, 60, 0.16);
+    --app-link-subtle: rgba(251, 146, 60, 0.08);
+    --app-link-fg: #1c0702;
+
+    /* High-contrast scales (Dark Mode - Guarantees radiant light text for 100/200/300) */
+    --scale-neutral-50: #060907;
+    --scale-neutral-100: #f3f4f6; /* Crisp radiant text */
+    --scale-neutral-200: #e5e7eb;
+    --scale-neutral-300: #d1d5db;
+    --scale-neutral-400: #9ca3af; /* Muted readable text */
+    --scale-neutral-500: #6b7280;
+    --scale-neutral-600: #4b5563;
+    --scale-neutral-700: #374151;
+    --scale-neutral-800: #19221e;
+    --scale-neutral-900: #121815;
+    --scale-neutral-950: #0b0f0d;
+
+    --scale-green-50: #04120a;
+    --scale-green-100: #ecfdf5;  /* Crisp radiant mint text */
+    --scale-green-200: #a7f3d0;  /* Luminous bright mint */
+    --scale-green-300: #6ee7b7;  /* Radiant emerald text */
+    --scale-green-400: #34d399;
+    --scale-green-500: #10b981;  /* Jewel emerald */
+    --scale-green-600: #059669;
+    --scale-green-700: #047857;
+    --scale-green-800: #064e3b;
+    --scale-green-900: #022c22;
+    --scale-green-950: #021a10;  /* Deep green-black for text on emerald buttons */
+
+    --scale-orange-50: #190900;
+    --scale-orange-100: #fff7ed; /* Crisp radiant warm text */
+    --scale-orange-200: #fde68a; /* Luminous warm gold */
+    --scale-orange-300: #fdba74; /* Radiant orange */
+    --scale-orange-400: #fb923c;
+    --scale-orange-500: #f97316;
+    --scale-orange-600: #ea580c;
+    --scale-orange-700: #c2410c;
+    --scale-orange-800: #7c2d12;
+    --scale-orange-900: #431407;
+    --scale-orange-950: #1c0702;
 
     /* System Aliases */
     --app-accent: var(--app-primary);
@@ -199,13 +291,14 @@
     background-attachment: fixed;
   }
 
-  a {
+  /* Unmarked prose links only - does not clobber buttons or explicit text- classes */
+  a:not([class*="text-"]):not([class*="bg-"]) {
     color: var(--app-link);
     text-decoration-skip-ink: auto;
     transition: color 0.15s ease;
   }
 
-  a:hover {
+  a:not([class*="text-"]):not([class*="bg-"]):hover {
     color: var(--app-link-hover);
   }
 
@@ -234,7 +327,6 @@
     text-rendering: optimizeLegibility;
   }
 }
-
 
 html:not(.dark) {
   color-scheme: light;

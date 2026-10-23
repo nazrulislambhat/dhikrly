@@ -97,7 +97,7 @@ export default function LegalLayout({
       <footer className="border-t border-[var(--app-line)] bg-[var(--app-surface)] py-8">
         <div className="mx-auto w-[min(calc(100%-2rem),72rem)] px-2 lg:px-4">
           <div className="flex flex-wrap items-center justify-between gap-4">
-            <p className="font-arabic text-lg text-emerald-800/40 dark:text-emerald-200/40">
+            <p className="font-arabic text-lg text-primary/85">
               بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
             </p>
             <div className="flex flex-wrap gap-5 text-[11px] font-semibold uppercase tracking-widest text-[var(--app-muted)]">
@@ -147,6 +147,22 @@ export default function LegalLayout({
                 App
               </Link>
             </div>
+          </div>
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-4">
+            <a
+              href="https://www.producthunt.com/products/dhikrly/reviews/new?utm_source=badge-product_review&utm_medium=badge&utm_source=badge-dhikrly"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block overflow-hidden rounded-[10px] shadow-sm transition-transform hover:scale-105 active:scale-95"
+            >
+              <img
+                src="https://api.producthunt.com/widgets/embed-image/v1/product_review.svg?product_id=1353959&theme=light"
+                alt="Dhikrly - Adhkār, Qur’an & Ṣalāh | Product Hunt"
+                style={{ width: '250px', height: '54px' }}
+                width="250"
+                height="54"
+              />
+            </a>
           </div>
           <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-[var(--app-line)] pt-4">
             <p className="text-[10px] text-[var(--app-muted)]">
