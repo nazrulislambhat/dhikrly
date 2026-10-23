@@ -277,7 +277,7 @@ export default function CommandPaletteModal({
         onClick={(e) => e.stopPropagation()}
       >
         {/* Search Input Bar */}
-        <div className="flex items-center gap-3 border-b border-[var(--app-line)] px-4 py-3.5 sm:px-5">
+        <div className="flex items-center gap-3 border-b border-border px-4 py-3.5 sm:px-5">
           <Search className="h-5 w-5 text-primary shrink-0" />
           <input
             ref={inputRef}
@@ -300,7 +300,7 @@ export default function CommandPaletteModal({
               <X className="h-4 w-4" />
             </button>
           )}
-          <span className="hidden sm:inline-flex items-center gap-1 rounded-lg border border-[var(--app-line)] px-2 py-0.5 text-[8px] font-bold text-muted">
+          <span className="hidden sm:inline-flex items-center gap-1 rounded-lg border border-border px-2 py-0.5 text-[8px] font-bold text-muted">
             ESC to close
           </span>
         </div>
@@ -336,8 +336,8 @@ export default function CommandPaletteModal({
                   <span
                     className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl transition-transform ${
                       isSelected
-                        ? 'bg-primary text-white scale-105 shadow-xs'
-                        : 'bg-primary-subtle text-primary'
+                        ? 'bg-primary text-primary-fg scale-105 shadow-xs font-bold'
+                        : 'bg-primary/10 text-primary'
                     }`}
                   >
                     <item.Icon className="h-5 w-5" />
@@ -373,13 +373,13 @@ export default function CommandPaletteModal({
         </div>
 
         {/* Footer info */}
-        <div className="flex items-center justify-between border-t border-[var(--app-line)] px-4 py-2.5 text-[11px] text-muted">
+        <div className="flex items-center justify-between border-t border-border px-4 py-2.5 text-[11px] text-muted">
           <div className="flex items-center gap-2">
             <span>Navigate with</span>
-            <span className="rounded border border-[var(--app-line)] px-1 font-mono text-[10px]">↑</span>
-            <span className="rounded border border-[var(--app-line)] px-1 font-mono text-[10px]">↓</span>
+            <span className="rounded border border-border px-1 font-mono text-[10px]">↑</span>
+            <span className="rounded border border-border px-1 font-mono text-[10px]">↓</span>
             <span>and</span>
-            <span className="rounded border border-[var(--app-line)] px-1.5 font-mono text-[10px]">↵ Enter</span>
+            <span className="rounded border border-border px-1.5 font-mono text-[10px]">↵ Enter</span>
           </div>
           <span>Dhikrly Quick Nav</span>
         </div>

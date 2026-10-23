@@ -126,7 +126,7 @@ export default function AppShell({
   const [desktopDropdownOpen, setDesktopDropdownOpen] = useState(false);
   const desktopDropdownRef = useRef<HTMLDivElement>(null);
 
-  const muted = dark ? 'text-sakinah-400' : 'text-sakinah-500';
+  const muted = 'text-muted';
   const surface = 'border-border bg-surface/90 backdrop-blur-xl';
 
   useEffect(() => {
@@ -228,16 +228,12 @@ export default function AppShell({
           <button
             type="button"
             onClick={() => setShowCommandPalette(true)}
-            className={`hidden lg:flex items-center gap-2 rounded-2xl border px-3 py-1.5 text-xs font-semibold transition-all hover:scale-105 active:scale-95 ${
-              dark
-                ? 'border-white/[0.08] bg-white/[0.04] text-sakinah-300 hover:border-dhikr-500/40'
-                : 'border-dhikr-950/[0.08] bg-white text-sakinah-600 hover:border-dhikr-600/40 shadow-xs'
-            }`}
+            className="hidden lg:flex items-center gap-2 rounded-2xl border border-border bg-surface text-muted hover:text-ink hover:border-primary/40 px-3 py-1.5 text-xs font-semibold transition-all hover:scale-105 active:scale-95 cursor-pointer"
             title="Search tools, prayers and duas (Cmd+K)"
           >
-            <Search className="h-3.5 w-3.5 text-dhikr-600 dark:text-dhikr-400" />
+            <Search className="h-3.5 w-3.5 text-primary" />
             <span>Quick Search</span>
-            <span className="inline-flex items-center gap-0.5 rounded-lg border border-[var(--app-line)] px-1.5 py-0.2 text-[10px] font-mono text-sakinah-400">
+            <span className="inline-flex items-center gap-0.5 rounded-lg border border-border px-1.5 py-0.2 text-[10px] font-mono text-muted">
               <Command className="h-2.5 w-2.5" />K
             </span>
           </button>
@@ -256,10 +252,8 @@ export default function AppShell({
                   aria-current={isCurrent ? 'page' : undefined}
                   className={`flex min-h-9 items-center gap-1.5 whitespace-nowrap rounded-xl px-3 text-xs font-bold no-underline transition-all ${
                     isCurrent
-                      ? dark
-                        ? 'bg-dhikr-500/20 text-dhikr-300 shadow-xs'
-                        : 'bg-dhikr-50 text-dhikr-900 border border-dhikr-600/20 shadow-xs'
-                      : `${muted} hover:bg-dhikr-500/10 hover:text-dhikr-800 dark:hover:text-dhikr-200`
+                      ? 'bg-primary/15 text-primary shadow-xs'
+                      : 'text-muted hover:bg-surface-hover hover:text-ink'
                   }`}
                 >
                   <item.Icon className="h-3.5 w-3.5" aria-hidden="true" />
@@ -274,12 +268,10 @@ export default function AppShell({
                 type="button"
                 onClick={() => setDesktopDropdownOpen((v) => !v)}
                 aria-expanded={desktopDropdownOpen}
-                className={`flex min-h-9 items-center gap-1.5 whitespace-nowrap rounded-xl px-3 text-xs font-bold transition-all ${
+                className={`flex min-h-9 items-center gap-1.5 whitespace-nowrap rounded-xl px-3 text-xs font-bold transition-all cursor-pointer ${
                   isDropdownActive
-                    ? dark
-                      ? 'bg-dhikr-500/20 text-dhikr-300 shadow-xs'
-                      : 'bg-dhikr-50 text-dhikr-900 border border-dhikr-600/20 shadow-xs'
-                    : `${muted} hover:bg-dhikr-500/10 hover:text-dhikr-800 dark:hover:text-dhikr-200`
+                    ? 'bg-primary/15 text-primary shadow-xs'
+                    : 'text-muted hover:bg-surface-hover hover:text-ink'
                 }`}
               >
                 <span>{activeDropdownItem ? activeDropdownItem.label : 'Explore'}</span>
@@ -457,10 +449,8 @@ export default function AppShell({
               aria-current={isCurrent ? 'page' : undefined}
               className={`flex min-h-12 flex-col items-center justify-center gap-0.5 rounded-2xl text-[10px] font-bold no-underline transition-all ${
                 isCurrent
-                  ? dark
-                    ? 'bg-dhikr-500/20 text-dhikr-300 shadow-xs'
-                    : 'bg-dhikr-50 text-dhikr-900 border border-dhikr-600/20 shadow-xs'
-                  : muted
+                  ? 'bg-primary/15 text-primary shadow-xs'
+                  : 'text-muted hover:text-ink'
               }`}
             >
               <item.Icon className="h-4 w-4" aria-hidden="true" />
@@ -473,12 +463,10 @@ export default function AppShell({
         <button
           type="button"
           onClick={() => setShowMoreMenu(true)}
-          className={`flex min-h-12 flex-col items-center justify-center gap-0.5 rounded-2xl text-[10px] font-bold transition-all ${
+          className={`flex min-h-12 flex-col items-center justify-center gap-0.5 rounded-2xl text-[10px] font-bold transition-all cursor-pointer ${
             isDropdownActive
-              ? dark
-                ? 'bg-dhikr-500/20 text-dhikr-300 shadow-xs'
-                : 'bg-dhikr-50 text-dhikr-900 border border-dhikr-600/20 shadow-xs'
-              : muted
+              ? 'bg-primary/15 text-primary shadow-xs'
+              : 'text-muted hover:text-ink'
           }`}
           aria-expanded={showMoreMenu}
           aria-label="More Dhikrly pages"

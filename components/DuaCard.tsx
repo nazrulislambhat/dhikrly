@@ -208,11 +208,7 @@ export default function DuaCard({
             onClick={cycleFontSize}
             title={`Adjust Arabic font size (current: ${arabicFontSize})`}
             aria-label={`Adjust Arabic font size (current: ${arabicFontSize})`}
-            className={`grid h-7 w-7 place-items-center rounded-lg border text-xs font-bold transition-all cursor-pointer ${
-              dark
-                ? 'border-white/10 bg-white/5 text-sakinah-400 hover:text-sakinah-200'
-                : 'border-sakinah-200 bg-sakinah-50 text-sakinah-500 hover:text-sakinah-800'
-            }`}
+            className="grid h-7 w-7 place-items-center rounded-lg border border-border bg-surface text-muted hover:text-ink hover:border-primary/40 text-xs font-bold transition-all cursor-pointer"
           >
             <span className="text-[11px] font-serif">A±</span>
           </button>
@@ -225,19 +221,17 @@ export default function DuaCard({
             aria-label={isPlaying ? 'Stop recitation' : 'Listen to authentic recitation'}
             className={`flex h-7 items-center justify-center gap-1 rounded-lg border px-2 transition-all cursor-pointer ${
               isPlaying
-                ? 'border-dhikr-600 bg-dhikr-700 text-white shadow-sm'
-                : dark
-                  ? 'border-white/10 bg-white/5 text-sakinah-400 hover:text-dhikr-300 hover:border-dhikr-500/40'
-                  : 'border-sakinah-200 bg-sakinah-50 text-sakinah-500 hover:text-dhikr-800 hover:border-dhikr-500/40'
+                ? 'border-primary bg-primary text-primary-fg shadow-sm'
+                : 'border-border bg-surface text-muted hover:text-primary hover:border-primary/40'
             }`}
           >
             {isPlaying ? (
               <>
                 <VolumeX className="h-3.5 w-3.5" />
                 <span className="flex items-center gap-0.5">
-                  <span className="h-2 w-0.5 bg-white animate-soundwave-1" />
-                  <span className="h-3 w-0.5 bg-white animate-soundwave-2" />
-                  <span className="h-2 w-0.5 bg-white animate-soundwave-3" />
+                  <span className="h-2 w-0.5 bg-current animate-soundwave-1" />
+                  <span className="h-3 w-0.5 bg-current animate-soundwave-2" />
+                  <span className="h-2 w-0.5 bg-current animate-soundwave-3" />
                 </span>
               </>
             ) : (
@@ -253,10 +247,8 @@ export default function DuaCard({
             aria-label={copied ? 'Copied to clipboard' : 'Copy remembrance'}
             className={`grid h-7 w-7 place-items-center rounded-lg border transition-all cursor-pointer ${
               copied
-                ? 'border-dhikr-600 bg-dhikr-700 text-white'
-                : dark
-                  ? 'border-white/10 bg-white/5 text-sakinah-400 hover:text-sakinah-200'
-                  : 'border-sakinah-200 bg-sakinah-50 text-sakinah-500 hover:text-sakinah-800'
+                ? 'border-primary bg-primary text-primary-fg'
+                : 'border-border bg-surface text-muted hover:text-ink hover:border-primary/40'
             }`}
           >
             {copied ? (
@@ -272,7 +264,7 @@ export default function DuaCard({
               type="button"
               onClick={() => onDelete(dua.id)}
               aria-label="Delete custom remembrance"
-              className="grid h-7 w-7 place-items-center rounded-lg text-sakinah-400 hover:text-red-500 transition-colors cursor-pointer"
+              className="grid h-7 w-7 place-items-center rounded-lg text-muted hover:text-red-500 transition-colors cursor-pointer"
             >
               ✕
             </button>
@@ -284,21 +276,15 @@ export default function DuaCard({
       <div className="px-4 sm:px-5">
         <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-1 pb-3 border-b border-black/[0.04] dark:border-white/[0.05]">
           <h3
-            className={`font-display text-base sm:text-lg font-bold tracking-tight ${
-              checked
-                ? dark
-                  ? 'text-dhikr-300'
-                  : 'text-dhikr-900'
-                : dark
-                  ? 'text-sakinah-100'
-                  : 'text-sakinah-900'
+            className={`font-display text-base sm:text-lg font-bold tracking-tight transition-colors ${
+              checked ? 'text-primary' : 'text-ink'
             }`}
           >
             {dua.title}
           </h3>
           {dua.titleAr && (
             <span
-              className="font-arabic text-sm text-sakinah-400 dark:text-sakinah-500"
+              className="font-arabic text-sm text-muted"
               dir="rtl"
             >
               {dua.titleAr}
@@ -314,18 +300,12 @@ export default function DuaCard({
           className={`rounded-2xl p-4 sm:p-5 transition-colors ${
             dark
               ? 'bg-black/30 border border-white/[0.04]'
-              : 'bg-dhikr-950/[0.02] border border-dhikr-900/[0.06]'
+              : 'bg-primary/5 border border-primary/10'
           }`}
         >
           <p
             className={`font-quran text-right font-normal select-text ${arabicSizeClasses} ${
-              checked
-                ? dark
-                  ? 'text-dhikr-200/90'
-                  : 'text-dhikr-950'
-                : dark
-                  ? 'text-sakinah-100'
-                  : 'text-sakinah-900'
+              checked ? 'text-primary' : 'text-ink'
             }`}
             dir="rtl"
             lang="ar"
@@ -339,21 +319,13 @@ export default function DuaCard({
         {expanded && (
           <div className="space-y-2 pt-1">
             {dua.transliteration && (
-              <p
-                className={`font-serif text-xs sm:text-[13px] leading-relaxed italic ${
-                  dark ? 'text-dhikr-300/85' : 'text-dhikr-800/90'
-                }`}
-              >
+              <p className="font-serif text-xs sm:text-[13px] leading-relaxed italic text-primary/85">
                 {dua.transliteration}
               </p>
             )}
 
             {dua.en && (
-              <p
-                className={`text-xs sm:text-[13px] leading-relaxed ${
-                  dark ? 'text-sakinah-300' : 'text-sakinah-600'
-                }`}
-              >
+              <p className="text-xs sm:text-[13px] leading-relaxed text-muted">
                 &ldquo;{dua.en}&rdquo;
               </p>
             )}
@@ -367,9 +339,7 @@ export default function DuaCard({
         <button
           type="button"
           onClick={() => setExpanded((v) => !v)}
-          className={`inline-flex items-center gap-1 text-[11px] font-semibold transition-colors cursor-pointer ${
-            dark ? 'text-sakinah-400 hover:text-sakinah-200' : 'text-sakinah-500 hover:text-sakinah-800'
-          }`}
+          className="inline-flex items-center gap-1 text-[11px] font-semibold text-muted hover:text-ink transition-colors cursor-pointer"
         >
           <span>{expanded ? 'Less' : 'Meaning & Pronunciation'}</span>
           {expanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}

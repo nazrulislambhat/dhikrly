@@ -997,15 +997,9 @@ export default function DuasTracker() {
           </div>
 
           {/* ── Footer ── */}
-          <footer
-            className={`mt-16 border-t pt-8 pb-12 text-center ${
-              dark ? 'border-white/[0.06]' : 'border-stone-200/70'
-            }`}
-          >
+          <footer className="mt-16 border-t border-border pt-8 pb-12 text-center">
             <p
-              className={`font-arabic text-2xl ${
-                dark ? 'text-emerald-400/30' : 'text-emerald-700/30'
-              }`}
+              className="font-arabic text-2xl text-primary/85"
               dir="rtl"
               lang="ar"
               translate="no"
@@ -1013,11 +1007,7 @@ export default function DuasTracker() {
               بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
             </p>
 
-            <p
-              className={`mt-3 text-[10px] uppercase tracking-widest ${
-                dark ? 'text-stone-500' : 'text-stone-400'
-              }`}
-            >
+            <p className="mt-3 text-xs uppercase tracking-widest text-muted">
               {user
                 ? `${
                     syncStatus === 'synced'
@@ -1031,63 +1021,55 @@ export default function DuasTracker() {
                 : 'Progress saved securely in your browser'}
             </p>
 
-            
-            <div className="mt-5 flex justify-center">
+            {/* Support & Reviews Badges */}
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-4">
+              <a
+                href="https://www.producthunt.com/products/dhikrly/reviews/new?utm_source=badge-product_review&utm_medium=badge&utm_source=badge-dhikrly"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block overflow-hidden rounded-[10px] shadow-sm transition-transform hover:scale-105 active:scale-95"
+              >
+                <img
+                  src="https://api.producthunt.com/widgets/embed-image/v1/product_review.svg?product_id=1353959&theme=light"
+                  alt="Dhikrly - Adhkār, Qur’an & Ṣalāh | Product Hunt"
+                  style={{ width: '250px', height: '54px' }}
+                  width="250"
+                  height="54"
+                />
+              </a>
+
               <a
                 href="https://buymeacoffee.com/nazrulislambhat"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Support Dhikrly"
-                className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-bold no-underline transition-all hover:scale-105 active:scale-95 ${
-                  dark
-                    ? 'border-amber-400/30 bg-amber-400/10 text-amber-200 hover:bg-amber-400/20 hover:border-amber-400/50'
-                    : 'border-amber-400/50 bg-[#FFDD00]/25 text-amber-950 hover:bg-[#FFDD00]/40 hover:border-amber-500/60 shadow-xs'
-                }`}
+                className="inline-flex h-[54px] items-center gap-2 rounded-2xl border border-amber-400/40 bg-[#FFDD00] px-5 text-xs font-black text-amber-950 no-underline shadow-sm transition-all hover:scale-105 hover:bg-[#ffe234] active:scale-95"
               >
-                <Coffee className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                <Coffee className="h-4 w-4 text-amber-900" />
                 <span>Support Dhikrly</span>
               </a>
             </div>
 
             {/* Navigation Links */}
-            <div
-              className={`mt-6 flex flex-wrap items-center justify-center gap-5 text-[11px] font-semibold ${
-                dark ? 'text-stone-400' : 'text-stone-500'
-              }`}
-            >
-              <Link
-                href="/about"
-                className={`transition-colors ${dark ? 'hover:text-emerald-300' : 'hover:text-emerald-800'}`}
-              >
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-5 text-xs font-semibold text-muted">
+              <Link href="/about" className="transition-colors hover:text-ink">
                 About
               </Link>
-              <Link
-                href="/privacy-policy"
-                className={`transition-colors ${dark ? 'hover:text-emerald-300' : 'hover:text-emerald-800'}`}
-              >
+              <Link href="/privacy-policy" className="transition-colors hover:text-ink">
                 Privacy Policy
               </Link>
-              <Link
-                href="/terms"
-                className={`transition-colors ${dark ? 'hover:text-emerald-300' : 'hover:text-emerald-800'}`}
-              >
+              <Link href="/terms" className="transition-colors hover:text-ink">
                 Terms of Use
               </Link>
-              <Link
-                href="/tech"
-                className={`transition-colors ${dark ? 'hover:text-emerald-300' : 'hover:text-emerald-800'}`}
-              >
+              <Link href="/tech" className="transition-colors hover:text-ink">
                 Tech Stack & APIs
               </Link>
-              <Link
-                href="/contact"
-                className={`transition-colors ${dark ? 'hover:text-emerald-300' : 'hover:text-emerald-800'}`}
-              >
+              <Link href="/contact" className="transition-colors hover:text-ink">
                 Contact
               </Link>
             </div>
 
-            <p className={`mt-4 text-[10px] ${dark ? 'text-stone-600' : 'text-stone-400'}`}>
+            <p className="mt-4 text-xs text-muted">
               © {new Date().getFullYear()} Dhikrly — Made for the Ummah
             </p>
           </footer>

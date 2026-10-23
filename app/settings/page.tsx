@@ -441,7 +441,7 @@ export default function SettingsPage() {
                 ) : (
                   <button
                     type="button"
-                    className="min-h-10 rounded-xl bg-emerald-800 px-4 text-xs font-semibold text-white hover:bg-emerald-700 dark:bg-emerald-400 dark:text-emerald-950 dark:hover:bg-emerald-300 shadow-sm transition-all"
+                    className="min-h-10 rounded-xl bg-primary px-4 text-xs font-bold text-primary-fg hover:bg-primary-hover shadow-sm transition-all cursor-pointer"
                     onClick={() => setShowAuth(true)}
                   >
                     Sign in to Sync
@@ -900,8 +900,8 @@ export default function SettingsPage() {
                     }}
                     className={`rounded-xl px-3 py-1.5 text-xs font-bold transition-all ${
                       voiceGender === 'male'
-                        ? 'bg-emerald-800 text-white dark:bg-emerald-400 dark:text-emerald-950 shadow-xs'
-                        : 'text-[var(--app-muted)] hover:text-[var(--app-ink)]'
+                        ? 'bg-primary text-primary-fg shadow-xs'
+                        : 'text-muted hover:text-ink'
                     }`}
                   >
                     <span>♂ Male (Default)</span>
@@ -914,8 +914,8 @@ export default function SettingsPage() {
                     }}
                     className={`rounded-xl px-3 py-1.5 text-xs font-bold transition-all ${
                       voiceGender === 'female'
-                        ? 'bg-emerald-800 text-white dark:bg-emerald-400 dark:text-emerald-950 shadow-xs'
-                        : 'text-[var(--app-muted)] hover:text-[var(--app-ink)]'
+                        ? 'bg-primary text-primary-fg shadow-xs'
+                        : 'text-muted hover:text-ink'
                     }`}
                   >
                     <span>♀ Female</span>
@@ -1064,7 +1064,7 @@ export default function SettingsPage() {
                   type="button"
                   onClick={handleExportData}
                   disabled={isExporting}
-                  className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-800 px-4 py-3 text-xs font-bold text-white shadow-sm hover:bg-emerald-700 dark:bg-emerald-400 dark:text-emerald-950 dark:hover:bg-emerald-300 transition-all disabled:opacity-50"
+                  className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-xs font-bold text-primary-fg shadow-sm hover:bg-primary-hover transition-all disabled:opacity-50 cursor-pointer"
                 >
                   <Download className="h-4 w-4" />
                   <span>{isExporting ? 'Generating Backup…' : 'Export My Spiritual Data (JSON)'}</span>
@@ -1092,7 +1092,7 @@ export default function SettingsPage() {
             <button
               type="button"
               onClick={() => void handleProfileSave()}
-              className="inline-flex items-center gap-2 rounded-xl bg-emerald-800 px-6 py-2.5 text-xs font-bold text-white shadow-md hover:bg-emerald-700 dark:bg-emerald-400 dark:text-emerald-950 dark:hover:bg-emerald-300 transition-all active:scale-95"
+              className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-2.5 text-xs font-bold text-primary-fg shadow-md hover:bg-primary-hover transition-all active:scale-95 cursor-pointer"
             >
               <Check className="h-4 w-4" />
               <span>Save Profile</span>
