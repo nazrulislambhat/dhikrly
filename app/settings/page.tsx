@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   AlertCircle,
   ArrowRight,
@@ -39,7 +39,7 @@ import AppShell from '@/components/AppShell';
 import AuthModal from '@/components/AuthModal';
 import NotificationSettings from '@/components/NotificationSettings';
 import { useAuth } from '@/hooks/useAuth';
-import { getSalahSettings, saveSalahSettings } from '@/lib/salahStorage';
+import { DEFAULT_SALAH_SETTINGS, getSalahSettings, saveSalahSettings } from '@/lib/salahStorage';
 import { load, NOTIFICATION_KEY, save, SETTINGS_KEY } from '@/lib/storage';
 import { supabase } from '@/lib/supabase';
 import type { SalahSettings } from '@/types/salah';
@@ -108,18 +108,14 @@ const DHIKR_GOAL_OPTIONS = [33, 100, 300, 500, 1000];
 const QURAN_GOAL_OPTIONS = [5, 10, 20, 50];
 
 export default function SettingsPage() {
-  const [dark, setDark] = useState(
-    () => load<{ dark: boolean }>(SETTINGS_KEY, { dark: false }).dark,
-  );
-  const [sound, setSound] = useState(
-    () => load<{ sound?: boolean }>(SETTINGS_KEY, { sound: true }).sound ?? true,
-  );
-  const [voiceGender, setVoiceGenderState] = useState<VoiceGender>(() => getVoiceGender());
-  const [salahSettings, setSalahSettings] = useState<SalahSettings>(() => getSalahSettings());
+  const [mounted, setMounted] = useState(false);
+  const isLoaded = useRef(false);
 
-  const [profile, setProfile] = useState<UserProfileSettings>(() => {
-    return load<UserProfileSettings>(PROFILE_KEY, DEFAULT_PROFILE);
-  });
+  const [dark, setDark] = useState<boolean>(false);
+  const [sound, setSound] = useState<boolean>(true);
+  const [voiceGender, setVoiceGenderState] = useState<VoiceGender>('male');
+  const [salahSettings, setSalahSettings] = useState<SalahSettings>(DEFAULT_SALAH_SETTINGS);
+  const [profile, setProfile] = useState<UserProfileSettings>(DEFAULT_PROFILE);
 
   const [statusMessage, setStatusMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
@@ -135,6 +131,21 @@ export default function SettingsPage() {
   const { user, loading, signOut } = useAuth();
 
   useEffect(() => {
+    setMounted(true);
+    const existing = load<{ dark: boolean; sound?: boolean }>(SETTINGS_KEY, {
+      dark: false,
+      sound: true,
+    });
+    setDark(existing.dark);
+    setSound(existing.sound ?? true);
+    setVoiceGenderState(getVoiceGender());
+    setSalahSettings(getSalahSettings());
+    setProfile(load<UserProfileSettings>(PROFILE_KEY, DEFAULT_PROFILE));
+    isLoaded.current = true;
+  }, []);
+
+  useEffect(() => {
+    if (!isLoaded.current) return;
     document.documentElement.classList.toggle('dark', dark);
     const existing = load<{ dark: boolean; sound?: boolean }>(SETTINGS_KEY, {
       dark,
@@ -144,6 +155,7 @@ export default function SettingsPage() {
   }, [dark, sound]);
 
   useEffect(() => {
+    if (!isLoaded.current) return;
     saveSalahSettings(salahSettings);
   }, [salahSettings]);
 
