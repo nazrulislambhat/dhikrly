@@ -852,14 +852,14 @@ export default function SettingsPage() {
 
           {/* Alert Status Banners */}
           {statusMessage && (
-            <div className="flex items-center gap-3 rounded-2xl border border-primary/40 bg-primary/10 p-4 text-xs font-bold text-primary animate-fade-in shadow-xs">
+            <div className="flex items-center gap-3 rounded-2xl border border-primary/40 bg-primary/10 p-4 text-xs font-bold text-primary  shadow-xs">
               <CheckCircle2 className="h-4 w-4 shrink-0" />
               <span>{statusMessage}</span>
             </div>
           )}
 
           {errorMessage && (
-            <div className="flex items-center gap-3 rounded-2xl border border-border bg-surface p-4 text-xs font-bold text-ink animate-fade-in shadow-xs">
+            <div className="flex items-center gap-3 rounded-2xl border border-border bg-surface p-4 text-xs font-bold text-ink  shadow-xs">
               <AlertCircle className="h-4 w-4 shrink-0 text-link" />
               <span>{errorMessage}</span>
             </div>

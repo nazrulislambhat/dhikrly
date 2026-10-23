@@ -479,7 +479,7 @@ export default function AppShell({
 
       {/* ── Mobile Bottom Sheet Drawer ── */}
       {showMoreMenu && (
-        <div className="fixed inset-0 z-50 flex flex-col justify-end bg-black/60 backdrop-blur-xs md:hidden animate-fade-in">
+        <div className="fixed inset-0 z-50 flex flex-col justify-end bg-black/60 backdrop-blur-xs md:hidden">
           <div
             className="fixed inset-0"
             onClick={() => setShowMoreMenu(false)}
