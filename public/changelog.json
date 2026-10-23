@@ -1,6 +1,32 @@
 {
-  "current": "2.3",
+  "current": "2.4",
   "releases": [
+    {
+      "version": "2.4",
+      "date": "2026-10-23",
+      "title": "Settings Overhaul, Live Theme Accent Engine, User Profile Photo Sync & Data Sovereignty",
+      "added": [
+        "Live App Accent Theme Engine — dynamic 6-color palette (Sacred Emerald, Sunset Amber, Oasis Teal, Sapphire Sky, Damask Rose, Night Amethyst) that updates CSS root variables across the entire app in real time",
+        "User Profile Photo Fetch & Upload — automatically fetches Google/OAuth avatar, supports custom image uploads with client-side canvas compression (<35KB), and custom image URLs",
+        "Modern Monogram Initials Avatar — elegant, brand-accented monogram initials when no custom photo is provided",
+        "Qur’an Hifz Memorization Recall Mode — veiling toggle that blurs upcoming verses in the reader until tapped to test recall",
+        "Audio Repeat & Loop Presets — loop verses 1×, 3×, 5×, 10× for memorization review before advancing",
+        "Pre-Prayer Warning Timers — configure reminder alerts 5, 10, or 15 minutes before Azan time",
+        "Makrooh (Prohibited) Times Protection — alert guard against praying during forbidden windows (Sunrise, Zenith Zawāl, Sunset)",
+        "Dhikr Ergonomics & Haptics — tactile vibration intensity (Soft, Crisp, Deep), bead click acoustic sound tones (Olive Wood, Stone, Digital Snap), and full-screen tap counter",
+        "Live Storage Diagnostics & Data Inspector — live record counters for adhkār, streaks, bookmarks, prayer days, and byte usage",
+        "Complete JSON Backup Import & Restore — full data sovereignty enabling seamless cross-device migration and instant recovery"
+      ],
+      "improved": [
+        "Overhauled Settings Page Layout — streamlined category filtering tabs (Accent & Theme, Identity & Photo, Qur’an & Hifz, Prayer & Adhān, Dhikr & Sensory, Worship Goals, Data & Storage)",
+        "Zero-Flicker Theme Initialization — instant inline root variable execution for saved accent colors and dark appearance on cold boot",
+        "Synced UserMenu Avatar Initials with Active Brand Accent Theme",
+        "Global Save Keyboard Shortcut (⌘S / Ctrl+S) with instant visual toast feedback"
+      ],
+      "removed": [
+        "Removed Spiritual Avatar Motif & Icon grid in favor of clean real profile pictures and elegant monogram initials"
+      ]
+    },
     {
       "version": "2.3",
       "date": "2026-10-16",
