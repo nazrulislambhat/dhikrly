@@ -1255,6 +1255,16 @@ export default function SettingsPage() {
                         Ja‘farī
                       </option>
                     </select>
+                    <div className="flex items-center justify-between pt-0.5">
+                      <span className="text-[11px] text-ink/60">Auto-syncs ‘Asr prayer shadow calculation</span>
+                      <Link
+                        href="/books"
+                        className="inline-flex items-center gap-1 text-[11px] font-bold text-link hover:text-link-hover"
+                      >
+                        <span>View recommended books</span>
+                        <ArrowUpRight className="h-3 w-3" />
+                      </Link>
+                    </div>
                   </div>
 
                   {/* Home City & Country (GPS Auto-detect) */}
