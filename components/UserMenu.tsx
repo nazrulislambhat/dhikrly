@@ -104,11 +104,7 @@ export default function UserMenu({
             />
           ) : null}
           <div
-            className={`h-6 w-6 items-center justify-center rounded-full text-[9px] font-bold ${
-              dark
-                ? 'bg-amber-400/20 text-amber-300'
-                : 'bg-amber-100 text-amber-700'
-            } ${avatarUrl ? 'hidden' : 'flex'}`}
+            className={`h-6 w-6 items-center justify-center rounded-full text-[9px] font-bold bg-primary/20 text-primary border border-primary/30 ${avatarUrl ? 'hidden' : 'flex'}`}
           >
             {initials}
           </div>

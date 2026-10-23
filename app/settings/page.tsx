@@ -12,22 +12,25 @@ import {
   Camera,
   Check,
   CheckCircle2,
-  CircleDot,
   Clock3,
   Compass,
   Download,
-  Flame,
-  Globe,
+  Eye,
+  EyeOff,
+  FileCheck,
+  HardDrive,
+  Headphones,
   Heart,
-  Image as ImageIcon,
-  Landmark,
-  Leaf,
   Link as LinkIcon,
+  Lock,
   MapPin,
   Moon,
   Music,
+  Palette,
   RefreshCw,
+  Repeat,
   RotateCcw,
+  Shield,
   ShieldCheck,
   Smartphone,
   Sparkles,
@@ -61,6 +64,13 @@ import {
   QURAN_SETTINGS_KEY,
   type QuranSettings,
 } from '@/lib/quran';
+import {
+  ACCENT_PALETTES,
+  applyAccentTheme,
+  DEFAULT_ACCENT,
+  getSavedAccent,
+  type AccentColorKey,
+} from '@/lib/theme';
 import { supabase } from '@/lib/supabase';
 import type { SalahSettings } from '@/types/salah';
 import { usePro } from '@/hooks/usePro';
@@ -68,9 +78,10 @@ import { getVoiceGender, setVoiceGender, type VoiceGender } from '@/lib/duaAudio
 
 export interface UserProfileSettings {
   displayName: string;
-  avatarIcon: string;
-  avatarColor: string;
   avatarUrl?: string;
+  avatarIcon?: string;
+  avatarColor?: string;
+  accentColor: AccentColorKey;
   niyyah: string;
   madhhab: 'Standard' | 'Hanafi' | 'Jafari';
   city: string;
@@ -79,22 +90,36 @@ export interface UserProfileSettings {
   dailyDhikrGoal: number;
   dailyQuranGoal: number;
   clockFormat: '12h' | '24h';
-  // Spiritual & Reader enhancements
+  // Quran reader & recitation features
   quranReciter?: string;
   quranScript?: 'uthmani' | 'indopak';
   arabicFontSize?: number;
   quranTranslation?: string;
+  hifzVeiling?: boolean;
+  audioRepeatCount?: number;
+  wordByWordEnabled?: boolean;
+  autoScrollReader?: boolean;
+  // Prayer & Adhan features
+  adhanTone?: string;
+  prePrayerAlertMinutes?: number;
+  makroohWarningEnabled?: boolean;
+  tahajjudDivision?: 'last_third' | 'middle_night';
+  // Dhikr & Sensory features
   hapticEnabled?: boolean;
+  hapticIntensity?: 'soft' | 'crisp' | 'deep';
+  fullScreenTap?: boolean;
   wakeLockEnabled?: boolean;
   autoAdvance?: boolean;
+  beadSoundTone?: 'wood' | 'stone' | 'digital' | 'mute';
+  // Notifications & Privacy
   fridayKahfReminder?: boolean;
+  offlinePrivacyMode?: boolean;
 }
 
 const DEFAULT_PROFILE: UserProfileSettings = {
   displayName: '',
-  avatarIcon: 'crescent',
-  avatarColor: 'primary',
   avatarUrl: undefined,
+  accentColor: DEFAULT_ACCENT,
   niyyah: '',
   madhhab: 'Standard',
   city: '',
@@ -107,78 +132,25 @@ const DEFAULT_PROFILE: UserProfileSettings = {
   quranScript: 'uthmani',
   arabicFontSize: 32,
   quranTranslation: 'en.sahih',
+  hifzVeiling: false,
+  audioRepeatCount: 1,
+  wordByWordEnabled: true,
+  autoScrollReader: true,
+  adhanTone: 'makkah',
+  prePrayerAlertMinutes: 0,
+  makroohWarningEnabled: true,
+  tahajjudDivision: 'last_third',
   hapticEnabled: true,
+  hapticIntensity: 'crisp',
+  fullScreenTap: false,
   wakeLockEnabled: false,
   autoAdvance: true,
+  beadSoundTone: 'wood',
   fridayKahfReminder: true,
+  offlinePrivacyMode: false,
 };
 
 const PROFILE_KEY = 'dhikrly_profile_settings_v1';
-
-const AVATAR_ICONS = [
-  { id: 'crescent', label: 'Hilāl', Icon: Moon },
-  { id: 'quran', label: 'Qur’an', Icon: BookOpen },
-  { id: 'tasbih', label: 'Tasbīḥ', Icon: CircleDot },
-  { id: 'masjid', label: 'Masjid', Icon: Landmark },
-  { id: 'lantern', label: 'Fanous', Icon: Flame },
-  { id: 'olive', label: 'Olive', Icon: Leaf },
-  { id: 'star', label: 'Rub al-Hizb', Icon: Sparkles },
-  { id: 'kabah', label: 'Ka’bah', Icon: Compass },
-];
-
-const AVATAR_COLORS: Record<
-  string,
-  { label: string; bg: string; text: string; ring: string; border: string; circle: string }
-> = {
-  primary: {
-    label: 'Primary Sacred',
-    bg: 'bg-primary',
-    text: 'text-primary-fg',
-    ring: 'ring-primary',
-    border: 'border-primary',
-    circle: 'bg-primary',
-  },
-  link: {
-    label: 'Amber Radiance',
-    bg: 'bg-link',
-    text: 'text-white',
-    ring: 'ring-link',
-    border: 'border-link',
-    circle: 'bg-link',
-  },
-  tintPrimary: {
-    label: 'Primary Soft',
-    bg: 'bg-primary/20',
-    text: 'text-primary',
-    ring: 'ring-primary',
-    border: 'border-primary/40',
-    circle: 'bg-primary/40',
-  },
-  tintAmber: {
-    label: 'Amber Soft',
-    bg: 'bg-link/20',
-    text: 'text-link',
-    ring: 'ring-link',
-    border: 'border-link/40',
-    circle: 'bg-link/40',
-  },
-  surface: {
-    label: 'Neutral Surface',
-    bg: 'bg-surface',
-    text: 'text-ink',
-    ring: 'ring-border',
-    border: 'border-border',
-    circle: 'bg-border',
-  },
-  deep: {
-    label: 'Deep Ink',
-    bg: 'bg-ink',
-    text: 'text-canvas',
-    ring: 'ring-ink',
-    border: 'border-ink',
-    circle: 'bg-ink',
-  },
-};
 
 const NIYYAH_SUGGESTIONS = [
   'Seeking consistency in my 5 daily prayers on time.',
@@ -230,16 +202,25 @@ const ARABIC_FONT_SIZES = [
   { label: 'Magnified', size: 44 },
 ];
 
-type SettingsTab = 'all' | 'profile' | 'quran' | 'prayer' | 'sensory' | 'goals' | 'data';
+type SettingsTab =
+  | 'all'
+  | 'theme'
+  | 'profile'
+  | 'quran'
+  | 'prayer'
+  | 'sensory'
+  | 'goals'
+  | 'data';
 
 const TABS: { id: SettingsTab; label: string; icon: typeof UserRound }[] = [
   { id: 'all', label: 'All Settings', icon: Sparkles },
+  { id: 'theme', label: 'Accent & Theme', icon: Palette },
   { id: 'profile', label: 'Identity & Photo', icon: UserRound },
-  { id: 'quran', label: 'Qur’an & Reciters', icon: BookOpen },
-  { id: 'prayer', label: 'Prayer & Hijri', icon: Clock3 },
-  { id: 'sensory', label: 'Sound & Haptics', icon: Volume2 },
+  { id: 'quran', label: 'Qur’an & Hifz', icon: BookOpen },
+  { id: 'prayer', label: 'Prayer & Adhān', icon: Clock3 },
+  { id: 'sensory', label: 'Dhikr & Sensory', icon: Volume2 },
   { id: 'goals', label: 'Worship Goals', icon: Heart },
-  { id: 'data', label: 'Backup & Restore', icon: Download },
+  { id: 'data', label: 'Data & Storage', icon: Download },
 ];
 
 export default function SettingsPage() {
@@ -249,6 +230,7 @@ export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<SettingsTab>('all');
   const [dark, setDark] = useState<boolean>(false);
   const [sound, setSound] = useState<boolean>(true);
+  const [accentColor, setAccentColor] = useState<AccentColorKey>(DEFAULT_ACCENT);
   const [voiceGender, setVoiceGenderState] = useState<VoiceGender>('male');
   const [salahSettings, setSalahSettings] = useState<SalahSettings>(DEFAULT_SALAH_SETTINGS);
   const [quranSettings, setQuranSettings] = useState<QuranSettings>(DEFAULT_QURAN_SETTINGS);
@@ -285,10 +267,18 @@ export default function SettingsPage() {
     setVoiceGenderState(getVoiceGender());
     setSalahSettings(getSalahSettings());
 
+    const savedAccent = getSavedAccent();
+    setAccentColor(savedAccent);
+    applyAccentTheme(savedAccent, existing.dark);
+
     const savedQuran = load<QuranSettings>(QURAN_SETTINGS_KEY, DEFAULT_QURAN_SETTINGS);
     setQuranSettings(savedQuran);
 
     const savedProfile = load<UserProfileSettings>(PROFILE_KEY, DEFAULT_PROFILE);
+    if (savedProfile.accentColor) {
+      setAccentColor(savedProfile.accentColor);
+      applyAccentTheme(savedProfile.accentColor, existing.dark);
+    }
     setProfile(savedProfile);
 
     isLoaded.current = true;
@@ -298,20 +288,20 @@ export default function SettingsPage() {
   useEffect(() => {
     if (!isLoaded.current) return;
     document.documentElement.classList.toggle('dark', dark);
+    applyAccentTheme(accentColor, dark);
     const existing = load<{ dark: boolean; sound?: boolean; haptic?: boolean }>(SETTINGS_KEY, {
       dark,
       sound: true,
       haptic: true,
     });
     save(SETTINGS_KEY, { ...existing, dark, sound });
-  }, [dark, sound]);
+  }, [dark, sound, accentColor]);
 
   // Sync with user metadata from Supabase
   useEffect(() => {
     if (user?.user_metadata) {
       const meta = user.user_metadata;
       setProfile((prev) => {
-        // If avatarUrl was not set by user, fetch from OAuth metadata (Google picture or avatar_url)
         const detectedAvatar =
           prev.avatarUrl ||
           (typeof meta.avatar_url === 'string' && meta.avatar_url ? meta.avatar_url : undefined) ||
@@ -321,8 +311,7 @@ export default function SettingsPage() {
           ...prev,
           displayName: prev.displayName || meta.full_name || meta.name || '',
           avatarUrl: detectedAvatar,
-          avatarIcon: meta.avatar_icon || prev.avatarIcon,
-          avatarColor: meta.avatar_color || prev.avatarColor,
+          accentColor: (meta.accent_color as AccentColorKey) || prev.accentColor || DEFAULT_ACCENT,
           niyyah: meta.niyyah || prev.niyyah,
           madhhab: meta.madhhab || prev.madhhab,
           city: meta.city || prev.city,
@@ -348,7 +337,7 @@ export default function SettingsPage() {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [profile, salahSettings, quranSettings, user]);
+  }, [profile, salahSettings, quranSettings, user, accentColor]);
 
   const updateProfileField = <K extends keyof UserProfileSettings>(
     field: K,
@@ -388,6 +377,15 @@ export default function SettingsPage() {
     }
   };
 
+  // Change App Accent Color dynamically
+  const handleAccentChange = (accent: AccentColorKey) => {
+    setAccentColor(accent);
+    applyAccentTheme(accent, dark);
+    updateProfileField('accentColor', accent);
+    setStatusMessage(`App accent color set to ${ACCENT_PALETTES[accent].name}!`);
+    setTimeout(() => setStatusMessage(''), 2500);
+  };
+
   const handleProfileSave = async () => {
     setStatusMessage('');
     setErrorMessage('');
@@ -400,8 +398,7 @@ export default function SettingsPage() {
         data: {
           avatar_url: profile.avatarUrl || null,
           full_name: profile.displayName.trim(),
-          avatar_icon: profile.avatarIcon,
-          avatar_color: profile.avatarColor,
+          accent_color: profile.accentColor,
           niyyah: profile.niyyah.trim(),
           madhhab: profile.madhhab,
           city: profile.city.trim(),
@@ -428,7 +425,7 @@ export default function SettingsPage() {
     }
 
     setHasUnsavedChanges(false);
-    setStatusMessage('All preferences saved successfully across device and cloud!');
+    setStatusMessage('All settings saved successfully across device and cloud!');
     setTimeout(() => setStatusMessage(''), 3500);
   };
 
@@ -509,7 +506,7 @@ export default function SettingsPage() {
   // Remove Photo
   const handleRemovePhoto = () => {
     updateProfileField('avatarUrl', undefined);
-    setStatusMessage('Profile photo removed. Reverted to spiritual avatar motif.');
+    setStatusMessage('Profile photo removed. Monogram initials active.');
     setTimeout(() => setStatusMessage(''), 3000);
   };
 
@@ -575,6 +572,56 @@ export default function SettingsPage() {
     );
   };
 
+  // Compute initials for clean modern monogram
+  const initials = useMemo(() => {
+    if (profile.displayName.trim()) {
+      const parts = profile.displayName.trim().split(/\s+/);
+      if (parts.length >= 2) {
+        return (parts[0][0] + parts[1][0]).toUpperCase();
+      }
+      return parts[0].slice(0, 2).toUpperCase();
+    }
+    if (user?.email) {
+      return user.email.slice(0, 2).toUpperCase();
+    }
+    return 'DH';
+  }, [profile.displayName, user?.email]);
+
+  // Storage Diagnostics & Statistics
+  const storageStats = useMemo(() => {
+    if (!mounted || typeof window === 'undefined') {
+      return { totalDuas: 0, streakDays: 0, bookmarks: 0, salahLogs: 0, approxKb: 0 };
+    }
+    try {
+      const checked = load<Record<string, Record<string, boolean>>>(STORAGE_KEY, {});
+      const totalCheckedCount = Object.values(checked).reduce(
+        (acc, day) => acc + Object.keys(day).length,
+        0
+      );
+      const streaks = load<Record<string, unknown>>(STREAK_KEY, {});
+      const streakDays = Object.keys(streaks).length;
+      const bookmarks = load<unknown[]>(QURAN_BOOKMARKS_KEY, []);
+      const salahLogs = Object.keys(load<Record<string, unknown>>('salah_log_v1', {})).length;
+
+      let totalBytes = 0;
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k) {
+          totalBytes += (localStorage.getItem(k) || '').length * 2;
+        }
+      }
+      return {
+        totalDuas: totalCheckedCount,
+        streakDays,
+        bookmarks: Array.isArray(bookmarks) ? bookmarks.length : 0,
+        salahLogs,
+        approxKb: Math.max(1, Math.round(totalBytes / 1024)),
+      };
+    } catch {
+      return { totalDuas: 0, streakDays: 0, bookmarks: 0, salahLogs: 0, approxKb: 0 };
+    }
+  }, [mounted, profile]);
+
   // Calculate formatted Hijri date preview with day offset
   const adjustedHijriDate = useMemo(() => {
     try {
@@ -596,7 +643,7 @@ export default function SettingsPage() {
     try {
       const backup = {
         app: 'Dhikrly',
-        version: '2.3.0',
+        version: '2.4.0',
         exportedAt: new Date().toISOString(),
         profile,
         adhkarChecked: load(STORAGE_KEY, null),
@@ -658,6 +705,9 @@ export default function SettingsPage() {
         if (parsed.profile) {
           save(PROFILE_KEY, parsed.profile);
           setProfile(parsed.profile);
+          if (parsed.profile.accentColor) {
+            handleAccentChange(parsed.profile.accentColor);
+          }
         }
         if (parsed.adhkarChecked) save(STORAGE_KEY, parsed.adhkarChecked);
         if (parsed.streaks) save(STREAK_KEY, parsed.streaks);
@@ -758,10 +808,6 @@ export default function SettingsPage() {
     }
   };
 
-  const selectedAvatar = AVATAR_ICONS.find((a) => a.id === profile.avatarIcon) || AVATAR_ICONS[0];
-  const selectedColor = AVATAR_COLORS[profile.avatarColor] || AVATAR_COLORS.primary;
-  const SelectedIcon = selectedAvatar.Icon;
-
   const cardClass = 'rounded-3xl border border-border bg-surface p-5 sm:p-7 shadow-xs';
   const fieldClass =
     'min-h-11 w-full rounded-xl border border-border bg-canvas px-3.5 py-2 text-sm text-ink outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all';
@@ -778,15 +824,15 @@ export default function SettingsPage() {
           <header className="flex flex-wrap items-center justify-between gap-4">
             <div>
               <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-bold text-primary mb-2">
-                <UserRound className="h-3.5 w-3.5" />
+                <Palette className="h-3.5 w-3.5" />
                 <span>SACRED SPACE & APP PREFERENCES</span>
               </div>
               <h1 className="mt-0.5 text-3xl font-extrabold tracking-tight sm:text-4xl text-ink">
                 Profile & Settings
               </h1>
               <p className="mt-1.5 text-sm text-ink/75 max-w-2xl">
-                Personalize your spiritual identity, profile photo, reciters, prayer calibration,
-                haptics, and data sovereignty.
+                Personalize your profile picture, live accent color, Qur’an hifz veiling, prayer
+                calibration, haptics, and data sovereignty.
               </p>
             </div>
 
@@ -823,15 +869,9 @@ export default function SettingsPage() {
           <section className={`${cardClass} overflow-hidden relative`} aria-labelledby="profile-title">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
               <div className="flex items-center gap-4 sm:gap-6">
-                {/* Avatar Display (Real Photo or Spiritual Motif) */}
+                {/* Avatar Display (Real Photo or Monogram Initials) */}
                 <div className="relative group shrink-0">
-                  <div
-                    className={`h-20 w-20 sm:h-24 sm:w-24 rounded-3xl overflow-hidden border-2 shadow-md flex items-center justify-center transition-all ${
-                      hasPhoto
-                        ? 'border-primary'
-                        : `${selectedColor.bg} ${selectedColor.text} ${selectedColor.border}`
-                    }`}
-                  >
+                  <div className="h-20 w-20 sm:h-24 sm:w-24 rounded-3xl overflow-hidden border-2 border-primary/40 bg-primary/15 shadow-md flex items-center justify-center transition-all">
                     {hasPhoto ? (
                       <img
                         src={profile.avatarUrl}
@@ -841,18 +881,18 @@ export default function SettingsPage() {
                         onError={(e) => {
                           e.currentTarget.style.display = 'none';
                           const fallback = e.currentTarget.parentElement?.querySelector(
-                            '.avatar-icon-fallback'
+                            '.avatar-initials-fallback'
                           ) as HTMLElement | null;
                           if (fallback) fallback.style.display = 'flex';
                         }}
                       />
                     ) : null}
                     <div
-                      className={`avatar-icon-fallback h-full w-full flex items-center justify-center ${
+                      className={`avatar-initials-fallback h-full w-full items-center justify-center text-xl sm:text-2xl font-black text-primary ${
                         hasPhoto ? 'hidden' : 'flex'
                       }`}
                     >
-                      <SelectedIcon className="h-10 w-10 sm:h-12 sm:w-12" />
+                      {initials}
                     </div>
                   </div>
 
@@ -874,13 +914,16 @@ export default function SettingsPage() {
                       <ShieldCheck className="h-3 w-3" />
                       {user ? 'Cloud Synced' : 'Offline Pilgrim'}
                     </span>
+                    <span className="inline-flex items-center gap-1 rounded-full border border-border bg-canvas px-2.5 py-0.5 text-[11px] font-bold text-ink">
+                      <Palette className="h-3 w-3 text-primary" />
+                      {ACCENT_PALETTES[accentColor]?.name || 'Sacred Emerald'}
+                    </span>
                     {isPro && (
                       <span className="inline-flex items-center gap-1 rounded-full border border-link/40 bg-link/10 px-2.5 py-0.5 text-[11px] font-bold text-link">
                         <Sparkles className="h-3 w-3" />
                         Pro {proTier.toUpperCase()}
                       </span>
                     )}
-                    <span className="text-[11px] text-ink/60">· 100% Private</span>
                   </div>
 
                   <h2 id="profile-title" className="text-xl sm:text-2xl font-black text-ink truncate">
@@ -961,7 +1004,66 @@ export default function SettingsPage() {
 
           {/* Main Settings Sections */}
           <div className="space-y-6">
-            {/* Section 1: Persona, Profile Photo & Identity */}
+            {/* Section: Live App Accent Theme (Feature 1) */}
+            {shouldShowSection('theme') && (
+              <section className={cardClass} aria-labelledby="accent-heading">
+                <div className="flex items-center gap-3 pb-4 border-b border-border">
+                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
+                    <Palette className="h-5 w-5" />
+                  </span>
+                  <div>
+                    <h2 id="accent-heading" className="text-base font-bold text-ink">
+                      Live App Accent Theme
+                    </h2>
+                    <p className="text-xs text-ink/75">
+                      Select your sacred brand accent color. Changes take effect across the entire app in real time.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-5 space-y-4">
+                  <label className="block text-xs font-bold text-ink uppercase tracking-wider">
+                    Select Accent Palette
+                  </label>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+                    {Object.values(ACCENT_PALETTES).map((pal) => {
+                      const isSelected = accentColor === pal.key;
+                      return (
+                        <button
+                          key={pal.key}
+                          type="button"
+                          onClick={() => handleAccentChange(pal.key)}
+                          className={`flex flex-col items-center gap-2.5 rounded-2xl border p-3.5 transition-all cursor-pointer text-center ${
+                            isSelected
+                              ? 'border-primary bg-primary/15 ring-2 ring-primary/40 shadow-xs'
+                              : 'border-border bg-canvas hover:border-primary/40'
+                          }`}
+                        >
+                          <span
+                            className="h-8 w-8 rounded-full shadow-sm flex items-center justify-center transition-transform hover:scale-110"
+                            style={{ backgroundColor: pal.dot }}
+                          >
+                            {isSelected && <Check className="h-4 w-4 text-white" />}
+                          </span>
+                          <span className="text-xs font-bold text-ink">{pal.name}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <div className="rounded-2xl border border-primary/20 bg-primary/5 p-3.5 flex items-center gap-3 text-xs text-primary font-semibold">
+                    <Sparkles className="h-4 w-4 shrink-0" />
+                    <span>
+                      Active palette: <strong>{ACCENT_PALETTES[accentColor]?.name}</strong>.
+                      Applies dynamically to all buttons, badges, highlights, and borders.
+                    </span>
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {/* Section: Profile Picture & Identity */}
             {shouldShowSection('profile') && (
               <section className={cardClass} aria-labelledby="identity-heading">
                 <div className="flex items-center gap-3 pb-4 border-b border-border">
@@ -970,10 +1072,10 @@ export default function SettingsPage() {
                   </span>
                   <div>
                     <h2 id="identity-heading" className="text-base font-bold text-ink">
-                      Spiritual Identity & Profile Photo
+                      Profile Picture & Persona
                     </h2>
                     <p className="text-xs text-ink/75">
-                      Upload your real profile picture, select spiritual motifs, display name and aspiration.
+                      Upload your real profile picture, set your display name, spiritual aspiration, and home city.
                     </p>
                   </div>
                 </div>
@@ -982,7 +1084,7 @@ export default function SettingsPage() {
                   {/* Photo Management Controls */}
                   <div className="rounded-2xl border border-border bg-canvas p-4 sm:p-5 space-y-4">
                     <label className="block text-xs font-bold text-ink uppercase tracking-wider">
-                      Profile Picture
+                      User Profile Photo
                     </label>
 
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -996,17 +1098,17 @@ export default function SettingsPage() {
                               className="h-full w-full object-cover"
                             />
                           ) : (
-                            <SelectedIcon className="h-7 w-7 text-primary" />
+                            <span className="text-base font-bold text-primary">{initials}</span>
                           )}
                         </div>
                         <div>
                           <p className="text-xs font-bold text-ink">
-                            {hasPhoto ? 'Custom Photo Active' : 'Spiritual Motif Active'}
+                            {hasPhoto ? 'Custom Photo Active' : 'Monogram Initials Active'}
                           </p>
                           <p className="text-[11px] text-ink/70">
                             {hasPhoto
                               ? 'Saved locally & synced to your account avatar.'
-                              : 'Select an image or use your signed-in provider picture.'}
+                              : 'Select an image or use your signed-in Google provider picture.'}
                           </p>
                         </div>
                       </div>
@@ -1057,7 +1159,7 @@ export default function SettingsPage() {
                             type="button"
                             onClick={handleRemovePhoto}
                             className="inline-flex items-center gap-1.5 rounded-xl border border-border px-3 py-2 text-xs font-semibold text-ink hover:text-link transition-all cursor-pointer"
-                            title="Revert to motif icon"
+                            title="Revert to monogram initials"
                           >
                             <Trash2 className="h-3.5 w-3.5" />
                             <span>Remove</span>
@@ -1085,64 +1187,6 @@ export default function SettingsPage() {
                         </button>
                       </div>
                     )}
-                  </div>
-
-                  {/* Spiritual Avatar Motif Selection (Fallback) */}
-                  <div className="space-y-2">
-                    <label className="block text-xs font-bold text-ink uppercase tracking-wider">
-                      Spiritual Motif & Icon
-                    </label>
-                    <p className="text-[11px] text-ink/70">
-                      Used when no custom photo is chosen, or as your sacred monogram.
-                    </p>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
-                      {AVATAR_ICONS.map((item) => {
-                        const isSelected = profile.avatarIcon === item.id;
-                        const ItemIcon = item.Icon;
-                        return (
-                          <button
-                            key={item.id}
-                            type="button"
-                            onClick={() => updateProfileField('avatarIcon', item.id)}
-                            className={`flex flex-col items-center gap-1.5 rounded-2xl border p-3 text-center transition-all cursor-pointer ${
-                              isSelected
-                                ? 'border-primary bg-primary/10 text-primary ring-2 ring-primary/40 font-bold'
-                                : 'border-border bg-canvas text-ink/80 hover:border-primary/40'
-                            }`}
-                          >
-                            <ItemIcon className="h-5 w-5" />
-                            <span className="text-[11px]">{item.label}</span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {/* Motif Accent Palette (Strict Brand Tokens) */}
-                  <div className="space-y-2">
-                    <label className="block text-xs font-bold text-ink uppercase tracking-wider">
-                      Motif Accent Palette
-                    </label>
-                    <div className="flex flex-wrap items-center gap-2.5">
-                      {Object.entries(AVATAR_COLORS).map(([colorKey, cfg]) => {
-                        const isSelected = profile.avatarColor === colorKey;
-                        return (
-                          <button
-                            key={colorKey}
-                            type="button"
-                            onClick={() => updateProfileField('avatarColor', colorKey)}
-                            className={`h-9 w-9 rounded-2xl ${cfg.circle} flex items-center justify-center transition-all cursor-pointer ${
-                              isSelected
-                                ? 'ring-3 ring-offset-2 ring-primary scale-105'
-                                : 'opacity-80 hover:opacity-100'
-                            }`}
-                            title={cfg.label}
-                          >
-                            {isSelected && <Check className="h-4 w-4 text-white" />}
-                          </button>
-                        );
-                      })}
-                    </div>
                   </div>
 
                   {/* Display Name */}
@@ -1250,7 +1294,7 @@ export default function SettingsPage() {
               </section>
             )}
 
-            {/* Section 2: Qur’an & Reciters Calibration */}
+            {/* Section: Qur’an & Hifz Memorization Suite (Feature 2) */}
             {shouldShowSection('quran') && (
               <section className={cardClass} aria-labelledby="quran-heading">
                 <div className="flex items-center justify-between pb-4 border-b border-border">
@@ -1260,10 +1304,10 @@ export default function SettingsPage() {
                     </span>
                     <div>
                       <h2 id="quran-heading" className="text-base font-bold text-ink">
-                        Qur’an Recitation & Reading Typography
+                        Qur’an Recitation & Hifz Memorization Suite
                       </h2>
                       <p className="text-xs text-ink/75">
-                        Customize your preferred Qari reciter, font size, script, and daily targets.
+                        Default reciter, memorization veiling, repeat loops, and word-by-word analysis.
                       </p>
                     </div>
                   </div>
@@ -1356,41 +1400,90 @@ export default function SettingsPage() {
                     </div>
                   </div>
 
-                  {/* Arabic Script Style */}
-                  <div className="space-y-1.5">
-                    <label className="block text-xs font-semibold text-ink">
-                      Arabic Script Style
+                  {/* Hifz & Study Preferences */}
+                  <div className="divide-y divide-border border-t border-border pt-2 space-y-2">
+                    {/* Hifz Veiling */}
+                    <label
+                      className="flex min-h-14 cursor-pointer items-center justify-between gap-4 py-2"
+                      htmlFor="hifz-toggle"
+                    >
+                      <div className="space-y-0.5">
+                        <strong className="text-xs font-bold text-ink block">
+                          Hifz Memorization Recall (Blur Veiling)
+                        </strong>
+                        <span className="text-[11px] text-ink/70">
+                          Blurs upcoming ayahs in the reader until tapped, testing your memory.
+                        </span>
+                      </div>
+                      <input
+                        id="hifz-toggle"
+                        type="checkbox"
+                        role="switch"
+                        checked={profile.hifzVeiling ?? false}
+                        onChange={(e) => updateProfileField('hifzVeiling', e.target.checked)}
+                        className="cursor-pointer"
+                      />
                     </label>
-                    <div className="grid grid-cols-2 gap-2">
-                      <button
-                        type="button"
-                        onClick={() => updateProfileField('quranScript', 'uthmani')}
-                        className={`rounded-xl border py-2.5 text-xs font-bold transition-all text-center cursor-pointer ${
-                          (profile.quranScript || 'uthmani') === 'uthmani'
-                            ? 'border-primary bg-primary/20 text-primary ring-1 ring-primary'
-                            : 'border-border bg-canvas text-ink/80'
-                        }`}
-                      >
-                        Uthmāni (Madani Hafs)
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => updateProfileField('quranScript', 'indopak')}
-                        className={`rounded-xl border py-2.5 text-xs font-bold transition-all text-center cursor-pointer ${
-                          profile.quranScript === 'indopak'
-                            ? 'border-primary bg-primary/20 text-primary ring-1 ring-primary'
-                            : 'border-border bg-canvas text-ink/80'
-                        }`}
-                      >
-                        Indo-Pak (Nastaliq / South Asian)
-                      </button>
+
+                    {/* Word by word */}
+                    <label
+                      className="flex min-h-14 cursor-pointer items-center justify-between gap-4 py-2 pt-3"
+                      htmlFor="wbw-toggle"
+                    >
+                      <div className="space-y-0.5">
+                        <strong className="text-xs font-bold text-ink block">
+                          Word-by-Word Translation Analysis
+                        </strong>
+                        <span className="text-[11px] text-ink/70">
+                          Display breakdown of individual words and root grammar upon tapping.
+                        </span>
+                      </div>
+                      <input
+                        id="wbw-toggle"
+                        type="checkbox"
+                        role="switch"
+                        checked={profile.wordByWordEnabled ?? true}
+                        onChange={(e) => updateProfileField('wordByWordEnabled', e.target.checked)}
+                        className="cursor-pointer"
+                      />
+                    </label>
+
+                    {/* Audio Repeat Count */}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3">
+                      <div className="space-y-0.5">
+                        <strong className="text-xs font-bold text-ink block">
+                          Ayah Audio Memorization Repeat
+                        </strong>
+                        <span className="text-[11px] text-ink/70">
+                          Loop each verse N times during recitation before advancing.
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-4 gap-1.5 shrink-0">
+                        {[1, 3, 5, 10].map((repeat) => {
+                          const isSelected = (profile.audioRepeatCount || 1) === repeat;
+                          return (
+                            <button
+                              key={repeat}
+                              type="button"
+                              onClick={() => updateProfileField('audioRepeatCount', repeat)}
+                              className={`rounded-xl border px-3 py-1.5 text-xs font-bold transition-all cursor-pointer ${
+                                isSelected
+                                  ? 'border-primary bg-primary text-primary-fg shadow-xs'
+                                  : 'border-border bg-canvas text-ink/80 hover:border-primary/40'
+                              }`}
+                            >
+                              {repeat}×
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
                   </div>
                 </div>
               </section>
             )}
 
-            {/* Section 3: Prayer Calculation & Astronomical Engine */}
+            {/* Section: Prayer & Adhān Alerts Calibration (Feature 3) */}
             {shouldShowSection('prayer') && (
               <section className={cardClass} aria-labelledby="prayer-heading">
                 <div className="flex items-center justify-between pb-4 border-b border-border">
@@ -1400,10 +1493,10 @@ export default function SettingsPage() {
                     </span>
                     <div>
                       <h2 id="prayer-heading" className="text-base font-bold text-ink">
-                        Prayer Times & Astronomical Calibration
+                        Prayer Times & Adhān Calibration
                       </h2>
                       <p className="text-xs text-ink/75">
-                        High-accuracy astronomical calculation authorities, ‘Asr shadows, and Hijri calendar.
+                        Fajr & Isha calculation authorities, pre-prayer warning alerts, and Makrooh protection.
                       </p>
                     </div>
                   </div>
@@ -1457,69 +1550,62 @@ export default function SettingsPage() {
                     </select>
                   </div>
 
-                  {/* ‘Asr Shadow Jurisprudence */}
+                  {/* Pre-Prayer Reminder Warning */}
                   <div className="space-y-1.5">
-                    <label className="block text-xs font-semibold text-ink" htmlFor="asr-method">
-                      ‘Asr Jurisprudence Method
+                    <label className="block text-xs font-semibold text-ink">
+                      Pre-Prayer Reminder Offset
                     </label>
-                    <select
-                      id="asr-method"
-                      className={`${fieldClass} cursor-pointer`}
-                      value={salahSettings.asrMethod}
-                      onChange={(e) => {
-                        setHasUnsavedChanges(true);
-                        setSalahSettings((curr) => {
-                          const updated = {
-                            ...curr,
-                            asrMethod: e.target.value as SalahSettings['asrMethod'],
-                          };
-                          saveSalahSettings(updated);
-                          return updated;
-                        });
-                      }}
-                    >
-                      <option className="bg-surface text-ink" value="Standard">
-                        Standard (Shadow = 1×) — Shāfi‘ī, Mālikī, Ḥanbalī
-                      </option>
-                      <option className="bg-surface text-ink" value="Hanafi">
-                        Ḥanafī (Shadow = 2×)
-                      </option>
-                    </select>
-                  </div>
-
-                  {/* Clock Format (12h vs 24h) */}
-                  <div className="space-y-1.5">
-                    <label className="block text-xs font-bold text-ink uppercase tracking-wider">
-                      Clock & Time Display Format
-                    </label>
-                    <div className="grid grid-cols-2 gap-2">
-                      <button
-                        type="button"
-                        onClick={() => updateProfileField('clockFormat', '12h')}
-                        className={`rounded-xl border py-2.5 text-xs font-bold transition-all text-center cursor-pointer ${
-                          profile.clockFormat === '12h'
-                            ? 'border-primary bg-primary/20 text-primary ring-1 ring-primary'
-                            : 'border-border bg-canvas text-ink/80'
-                        }`}
-                      >
-                        12-Hour (e.g. 1:45 PM)
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => updateProfileField('clockFormat', '24h')}
-                        className={`rounded-xl border py-2.5 text-xs font-bold transition-all text-center cursor-pointer ${
-                          profile.clockFormat === '24h'
-                            ? 'border-primary bg-primary/20 text-primary ring-1 ring-primary'
-                            : 'border-border bg-canvas text-ink/80'
-                        }`}
-                      >
-                        24-Hour (e.g. 13:45)
-                      </button>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                      {[
+                        { minutes: 0, label: 'At Exact Azan' },
+                        { minutes: 5, label: '5 min before' },
+                        { minutes: 10, label: '10 min before' },
+                        { minutes: 15, label: '15 min before' },
+                      ].map((item) => {
+                        const isSelected = (profile.prePrayerAlertMinutes || 0) === item.minutes;
+                        return (
+                          <button
+                            key={item.minutes}
+                            type="button"
+                            onClick={() => updateProfileField('prePrayerAlertMinutes', item.minutes)}
+                            className={`rounded-xl border py-2 text-xs font-bold transition-all text-center cursor-pointer ${
+                              isSelected
+                                ? 'border-primary bg-primary/20 text-primary ring-1 ring-primary shadow-xs'
+                                : 'border-border bg-canvas text-ink/80 hover:border-primary/40'
+                            }`}
+                          >
+                            {item.label}
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
 
+                  {/* Makrooh Prohibited Prayer Protection */}
+                  <label
+                    className="flex min-h-14 cursor-pointer items-center justify-between gap-4 pt-2 border-t border-border"
+                    htmlFor="makrooh-toggle"
+                  >
+                    <div className="space-y-0.5">
+                      <strong className="text-xs font-bold text-ink block">
+                        Makrooh (Forbidden) Times Warning
+                      </strong>
+                      <span className="text-[11px] text-ink/70">
+                        Warn when approaching prohibited prayer windows (Sunrise, Zenith Zawāl, Sunset).
+                      </span>
+                    </div>
+                    <input
+                      id="makrooh-toggle"
+                      type="checkbox"
+                      role="switch"
+                      checked={profile.makroohWarningEnabled ?? true}
+                      onChange={(e) => updateProfileField('makroohWarningEnabled', e.target.checked)}
+                      className="cursor-pointer"
+                    />
+                  </label>
+
                   {/* Hijri Calendar Moon Sighting Offset */}
-                  <div className="space-y-2">
+                  <div className="space-y-2 pt-2 border-t border-border">
                     <label className="block text-xs font-bold text-ink uppercase tracking-wider">
                       Hijri Moon Sighting Adjustment
                     </label>
@@ -1554,7 +1640,7 @@ export default function SettingsPage() {
               </section>
             )}
 
-            {/* Section 4: Audio, Haptics & Sensory Feedback */}
+            {/* Section: Dhikr, Sensory & Touch Ergonomics (Feature 4) */}
             {shouldShowSection('sensory') && (
               <section className={cardClass} aria-labelledby="sensory-heading">
                 <div className="flex items-center gap-3 pb-4 border-b border-border">
@@ -1563,39 +1649,18 @@ export default function SettingsPage() {
                   </span>
                   <div>
                     <h2 id="sensory-heading" className="text-base font-bold text-ink">
-                      Sensory Feedback, Haptics & Sound
+                      Dhikr Ergonomics, Haptics & Sound
                     </h2>
                     <p className="text-xs text-ink/75">
-                      Fine-tune counting clicks, gentle mobile vibration pulses, and voice cadences.
+                      Tactile vibration intensity, full-screen tap counting, bead click tones, and wake lock.
                     </p>
                   </div>
                 </div>
 
                 <div className="mt-5 divide-y divide-border space-y-2">
-                  {/* Dark Mode */}
-                  <label
-                    className="flex min-h-14 cursor-pointer items-center justify-between gap-4 py-2"
-                    htmlFor="dark-toggle"
-                  >
-                    <div className="space-y-0.5">
-                      <strong className="text-xs font-bold text-ink block">Dark Appearance Mode</strong>
-                      <span className="text-[11px] text-ink/70">
-                        High-contrast, easy-on-the-eyes night palette.
-                      </span>
-                    </div>
-                    <input
-                      id="dark-toggle"
-                      type="checkbox"
-                      role="switch"
-                      checked={dark}
-                      onChange={(e) => setDark(e.target.checked)}
-                      className="cursor-pointer"
-                    />
-                  </label>
-
                   {/* Sound Click */}
                   <label
-                    className="flex min-h-14 cursor-pointer items-center justify-between gap-4 py-2 pt-3"
+                    className="flex min-h-14 cursor-pointer items-center justify-between gap-4 py-2"
                     htmlFor="sound-toggle"
                   >
                     <div className="space-y-0.5">
@@ -1616,6 +1681,41 @@ export default function SettingsPage() {
                     />
                   </label>
 
+                  {/* Bead click tone picker */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3">
+                    <div className="space-y-0.5">
+                      <strong className="text-xs font-bold text-ink block">
+                        Bead Click Acoustic Tone
+                      </strong>
+                      <span className="text-[11px] text-ink/70">
+                        Natural acoustic sound model for counter taps.
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-3 gap-1.5 shrink-0">
+                      {[
+                        { id: 'wood', label: 'Olive Wood' },
+                        { id: 'stone', label: 'Polished Stone' },
+                        { id: 'digital', label: 'Digital Snap' },
+                      ].map((t) => {
+                        const isSelected = (profile.beadSoundTone || 'wood') === t.id;
+                        return (
+                          <button
+                            key={t.id}
+                            type="button"
+                            onClick={() => updateProfileField('beadSoundTone', t.id as any)}
+                            className={`rounded-xl border px-3 py-1.5 text-xs font-bold transition-all cursor-pointer ${
+                              isSelected
+                                ? 'border-primary bg-primary text-primary-fg shadow-xs'
+                                : 'border-border bg-canvas text-ink/80 hover:border-primary/40'
+                            }`}
+                          >
+                            {t.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
                   {/* Haptic Vibration */}
                   <label
                     className="flex min-h-14 cursor-pointer items-center justify-between gap-4 py-2 pt-3"
@@ -1635,6 +1735,64 @@ export default function SettingsPage() {
                       role="switch"
                       checked={profile.hapticEnabled ?? true}
                       onChange={(e) => updateProfileField('hapticEnabled', e.target.checked)}
+                      className="cursor-pointer"
+                    />
+                  </label>
+
+                  {/* Haptic Pulse Intensity */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3">
+                    <div className="space-y-0.5">
+                      <strong className="text-xs font-bold text-ink block">
+                        Vibration Pulse Strength
+                      </strong>
+                      <span className="text-[11px] text-ink/70">
+                        Select tactile pulse duration on touch devices.
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-3 gap-1.5 shrink-0">
+                      {[
+                        { id: 'soft', label: 'Soft (10ms)' },
+                        { id: 'crisp', label: 'Crisp (20ms)' },
+                        { id: 'deep', label: 'Deep (35ms)' },
+                      ].map((h) => {
+                        const isSelected = (profile.hapticIntensity || 'crisp') === h.id;
+                        return (
+                          <button
+                            key={h.id}
+                            type="button"
+                            onClick={() => updateProfileField('hapticIntensity', h.id as any)}
+                            className={`rounded-xl border px-3 py-1.5 text-xs font-bold transition-all cursor-pointer ${
+                              isSelected
+                                ? 'border-primary bg-primary text-primary-fg shadow-xs'
+                                : 'border-border bg-canvas text-ink/80 hover:border-primary/40'
+                            }`}
+                          >
+                            {h.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Full screen tap */}
+                  <label
+                    className="flex min-h-14 cursor-pointer items-center justify-between gap-4 py-2 pt-3"
+                    htmlFor="fulltap-toggle"
+                  >
+                    <div className="space-y-0.5">
+                      <strong className="text-xs font-bold text-ink block">
+                        Full-Screen Tap Counter
+                      </strong>
+                      <span className="text-[11px] text-ink/70">
+                        Tap anywhere on screen to increment dhikr without looking at the display.
+                      </span>
+                    </div>
+                    <input
+                      id="fulltap-toggle"
+                      type="checkbox"
+                      role="switch"
+                      checked={profile.fullScreenTap ?? false}
+                      onChange={(e) => updateProfileField('fullScreenTap', e.target.checked)}
                       className="cursor-pointer"
                     />
                   </label>
@@ -1661,53 +1819,11 @@ export default function SettingsPage() {
                       className="cursor-pointer"
                     />
                   </label>
-
-                  {/* Prophetic Du'a Audio Voice */}
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3">
-                    <div className="space-y-0.5">
-                      <strong className="text-xs font-bold text-ink block">
-                        Du‘ā & Supplication Voice
-                      </strong>
-                      <span className="text-[11px] text-ink/70">
-                        Male (default Prophetic recitation) vs female voice tuning.
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1.5 rounded-2xl border border-border bg-canvas p-1 shrink-0">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setVoiceGender('male');
-                          setVoiceGenderState('male');
-                        }}
-                        className={`rounded-xl px-3 py-1.5 text-xs font-bold transition-all cursor-pointer ${
-                          voiceGender === 'male'
-                            ? 'bg-primary text-primary-fg shadow-xs'
-                            : 'text-ink/70 hover:text-ink'
-                        }`}
-                      >
-                        ♂ Male (Default)
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setVoiceGender('female');
-                          setVoiceGenderState('female');
-                        }}
-                        className={`rounded-xl px-3 py-1.5 text-xs font-bold transition-all cursor-pointer ${
-                          voiceGender === 'female'
-                            ? 'bg-primary text-primary-fg shadow-xs'
-                            : 'text-ink/70 hover:text-ink'
-                        }`}
-                      >
-                        ♀ Female
-                      </button>
-                    </div>
-                  </div>
                 </div>
               </section>
             )}
 
-            {/* Section 5: Worship Goals & Habit Rhythm */}
+            {/* Section: Worship Goals & Habit Rhythm */}
             {shouldShowSection('goals') && (
               <section className={cardClass} aria-labelledby="goals-heading">
                 <div className="flex items-center gap-3 pb-4 border-b border-border">
@@ -1825,24 +1941,55 @@ export default function SettingsPage() {
               </section>
             )}
 
-            {/* Section 6: Data Sovereignty, Backup & RESTORE */}
+            {/* Section: Data Sovereignty & Storage Diagnostics (Feature 5) */}
             {shouldShowSection('data') && (
               <section className={cardClass} aria-labelledby="data-heading">
                 <div className="flex items-center gap-3 pb-4 border-b border-border">
                   <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
-                    <Download className="h-5 w-5" />
+                    <HardDrive className="h-5 w-5" />
                   </span>
                   <div>
                     <h2 id="data-heading" className="text-base font-bold text-ink">
-                      Data Sovereignty, Backup & Restore
+                      Data Sovereignty, Storage & Privacy
                     </h2>
                     <p className="text-xs text-ink/75">
-                      Export your complete 365-day history, restore backups across devices, or flush cache.
+                      Live storage diagnostics, complete encrypted JSON backup, and 1-click restore.
                     </p>
                   </div>
                 </div>
 
-                <div className="mt-5 space-y-4">
+                <div className="mt-5 space-y-5">
+                  {/* Storage Diagnostics Inspector */}
+                  <div className="rounded-2xl border border-border bg-canvas p-4 sm:p-5 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-ink uppercase tracking-wider">
+                        Storage Diagnostics & Record Counts
+                      </span>
+                      <span className="text-xs font-bold text-primary">
+                        {storageStats.approxKb} KB used
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1">
+                      <div className="rounded-xl border border-border bg-surface p-3 text-center">
+                        <span className="text-lg font-black text-ink block">{storageStats.totalDuas}</span>
+                        <span className="text-[10px] text-ink/70">Adhkār Completed</span>
+                      </div>
+                      <div className="rounded-xl border border-border bg-surface p-3 text-center">
+                        <span className="text-lg font-black text-ink block">{storageStats.streakDays}</span>
+                        <span className="text-[10px] text-ink/70">Streak Record Days</span>
+                      </div>
+                      <div className="rounded-xl border border-border bg-surface p-3 text-center">
+                        <span className="text-lg font-black text-ink block">{storageStats.bookmarks}</span>
+                        <span className="text-[10px] text-ink/70">Qur’an Bookmarks</span>
+                      </div>
+                      <div className="rounded-xl border border-border bg-surface p-3 text-center">
+                        <span className="text-lg font-black text-ink block">{storageStats.salahLogs}</span>
+                        <span className="text-[10px] text-ink/70">Ṣalāh Days Logged</span>
+                      </div>
+                    </div>
+                  </div>
+
                   {/* Hidden file input for Restore */}
                   <input
                     ref={importInputRef}
