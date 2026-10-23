@@ -12,7 +12,7 @@ export default function AboutPage() {
       subtitle="A humble tool for daily remembrance of Allah"
       lastUpdated="March 2025"
     >
-      <div className="mb-6 rounded-xl border border-amber-700/15 bg-amber-100 px-5 py-4 text-amber-800 [&_p]:mb-0 [&_p]:text-[13px] [&_p]:text-amber-800">
+      <div className="mb-6 rounded-xl border border-amber-300 px-5 py-4 text-amber-800 [&_p]:mb-0 [&_p]:text-[13px] [&_p]:text-amber-800">
         <p>
           `Whoever recites Ayat al-Kursi after every obligatory prayer, nothing
           prevents him from entering Paradise except death.`` — Reported by
