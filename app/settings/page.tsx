@@ -1170,7 +1170,7 @@ export default function SettingsPage() {
 
                     {/* Inline Image URL Input Modal / Collapse */}
                     {showUrlInput && (
-                      <div className="pt-2 flex flex-col sm:flex-row gap-2 animate-fade-in">
+                      <div className="pt-2 flex flex-col sm:flex-row gap-2">
                         <input
                           type="url"
                           value={customUrlInput}
