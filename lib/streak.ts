@@ -11,7 +11,8 @@ export const DEFAULT_STREAK: Streak = { current: 0, best: 0, lastComplete: '' };
 export function sanitizeStreak(s?: Partial<Streak> | null, todayStr = getTodayKey()): Streak {
   if (!s) return { ...DEFAULT_STREAK };
 
-  const yesterdayDate = new Date(Date.now() - 86_400_000);
+  const todayDate = new Date(`${todayStr}T12:00:00`);
+  const yesterdayDate = new Date(todayDate.getTime() - 86_400_000);
   const yesterday = yesterdayDate.toISOString().slice(0, 10);
 
   const lastComplete = s.lastComplete || '';
@@ -109,11 +110,11 @@ export function computeStreakFromHistory(
   }
 
   // 2. Calculate current active streak ending today or yesterday
-  const yesterday = new Date(Date.now() - 86_400_000).toISOString().slice(0, 10);
+  const checkDate = new Date(`${todayStr}T12:00:00`);
+  const yesterday = new Date(checkDate.getTime() - 86_400_000).toISOString().slice(0, 10);
   let current = 0;
   let lastComplete = '';
 
-  let checkDate = new Date(`${todayStr}T12:00:00`);
   const todayCompleted = completedDates.has(todayStr);
 
   if (todayCompleted) {

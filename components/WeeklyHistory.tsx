@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { load, STORAGE_KEY } from '@/lib/storage';
 import { getTodayKey } from '@/lib/dates';
 import type { HistoryDay } from '@/types';
+import { Calendar, Flame } from 'lucide-react';
 
 interface WeeklyHistoryProps {
   dark: boolean;
@@ -47,54 +48,71 @@ export default function WeeklyHistory({
     });
   }, [mounted, today, total, dataVersion]);
 
-  const card = dark
-    ? 'bg-white/[0.04] border-white/[0.07]'
-    : 'bg-white border-black/[0.07] shadow-sm';
-
   return (
-    <div className={`rounded-2xl border p-4 ${card}`} suppressHydrationWarning>
-      <p
-        suppressHydrationWarning
-        className={`mb-3 text-[10px] uppercase tracking-widest ${
-          dark ? 'text-stone-600' : 'text-stone-400'
-        }`}
-      >
-        {`7-day history · best streak ${mounted ? streakBest : 0}d`}
-      </p>
-      <div className="flex h-12 items-end gap-1.5">
+    <div
+      className={`rounded-2xl border p-4.5 transition-all duration-200 ${
+        dark
+          ? 'border-white/[0.08] bg-[#111e1a]/90 backdrop-blur-md'
+          : 'border-stone-200/90 bg-white shadow-xs'
+      }`}
+      suppressHydrationWarning
+    >
+      <div className="flex items-center justify-between gap-2 mb-3.5">
+        <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-[var(--app-ink)]">
+          <Calendar className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+          <span>Weekly Consistency</span>
+        </div>
+        <div
+          suppressHydrationWarning
+          className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold text-amber-600 dark:text-amber-300 bg-amber-500/10"
+        >
+          <Flame className="h-3 w-3" />
+          <span>Best: {mounted ? streakBest : 0}d</span>
+        </div>
+      </div>
+
+      <div className="flex h-16 items-end gap-2 pt-2">
         {history.map((h: HistoryDay) => (
           <div
             key={h.key}
-            className="flex flex-1 flex-col items-center gap-1"
+            className="group relative flex flex-1 flex-col items-center gap-1.5"
+            title={`${h.label}: ${h.pct}% completed`}
           >
+            {/* Tooltip on hover */}
+            <div className="absolute -top-7 hidden group-hover:flex items-center justify-center rounded-md bg-stone-900 text-white dark:bg-stone-100 dark:text-stone-900 px-1.5 py-0.5 text-[9px] font-bold shadow-md z-10 whitespace-nowrap">
+              {h.pct}%
+            </div>
+
+            {/* Bar track and fill */}
             <div
-              className={`w-full rounded-sm transition-all duration-300 ${
-                h.isToday
-                  ? h.pct === 100
-                    ? 'bg-emerald-500'
-                    : 'bg-amber-400'
-                  : h.pct === 100
-                    ? dark
-                      ? 'bg-emerald-600/50'
-                      : 'bg-emerald-400/40'
-                    : dark
-                      ? 'bg-white/[0.08]'
-                      : 'bg-black/[0.07]'
+              className={`w-full rounded-full overflow-hidden transition-all duration-300 relative ${
+                dark ? 'bg-white/[0.06]' : 'bg-black/[0.05]'
               }`}
-              style={{ height: `${Math.max(4, (h.pct / 100) * 36)}px` }}
-            />
+              style={{ height: '42px' }}
+            >
+              <div
+                className={`w-full absolute bottom-0 rounded-full transition-all duration-500 ${
+                  h.pct === 100
+                    ? 'bg-gradient-to-t from-emerald-600 to-emerald-400'
+                    : h.pct > 0
+                      ? 'bg-gradient-to-t from-amber-600 to-amber-400'
+                      : 'bg-transparent'
+                }`}
+                style={{ height: `${Math.max(h.pct > 0 ? 6 : 0, (h.pct / 100) * 42)}px` }}
+              />
+            </div>
+
+            {/* Day Label */}
             <span
-              className={`text-[8px] ${
+              className={`text-[10px] font-semibold tracking-tight transition-colors ${
                 h.isToday
-                  ? dark
-                    ? 'text-amber-400'
-                    : 'text-amber-600'
+                  ? 'text-emerald-700 dark:text-emerald-400 font-bold'
                   : dark
-                    ? 'text-stone-700'
-                    : 'text-stone-400'
+                    ? 'text-stone-400'
+                    : 'text-stone-500'
               }`}
             >
-              {h.label}
+              {h.isToday ? 'Today' : h.label}
             </span>
           </div>
         ))}

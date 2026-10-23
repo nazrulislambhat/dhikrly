@@ -54,13 +54,12 @@ describe('azanNotificationService', () => {
     mockStorage = new MockStorage();
     // @ts-expect-error Mocking global localStorage
     globalThis.localStorage = mockStorage;
-    // @ts-expect-error Mocking global window
     globalThis.window = {
       dispatchEvent: () => true,
       addEventListener: () => {},
       removeEventListener: () => {},
       Notification: { permission: 'granted' },
-    };
+    } as unknown as Window & typeof globalThis;
   });
 
   afterEach(() => {
