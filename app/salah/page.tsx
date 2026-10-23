@@ -242,23 +242,15 @@ export default function SalahPage() {
     ? getCurrentAndNextPrayer(times, now)
     : { current: null, next: 'fajr' as const, minutesUntilNext: 0 };
 
-  const bg = dark
-    ? 'min-h-screen bg-[#0d1715] text-stone-200'
-    : 'min-h-screen bg-stone-50 text-stone-800';
-  const cardBase = dark
-    ? 'bg-white/[0.04] border-white/[0.07]'
-    : 'bg-white border-stone-200 shadow-sm';
-  const tabActive = dark
-    ? 'bg-emerald-400/15 text-emerald-200'
-    : 'bg-white text-emerald-800 shadow-sm';
-  const tabInactive = dark
-    ? 'text-stone-500 hover:text-stone-300'
-    : 'text-stone-400 hover:text-stone-600';
+  const bg = 'min-h-screen bg-canvas text-ink';
+  const cardBase = 'border-border bg-surface text-ink shadow-sm';
+  const tabActive = 'bg-primary-light text-primary shadow-xs';
+  const tabInactive = 'text-muted hover:text-ink';
 
   // Show location setup if no location
   if (!settings.location) {
     return (
-      <div className={dark ? 'min-h-screen bg-[#0d1715] text-stone-200' : 'min-h-screen bg-stone-50 text-stone-800'}>
+      <div className="min-h-screen bg-canvas text-ink">
         <AppShell active="salah" dark={dark} onToggleDark={() => setDark((value) => !value)}>
           <LocationSetup dark={dark} onLocation={handleLocation} />
         </AppShell>
