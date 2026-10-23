@@ -13,6 +13,7 @@ import {
   ChevronUp,
   RotateCcw,
   Type,
+  Maximize2,
 } from 'lucide-react';
 import type { Dua } from '@/types';
 import { speakArabicText, stopDuaAudio } from '@/lib/duaAudio';
@@ -23,6 +24,7 @@ interface DuaCardProps {
   checked: boolean;
   onToggle: (id: string, soundEnabled?: boolean) => void;
   onDelete?: (id: string) => void;
+  onOpenFocus?: (dua: Dua) => void;
   dark: boolean;
   soundEnabled?: boolean;
 }
@@ -32,6 +34,7 @@ export default function DuaCard({
   checked,
   onToggle,
   onDelete,
+  onOpenFocus,
   dark,
   soundEnabled = true,
 }: DuaCardProps) {
@@ -257,6 +260,19 @@ export default function DuaCard({
               <Copy className="h-3.5 w-3.5" />
             )}
           </button>
+
+          {/* Full-Screen Khushū‘ Mode */}
+          {onOpenFocus && (
+            <button
+              type="button"
+              onClick={() => onOpenFocus(dua)}
+              title="Open in Khushū‘ Full-Screen Reciter"
+              aria-label="Open in Khushū‘ Full-Screen Reciter"
+              className="grid h-7 w-7 place-items-center rounded-lg border border-border bg-surface text-muted hover:text-primary hover:border-primary/40 transition-all cursor-pointer"
+            >
+              <Maximize2 className="h-3.5 w-3.5" />
+            </button>
+          )}
 
           {/* Custom Dua Delete */}
           {dua.custom && onDelete && (
