@@ -45,6 +45,11 @@ export default function RootLayout({
           content="black-translucent"
         />
         <meta name="apple-mobile-web-app-title" content="Dhikrly" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var s=JSON.parse(localStorage.getItem('duas_settings_v3')||'{}');if(s.dark){document.documentElement.classList.add('dark');}var a=localStorage.getItem('dhikrly_accent_color_v1')||'emerald';var p={emerald:{l:{p:'#0d5e42',h:'#094430',fg:'#fff'},d:{p:'#10b981',h:'#34d399',fg:'#021a10'}},amber:{l:{p:'#c25708',h:'#9a4204',fg:'#fff'},d:{p:'#f59e0b',h:'#fbbf24',fg:'#1c0d02'}},teal:{l:{p:'#0f766e',h:'#115e59',fg:'#fff'},d:{p:'#14b8a6',h:'#2dd4bf',fg:'#021a17'}},sky:{l:{p:'#0369a1',h:'#075985',fg:'#fff'},d:{p:'#38bdf8',h:'#7dd3fc',fg:'#041624'}},rose:{l:{p:'#be123c',h:'#9f1239',fg:'#fff'},d:{p:'#fb7185',h:'#fda4af',fg:'#24040a'}},violet:{l:{p:'#6d28d9',h:'#5b21b6',fg:'#fff'},d:{p:'#a78bfa',h:'#c4b5fd',fg:'#14092b'}}};var pal=p[a]||p.emerald;var isD=s.dark||document.documentElement.classList.contains('dark');var c=isD?pal.d:pal.l;document.documentElement.style.setProperty('--app-primary',c.p);document.documentElement.style.setProperty('--app-primary-hover',c.h);document.documentElement.style.setProperty('--app-primary-fg',c.fg);document.documentElement.style.setProperty('--app-accent',c.p);}catch(e){}})();`,
+          }}
+        />
       </head>
       <body suppressHydrationWarning>{children}</body>
     </html>
