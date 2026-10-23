@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { getHijriDate, getTodayKey, formatSafeDate } from '@/lib/dates';
 import {
+  DEFAULT_SALAH_SETTINGS,
   getSalahSettings,
   saveSalahSettings,
   getLocalMasjidsList,
@@ -53,6 +54,7 @@ import type {
   PrayerName,
   PrayerStatus,
   SalahLocation,
+  SalahSettings,
   DayLog,
   LocalMasjidSettings,
   LocalMasjidItem,
@@ -66,10 +68,9 @@ import { getPrayerWindows } from '@/lib/makroohTimes';
 type Tab = 'today' | 'insights' | 'masjid';
 
 export default function SalahPage() {
-  const [dark, setDark] = useState(
-    () => load<{ dark: boolean }>(SETTINGS_KEY, { dark: false }).dark,
-  );
-  const [settings, setSettings] = useState(() => getSalahSettings());
+  const [mounted, setMounted] = useState(false);
+  const [dark, setDark] = useState<boolean>(false);
+  const [settings, setSettings] = useState<SalahSettings>(DEFAULT_SALAH_SETTINGS);
   const [activeTab, setActiveTab] = useState<Tab>('today');
   const [showHeatmap, setShowHeatmap] = useState(false);
   const [now, setNow] = useState(new Date());
@@ -82,6 +83,13 @@ export default function SalahPage() {
   const today = getTodayKey();
   const [selectedDate, setSelectedDate] = useState<string>(today);
   const isToday = selectedDate === today;
+
+  useEffect(() => {
+    setMounted(true);
+    setSettings(getSalahSettings());
+    const savedDark = load<{ dark: boolean }>(SETTINGS_KEY, { dark: false }).dark;
+    setDark(savedDark);
+  }, []);
 
   const yesterdayStr = useMemo(
     () => new Date(Date.now() - 86_400_000).toISOString().slice(0, 10),
@@ -246,6 +254,28 @@ export default function SalahPage() {
   const cardBase = 'border-border bg-surface text-ink shadow-sm';
   const tabActive = 'bg-primary-light text-primary shadow-xs';
   const tabInactive = 'text-muted hover:text-ink';
+
+  // Show skeleton during SSR and before mount so server HTML matches client initial render
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-canvas text-ink">
+        <AppShell active="salah" dark={dark} onToggleDark={() => setDark((value) => !value)}>
+          <div className="mx-auto w-[min(calc(100%-2rem),72rem)] px-2 pt-5 pb-10 sm:px-4 sm:pt-8 lg:px-4">
+            <header className="mb-6">
+              <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-300 mb-2">
+                <Clock3 className="h-3.5 w-3.5" />
+                <span>DAILY PRAYERS & SUNNAH SCHEDULE</span>
+              </div>
+              <h1 className="font-serif text-[clamp(24px,4vw,32px)] font-semibold tracking-tight text-stone-900 dark:text-stone-100">
+                Daily Ṣalāh
+              </h1>
+            </header>
+            <PrayerCardSkeleton />
+          </div>
+        </AppShell>
+      </div>
+    );
+  }
 
   // Show location setup if no location
   if (!settings.location) {

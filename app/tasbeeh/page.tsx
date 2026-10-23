@@ -98,9 +98,7 @@ const DHIKR_PRESETS: DhikrPreset[] = [
 const LIFETIME_STATS_KEY = 'dhikrly_tasbeeh_lifetime_v1';
 
 export default function TasbeehPage() {
-  const [dark, setDark] = useState<boolean>(
-    () => load<{ dark: boolean }>(SETTINGS_KEY, { dark: false }).dark,
-  );
+  const [dark, setDark] = useState<boolean>(false);
 
   const [activePreset, setActivePreset] = useState<DhikrPreset>(DHIKR_PRESETS[0]);
   const [count, setCount] = useState<number>(0);
@@ -117,14 +115,16 @@ export default function TasbeehPage() {
   const [sequenceStep, setSequenceStep] = useState<number>(0);
 
   // Lifetime counts
-  const [lifetimeTotal, setLifetimeTotal] = useState<number>(() => {
-    if (typeof window === 'undefined') return 0;
+  const [lifetimeTotal, setLifetimeTotal] = useState<number>(0);
+
+  useEffect(() => {
+    const savedDark = load<{ dark: boolean }>(SETTINGS_KEY, { dark: false }).dark;
+    setDark(savedDark);
     try {
-      return parseInt(window.localStorage.getItem(LIFETIME_STATS_KEY) ?? '0', 10);
-    } catch {
-      return 0;
-    }
-  });
+      const stored = window.localStorage.getItem(LIFETIME_STATS_KEY);
+      if (stored) setLifetimeTotal(parseInt(stored, 10) || 0);
+    } catch {}
+  }, []);
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', dark);
@@ -546,7 +546,7 @@ export default function TasbeehPage() {
             <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--app-muted)]">
               All-Time Dhikr Counted
             </span>
-            <div className="mt-2 text-3xl font-extrabold text-emerald-700 dark:text-emerald-300">
+            <div suppressHydrationWarning className="mt-2 text-3xl font-extrabold text-emerald-700 dark:text-emerald-300">
               {lifetimeTotal.toLocaleString()}
             </div>
             <p className="mt-1 text-xs text-[var(--app-muted)]">
