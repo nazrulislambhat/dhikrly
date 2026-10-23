@@ -392,9 +392,7 @@ export default function DuasTracker() {
     return true;
   });
 
-  const bg = dark
-    ? 'min-h-screen bg-[#091411] text-stone-200 antialiased selection:bg-emerald-500/30'
-    : 'min-h-screen bg-[#f8faf9] text-stone-800 antialiased selection:bg-emerald-500/20';
+  const bg = 'min-h-screen bg-canvas text-ink antialiased selection:bg-primary/20';
 
   return (
     <div className={bg}>
