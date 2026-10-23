@@ -242,8 +242,8 @@ html:not(.dark) {
 
 html.dark body {
   background-image: 
-    radial-gradient(ellipse at 85% -10%, rgb(62 168 124 / 9%), transparent 44rem),
-    radial-gradient(ellipse at 15% 100%, rgb(245 158 11 / 4%), transparent 38rem);
+    radial-gradient(ellipse at 85% -10%, rgba(16, 185, 129, 0.05), transparent 44rem),
+    radial-gradient(ellipse at 15% 100%, rgba(251, 146, 60, 0.03), transparent 38rem);
 }
 
 /* ── Typography Utilities ── */
