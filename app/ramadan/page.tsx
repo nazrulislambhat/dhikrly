@@ -44,9 +44,8 @@ const ASHRA_TABS = [
 type ActiveSection = 'journey' | 'khatmah' | 'duas';
 
 export default function RamadanPage() {
-  const [dark, setDark] = useState<boolean>(
-    () => load<{ dark: boolean }>(SETTINGS_KEY, { dark: false }).dark,
-  );
+  const [mounted, setMounted] = useState<boolean>(false);
+  const [dark, setDark] = useState<boolean>(false);
 
   const salahSettings = useMemo(() => getSalahSettings(), []);
   const { times, loading: timesLoading } = usePrayerTimes(
@@ -73,17 +72,23 @@ export default function RamadanPage() {
   const [now, setNow] = useState(new Date());
 
   useEffect(() => {
-    document.documentElement.classList.toggle('dark', dark);
+    setMounted(true);
+    const savedDark = load<{ dark: boolean }>(SETTINGS_KEY, { dark: false }).dark;
+    setDark(savedDark);
     setTrackerData(getRamadanTrackerData());
     setKhatmah(getKhatmahProgress());
 
     const timer = setInterval(() => setNow(new Date()), 30_000);
     return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', dark);
   }, [dark]);
 
   // Iftar & Suhoor countdown calculation
   const { countdownText, countdownSub, isFastingHours } = useMemo(() => {
-    if (!times) {
+    if (!times || !mounted) {
       return {
         countdownText: '--:--',
         countdownSub: 'Configure location in Ṣalāh settings for prayer times',

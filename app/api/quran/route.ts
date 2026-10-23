@@ -35,6 +35,7 @@ function isIndopakVerse(value: unknown): value is QuranComIndopakVerse {
 
 interface QuranChapterEdition {
   edition: { identifier: string };
+  surah?: unknown;
   ayahs: { number: number; numberInSurah: number; text: string; audio?: string; page: number }[];
 }
 
@@ -177,10 +178,12 @@ async function getChapterFromQuranCom(
     };
   });
 
+  const surahMeta = surahsData.find((s) => s.number === chapterNumber);
+
   return [
-    { edition: { identifier: 'quran-uthmani' }, ayahs: arabicAyahs },
-    { edition: { identifier: translation }, ayahs: translationAyahs },
-    { edition: { identifier: reciter }, ayahs: audioAyahs },
+    { edition: { identifier: 'quran-uthmani' }, surah: surahMeta, ayahs: arabicAyahs },
+    { edition: { identifier: translation }, surah: surahMeta, ayahs: translationAyahs },
+    { edition: { identifier: reciter }, surah: surahMeta, ayahs: audioAyahs },
   ];
 }
 
@@ -317,33 +320,76 @@ export async function GET(request: Request) {
 
       const uthmaniPage = {
         edition: { identifier: 'quran-uthmani' },
-        ayahs: verses.map((v) => ({
-          number: v.id,
-          numberInSurah: v.verse_number,
-          text: v.text_uthmani,
-          page: v.page_number,
-        })),
+        ayahs: verses.map((v) => {
+          const sNum = Number(v.verse_key?.split(':')[0]) || 1;
+          const surahMeta = surahsData.find((s) => s.number === sNum);
+          return {
+            number: v.id,
+            numberInSurah: v.verse_number,
+            text: v.text_uthmani,
+            page: v.page_number,
+            surah: surahMeta
+              ? {
+                  number: surahMeta.number,
+                  name: surahMeta.name,
+                  englishName: surahMeta.englishName,
+                  englishNameTranslation: surahMeta.englishNameTranslation,
+                  numberOfAyahs: surahMeta.numberOfAyahs,
+                  revelationType: surahMeta.revelationType,
+                }
+              : undefined,
+          };
+        }),
       };
 
       const translationPage = {
         edition: { identifier: translation },
-        ayahs: verses.map((v) => ({
-          number: v.id,
-          numberInSurah: v.verse_number,
-          text: (v.translations?.[0]?.text ?? '').replace(/<sup[^>]*>.*?<\/sup>/gi, '').trim(),
-          page: v.page_number,
-        })),
+        ayahs: verses.map((v) => {
+          const sNum = Number(v.verse_key?.split(':')[0]) || 1;
+          const surahMeta = surahsData.find((s) => s.number === sNum);
+          return {
+            number: v.id,
+            numberInSurah: v.verse_number,
+            text: (v.translations?.[0]?.text ?? '').replace(/<sup[^>]*>.*?<\/sup>/gi, '').trim(),
+            page: v.page_number,
+            surah: surahMeta
+              ? {
+                  number: surahMeta.number,
+                  name: surahMeta.name,
+                  englishName: surahMeta.englishName,
+                  englishNameTranslation: surahMeta.englishNameTranslation,
+                  numberOfAyahs: surahMeta.numberOfAyahs,
+                  revelationType: surahMeta.revelationType,
+                }
+              : undefined,
+          };
+        }),
       };
 
+      const reciterId = reciter.includes('alafasy') ? 'ar.alafasy' : reciter;
       const reciterPage = {
         edition: { identifier: reciter },
-        ayahs: verses.map((v) => ({
-          number: v.id,
-          numberInSurah: v.verse_number,
-          text: '',
-          audio: `https://cdn.islamic.network/quran/audio/128/ar.alafasy/${v.id}.mp3`,
-          page: v.page_number,
-        })),
+        ayahs: verses.map((v) => {
+          const sNum = Number(v.verse_key?.split(':')[0]) || 1;
+          const surahMeta = surahsData.find((s) => s.number === sNum);
+          return {
+            number: v.id,
+            numberInSurah: v.verse_number,
+            text: '',
+            audio: `https://cdn.islamic.network/quran/audio/128/${reciterId}/${v.id}.mp3`,
+            page: v.page_number,
+            surah: surahMeta
+              ? {
+                  number: surahMeta.number,
+                  name: surahMeta.name,
+                  englishName: surahMeta.englishName,
+                  englishNameTranslation: surahMeta.englishNameTranslation,
+                  numberOfAyahs: surahMeta.numberOfAyahs,
+                  revelationType: surahMeta.revelationType,
+                }
+              : undefined,
+          };
+        }),
       };
 
       return NextResponse.json({

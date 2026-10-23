@@ -72,9 +72,7 @@ export default function InsightsPage() {
   const [dataVersion, setDataVersion] = useState<number>(0);
   const { user } = useAuth();
 
-  const [dark, setDark] = useState<boolean>(
-    () => load<{ dark: boolean }>(SETTINGS_KEY, { dark: false }).dark,
-  );
+  const [dark, setDark] = useState<boolean>(false);
   const [timeRange, setTimeRange] = useState<TimeRange>('30');
   const [activeTab, setActiveTab] = useState<InsightTab>('overview');
 
@@ -85,12 +83,17 @@ export default function InsightsPage() {
   const [surahFilter, setSurahFilter] = useState<SurahFilter>('all');
 
   // Quran tracker state from localStorage
-  const [quranTrackerData, setQuranTrackerData] = useState<QuranTrackerData>(() =>
-    getQuranTrackerData(),
-  );
+  const [quranTrackerData, setQuranTrackerData] = useState<QuranTrackerData>({
+    completedSurahs: [],
+    logs: [],
+    updatedAt: '',
+  });
 
   useEffect(() => {
     setMounted(true);
+    const savedDark = load<{ dark: boolean }>(SETTINGS_KEY, { dark: false }).dark;
+    setDark(savedDark);
+    setQuranTrackerData(getQuranTrackerData());
   }, []);
 
   useEffect(() => {
