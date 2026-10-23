@@ -66,17 +66,12 @@ export default function AuthModal({ dark, onClose }: AuthModalProps) {
     // On success the page redirects — no cleanup needed
   };
 
-  const overlay = dark
-    ? 'bg-black/65 backdrop-blur-md'
-    : 'bg-stone-900/45 backdrop-blur-md';
-  const panel = dark
-    ? 'bg-[#14211e] border-white/10 text-stone-100'
-    : 'bg-white border-stone-200';
-  const inputCls = dark
-    ? 'bg-white/5 border-white/10 text-stone-200 placeholder-stone-600 focus:border-amber-400/50'
-    : 'bg-stone-50 border-stone-200 text-stone-700 placeholder-stone-400 focus:border-amber-400';
-  const mutedText = dark ? 'text-stone-500' : 'text-stone-400';
-  const divider = dark ? 'border-white/10' : 'border-stone-200';
+  const overlay = 'bg-black/60 backdrop-blur-md';
+  const panel = 'border-border bg-surface text-ink shadow-2xl';
+  const inputCls =
+    'border-border bg-surface-hover text-ink placeholder-muted focus:border-link focus:ring-1 focus:ring-link/20';
+  const mutedText = 'text-muted';
+  const divider = 'border-border';
 
   const TITLE: Record<AuthView, string> = {
     signin: 'Welcome back',

@@ -29,10 +29,8 @@ export default function QuranWordModal({
     setTimeout(() => setIsPlaying(false), 1200);
   };
 
-  const overlay = dark ? 'bg-black/60 backdrop-blur-sm' : 'bg-stone-900/40 backdrop-blur-sm';
-  const panel = dark
-    ? 'border-white/10 bg-[#14211e] text-stone-100 shadow-2xl'
-    : 'border-stone-200 bg-white text-stone-900 shadow-xl';
+  const overlay = 'bg-black/60 backdrop-blur-sm';
+  const panel = 'border-border bg-surface text-ink shadow-2xl';
 
   return (
     <div

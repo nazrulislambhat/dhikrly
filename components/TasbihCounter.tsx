@@ -33,7 +33,7 @@ export default function TasbihCounter() {
   };
 
   return (
-    <div className="mx-auto flex w-full flex-col items-center gap-5 rounded-2xl border border-[var(--app-line)] bg-[var(--app-surface)] p-5 shadow-sm dark:bg-[#14211e]">
+    <div className="mx-auto flex w-full flex-col items-center gap-5 rounded-2xl border border-[var(--app-line)] bg-[var(--app-surface)] p-5 shadow-sm">
       <div className="flex w-full items-center justify-between">
         <h2 className="text-sm font-bold text-[var(--app-ink)]">
           Tasbih Counter
@@ -52,7 +52,7 @@ export default function TasbihCounter() {
             aria-pressed={target === t}
             className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
               target === t
-                ? 'bg-emerald-800 text-white dark:bg-emerald-400 dark:text-emerald-950'
+                ? 'bg-primary text-white'
                 : 'border border-[var(--app-line)] bg-[var(--app-surface)] text-[var(--app-muted)] hover:text-[var(--app-ink)]'
             }`}
           >
@@ -65,7 +65,7 @@ export default function TasbihCounter() {
           aria-pressed={target === null}
           className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
             target === null
-              ? 'bg-emerald-800 text-white dark:bg-emerald-400 dark:text-emerald-950'
+              ? 'bg-primary text-white'
               : 'border border-[var(--app-line)] bg-[var(--app-surface)] text-[var(--app-muted)] hover:text-[var(--app-ink)]'
           }`}
         >
@@ -88,7 +88,7 @@ export default function TasbihCounter() {
         />
         <button
           type="submit"
-          className="shrink-0 rounded-xl border border-[var(--app-line)] bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-800 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-200"
+          className="shrink-0 rounded-xl border border-primary/30 bg-primary-light px-3 py-2 text-xs font-semibold text-primary hover:bg-primary/20"
         >
           Set target
         </button>
@@ -98,7 +98,7 @@ export default function TasbihCounter() {
         type="button"
         onClick={increment}
         aria-label={`Count dhikr${target === null ? `, ${count}` : `, ${count} of ${target}`}`}
-        className="relative flex h-48 w-48 sm:h-52 sm:w-52 select-none items-center justify-center rounded-full bg-emerald-50 text-emerald-900 shadow-inner transition-transform active:scale-95 dark:bg-emerald-950/40 dark:text-emerald-50"
+        className="relative flex h-48 w-48 sm:h-52 sm:w-52 select-none items-center justify-center rounded-full bg-primary-subtle text-ink shadow-inner transition-transform active:scale-95"
       >
         <svg className="absolute inset-0 -rotate-90" viewBox="0 0 200 200">
           <circle
@@ -107,7 +107,7 @@ export default function TasbihCounter() {
             r={RADIUS}
             fill="none"
             strokeWidth="8"
-            className="stroke-emerald-100 dark:stroke-emerald-900/40"
+            className="stroke-primary/20"
           />
           <circle
             cx="100"
@@ -116,7 +116,7 @@ export default function TasbihCounter() {
             fill="none"
             strokeWidth="8"
             strokeLinecap="round"
-            className="stroke-emerald-600 transition-all duration-200 dark:stroke-emerald-400"
+            className="stroke-primary transition-all duration-200"
             style={{
               strokeDasharray: CIRCUMFERENCE,
               strokeDashoffset: dashOffset,
@@ -126,14 +126,14 @@ export default function TasbihCounter() {
 
         <div className="flex flex-col items-center">
           <span className="text-2xl font-bold tabular-nums">{count}</span>
-          <span className="mt-1 text-xs text-emerald-700/80 dark:text-emerald-200/70">
+          <span className="mt-1 text-xs text-primary/80">
             {target === null ? 'count' : `of ${target}`}
           </span>
         </div>
       </button>
 
       <p
-        className={`-mt-2 text-xs font-semibold text-emerald-600 dark:text-emerald-400 ${
+        className={`-mt-2 text-xs font-semibold text-primary ${
           justCompleted ? 'visible' : 'invisible'
         }`}
         aria-live="polite"

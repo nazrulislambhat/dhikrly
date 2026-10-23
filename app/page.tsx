@@ -238,7 +238,7 @@ export default function DuasTracker() {
         cta: 'Begin Night Adhkār',
         filterTarget: 'all',
         gradient: dark
-          ? 'from-[#051712] via-[#09221a] to-[#04100c]'
+          ? 'from-[#0d1310] via-[#131d18] to-[#0a0f0d]'
           : 'from-[#063327] via-[#084534] to-[#0a4e3c]',
       };
     }
@@ -251,7 +251,7 @@ export default function DuasTracker() {
         cta: 'Start Morning Adhkār',
         filterTarget: 'athkar',
         gradient: dark
-          ? 'from-[#07241b] via-[#0d362a] to-[#092219]'
+          ? 'from-[#0e1713] via-[#16231c] to-[#0b110e]'
           : 'from-[#064e3b] via-[#065f46] to-[#0d6e53]',
       };
     }
@@ -264,7 +264,7 @@ export default function DuasTracker() {
         cta: 'Continue Daily Adhkār',
         filterTarget: 'all',
         gradient: dark
-          ? 'from-[#08221a] via-[#0c3126] to-[#071c14]'
+          ? 'from-[#0f1713] via-[#15241d] to-[#0b120f]'
           : 'from-[#075340] via-[#09664f] to-[#085a46]',
       };
     }
@@ -277,7 +277,7 @@ export default function DuasTracker() {
         cta: 'Start Evening Adhkār',
         filterTarget: 'athkar',
         gradient: dark
-          ? 'from-[#0a231b] via-[#122e23] to-[#071711]'
+          ? 'from-[#111614] via-[#18211b] to-[#0c100e]'
           : 'from-[#084c3b] via-[#0d5945] to-[#126852]',
       };
     }
@@ -289,7 +289,7 @@ export default function DuasTracker() {
       cta: 'Read Bedtime Du‘ās',
       filterTarget: 'athkar',
       gradient: dark
-        ? 'from-[#04140f] via-[#071f17] to-[#030d0a]'
+        ? 'from-[#0c100e] via-[#111714] to-[#080c0a]'
         : 'from-[#063b2d] via-[#074b3a] to-[#063327]',
     };
   }, [dark]);
@@ -524,11 +524,7 @@ export default function DuasTracker() {
                 <button
                   type="button"
                   onClick={() => setActiveModal('auth')}
-                  className={`inline-flex h-8 items-center gap-1.5 rounded-full border px-3.5 text-xs font-bold transition-all hover:scale-105 active:scale-95 ${
-                    dark
-                      ? 'border-emerald-400/40 bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30'
-                      : 'border-emerald-700/30 bg-emerald-800 text-white shadow-xs hover:bg-emerald-700'
-                  }`}
+                  className="inline-flex h-8 items-center gap-1.5 rounded-full border border-primary/30 bg-primary px-3.5 text-xs font-bold text-white transition-all hover:bg-primary-hover shadow-xs active:scale-95 cursor-pointer"
                 >
                   <span>Sync / Login</span>
                 </button>
@@ -609,7 +605,7 @@ export default function DuasTracker() {
                         const el = document.getElementById('daily-adhkar');
                         if (el) el.scrollIntoView({ behavior: 'smooth' });
                       }}
-                      className="tap-bounce inline-flex items-center gap-2 rounded-2xl bg-white px-4 py-2 text-xs font-extrabold text-emerald-950 shadow-md hover:bg-emerald-50 dark:bg-emerald-300 dark:text-emerald-950 dark:hover:bg-emerald-200"
+                      className="tap-bounce inline-flex items-center gap-2 rounded-2xl bg-white px-4 py-2 text-xs font-extrabold text-stone-900 shadow-md hover:bg-white/90 dark:bg-primary dark:text-white dark:hover:bg-primary-hover"
                     >
                       <span>
                         {done === total && total > 0
@@ -619,8 +615,8 @@ export default function DuasTracker() {
                       <ArrowRight className="h-3.5 w-3.5" />
                     </button>
 
-                    <div className="inline-flex items-center gap-1.5 rounded-2xl border border-amber-400/30 bg-amber-400/15 px-3 py-2 text-xs font-bold text-amber-200">
-                      <Flame className="h-4 w-4 text-amber-300 fill-amber-300/30" />
+                    <div className="inline-flex items-center gap-1.5 rounded-2xl border border-link/30 bg-link-light px-3 py-2 text-xs font-bold text-link">
+                      <Flame className="h-4 w-4 text-link fill-link/30" />
                       <span>{streak.current}d Streak</span>
                       <span className="opacity-60 font-normal text-[10px]">• Best: {streak.best}d</span>
                     </div>
@@ -718,30 +714,24 @@ export default function DuasTracker() {
                 href={pillar.href}
                 className={`group flex items-center gap-3 rounded-2xl border p-3.5 no-underline transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg ${
                   pillar.active
-                    ? dark
-                      ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-200 shadow-xs'
-                      : 'border-emerald-700/30 bg-emerald-50/80 text-emerald-950 shadow-xs'
+                    ? 'border-primary/40 bg-primary-light text-primary shadow-xs'
                     : dark
-                      ? 'border-white/[0.08] bg-[#0c1814]/90 hover:border-emerald-500/30 text-stone-200'
-                      : 'border-emerald-950/[0.07] bg-white hover:border-emerald-600/30 text-stone-800 shadow-xs'
+                      ? 'border-white/[0.08] bg-surface/90 hover:border-primary/30 text-ink'
+                      : 'border-border bg-white hover:border-primary/30 text-ink shadow-xs'
                 }`}
               >
                 <span
                   className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl transition-transform group-hover:scale-105 ${
                     pillar.active
-                      ? dark
-                        ? 'bg-emerald-500/25 text-emerald-300'
-                        : 'bg-emerald-800 text-white shadow-xs'
-                      : dark
-                        ? 'bg-white/5 text-emerald-400'
-                        : 'bg-emerald-50 text-emerald-800'
+                      ? 'bg-primary text-white shadow-xs'
+                      : 'bg-primary-subtle text-primary'
                   }`}
                 >
                   <pillar.Icon className="h-5 w-5" />
                 </span>
                 <div className="min-w-0 flex-1">
                   <div className="truncate text-xs font-extrabold leading-tight">{pillar.title}</div>
-                  <div className="truncate text-[10px] text-stone-400 mt-0.5">
+                  <div className="truncate text-[10px] text-muted mt-0.5">
                     {pillar.desc}
                   </div>
                 </div>
@@ -803,11 +793,7 @@ export default function DuasTracker() {
                       value={search}
                       onChange={(e) => setSearch(e.target.value)}
                       aria-label="Search remembrances"
-                      className={`h-11 w-full rounded-2xl border pl-10 pr-9 text-xs outline-none transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 ${
-                        dark
-                          ? 'border-white/[0.08] bg-[#0c1814] text-stone-100 placeholder-stone-500'
-                          : 'border-emerald-950/[0.08] bg-white text-stone-800 placeholder-stone-400 shadow-xs'
-                      }`}
+                      className="h-11 w-full rounded-2xl border border-border bg-surface pl-10 pr-9 text-xs text-ink placeholder-muted outline-none transition-all focus:border-primary focus:ring-2 focus:ring-primary/20 shadow-xs"
                     />
                     {search && (
                       <button
@@ -827,10 +813,8 @@ export default function DuasTracker() {
                     aria-pressed={priOnly}
                     className={`tap-bounce inline-flex h-11 items-center gap-1.5 rounded-2xl border px-3.5 text-xs font-bold transition-all ${
                       priOnly
-                        ? 'border-amber-400/50 bg-amber-400/20 text-amber-800 dark:text-amber-300 shadow-xs'
-                        : dark
-                          ? 'border-white/[0.08] bg-[#0c1814] text-stone-400 hover:text-stone-200'
-                          : 'border-emerald-950/[0.08] bg-white text-stone-600 hover:text-stone-900 shadow-xs'
+                        ? 'border-link/50 bg-link-light text-link shadow-xs'
+                        : 'border-border bg-surface text-muted hover:text-ink shadow-xs'
                     }`}
                   >
                     <Star
@@ -843,7 +827,7 @@ export default function DuasTracker() {
                   <button
                     type="button"
                     onClick={() => setActiveModal('addDua')}
-                    className="tap-bounce inline-flex h-11 items-center gap-1.5 rounded-2xl border border-emerald-600/30 bg-emerald-50 px-4 text-xs font-bold text-emerald-900 transition hover:bg-emerald-100 dark:border-emerald-500/30 dark:bg-emerald-500/15 dark:text-emerald-300 shadow-xs"
+                    className="tap-bounce inline-flex h-11 items-center gap-1.5 rounded-2xl border border-primary/30 bg-primary-light px-4 text-xs font-bold text-primary transition hover:bg-primary/20 shadow-xs"
                   >
                     <Plus className="h-3.5 w-3.5" aria-hidden="true" />
                     <span>Add Custom</span>
@@ -863,20 +847,16 @@ export default function DuasTracker() {
                         aria-pressed={active}
                         className={`tap-bounce inline-flex min-h-8 shrink-0 items-center gap-2 rounded-xl px-3.5 text-xs font-bold transition-all ${
                           active
-                            ? 'bg-emerald-800 text-white dark:bg-emerald-500 dark:text-emerald-950 shadow-sm'
-                            : dark
-                              ? 'border border-white/[0.08] bg-[#0c1814] text-stone-400 hover:text-stone-200'
-                              : 'border border-emerald-950/[0.08] bg-white text-stone-600 hover:text-stone-900 shadow-xs'
+                            ? 'bg-primary text-white shadow-sm'
+                            : 'border border-border bg-surface text-muted hover:text-ink shadow-xs'
                         }`}
                       >
                         <span>{label}</span>
                         <span
                           className={`rounded-full px-1.5 py-0.2 text-[10px] tabular-nums font-mono ${
                             active
-                              ? 'bg-white/20 text-white dark:bg-black/20 dark:text-emerald-950'
-                              : dark
-                                ? 'bg-white/5 text-stone-400'
-                                : 'bg-stone-100 text-stone-600'
+                              ? 'bg-white/20 text-white'
+                              : 'bg-black/5 dark:bg-white/10 text-muted'
                           }`}
                         >
                           {catDone(key)}/{count}
@@ -905,7 +885,7 @@ export default function DuasTracker() {
                         setFilter('all');
                         setPriOnly(false);
                       }}
-                      className="mt-4 rounded-xl bg-emerald-800 px-4 py-2 text-xs font-bold text-white hover:bg-emerald-700 dark:bg-emerald-500 dark:text-emerald-950"
+                      className="mt-4 rounded-xl bg-primary px-4 py-2 text-xs font-bold text-white hover:bg-primary-hover"
                     >
                       Clear Filters
                     </button>
@@ -951,11 +931,7 @@ export default function DuasTracker() {
 
               {/* Today's Progress Card */}
               <section
-                className={`rounded-3xl border p-5 transition-all ${
-                  dark
-                    ? 'border-white/[0.08] bg-[#0c1814]/90 backdrop-blur-md'
-                    : 'border-emerald-950/[0.07] bg-white shadow-xs'
-                }`}
+                className="rounded-3xl border border-border bg-surface/90 backdrop-blur-md p-5 shadow-xs transition-all"
               >
                 <div className="flex items-center justify-between text-xs font-bold">
                   <span className="text-[var(--app-ink)]">Today&apos;s Devotion Goal</span>
@@ -997,9 +973,7 @@ export default function DuasTracker() {
 
               {/* Activity Heatmap Accordion */}
               <div
-                className={`overflow-hidden rounded-3xl border transition-all ${
-                  dark ? 'border-white/[0.08] bg-[#0c1814]/90' : 'border-emerald-950/[0.07] bg-white shadow-xs'
-                }`}
+                className="overflow-hidden rounded-3xl border border-border bg-surface/90 shadow-xs transition-all"
               >
                 <button
                   type="button"
@@ -1059,13 +1033,13 @@ export default function DuasTracker() {
                 : 'Progress saved securely in your browser'}
             </p>
 
-            {/* Buy Me A Coffee Pill */}
+            
             <div className="mt-5 flex justify-center">
               <a
                 href="https://buymeacoffee.com/nazrulislambhat"
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label="Buy me a coffee - Support Dhikrly"
+                aria-label="Support Dhikrly"
                 className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-bold no-underline transition-all hover:scale-105 active:scale-95 ${
                   dark
                     ? 'border-amber-400/30 bg-amber-400/10 text-amber-200 hover:bg-amber-400/20 hover:border-amber-400/50'
@@ -1073,7 +1047,7 @@ export default function DuasTracker() {
                 }`}
               >
                 <Coffee className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-                <span>Support Dhikrly · Buy me a coffee</span>
+                <span>Support Dhikrly</span>
               </a>
             </div>
 

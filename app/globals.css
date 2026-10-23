@@ -10,61 +10,174 @@
   --font-ui: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-display: 'Plus Jakarta Sans', sans-serif;
   
-  --color-gold-50: #fffdf5;
-  --color-gold-100: #fef7dc;
-  --color-gold-200: #fdeab8;
-  --color-gold-300: #fcd783;
-  --color-gold-400: #fbbf48;
-  --color-gold-500: #f59e0b;
-  --color-gold-600: #d97706;
-  --color-gold-700: #b45309;
-  --color-gold-800: #92400e;
-  --color-gold-900: #78350f;
-  
-  --color-amber-50: #eafbf5;
-  --color-amber-100: #d2f6e9;
-  --color-amber-200: #a9ecd5;
-  --color-amber-300: #77ddbc;
-  --color-amber-400: #42c99e;
-  --color-amber-500: #18b783;
-  --color-amber-600: #0d936b;
-  --color-amber-700: #087657;
-  --color-amber-800: #075d46;
-  --color-amber-900: #064c3b;
-  --color-amber-950: #032b23;
-  
-  --color-stone-50: #f7f9f7;
-  --color-stone-100: #ebf1ee;
-  --color-stone-200: #d8e2df;
-  --color-stone-300: #bdccc8;
-  --color-stone-400: #8fa39d;
-  --color-stone-500: #657872;
-  --color-stone-600: #4a5d57;
-  --color-stone-700: #344640;
-  --color-stone-800: #22332e;
-  --color-stone-900: #14221e;
-  
+  /* ── Dedicated App Brand Colors (Green Primary & Orange Link) ── */
+  --color-primary: var(--app-primary);
+  --color-primary-hover: var(--app-primary-hover);
+  --color-primary-light: var(--app-primary-light);
+  --color-primary-subtle: var(--app-primary-subtle);
+
+  --color-link: var(--app-link);
+  --color-link-hover: var(--app-link-hover);
+  --color-link-light: var(--app-link-light);
+
+  --color-canvas: var(--app-bg);
+  --color-surface: var(--app-surface);
+  --color-surface-hover: var(--app-surface-hover);
+  --color-border: var(--app-border);
+  --color-ink: var(--app-ink);
+  --color-muted: var(--app-muted);
+
+  /* Unified Aliases (Guarantees every component adheres to the green & orange brand system) */
+  --color-dhikr-50: var(--app-primary-subtle);
+  --color-dhikr-100: var(--app-primary-light);
+  --color-dhikr-200: var(--app-primary-light);
+  --color-dhikr-300: var(--app-primary);
+  --color-dhikr-400: var(--app-primary);
+  --color-dhikr-500: var(--app-primary);
+  --color-dhikr-600: var(--app-primary);
+  --color-dhikr-700: var(--app-primary);
+  --color-dhikr-800: var(--app-primary-hover);
+  --color-dhikr-900: var(--app-primary-hover);
+  --color-dhikr-950: var(--app-primary-hover);
+
+  --color-brand-50: var(--app-primary-subtle);
+  --color-brand-100: var(--app-primary-light);
+  --color-brand-200: var(--app-primary-light);
+  --color-brand-300: var(--app-primary);
+  --color-brand-400: var(--app-primary);
+  --color-brand-500: var(--app-primary);
+  --color-brand-600: var(--app-primary);
+  --color-brand-700: var(--app-primary);
+  --color-brand-800: var(--app-primary-hover);
+  --color-brand-900: var(--app-primary-hover);
+  --color-brand-950: var(--app-primary-hover);
+
+  --color-noor-50: var(--app-link-light);
+  --color-noor-100: var(--app-link-light);
+  --color-noor-200: var(--app-link-light);
+  --color-noor-300: var(--app-link);
+  --color-noor-400: var(--app-link);
+  --color-noor-500: var(--app-link);
+  --color-noor-600: var(--app-link);
+  --color-noor-700: var(--app-link-hover);
+  --color-noor-800: var(--app-link-hover);
+  --color-noor-900: var(--app-link-hover);
+  --color-noor-950: var(--app-link-hover);
+
+  --color-sakinah-50: var(--app-bg);
+  --color-sakinah-100: var(--app-surface-hover);
+  --color-sakinah-200: var(--app-border);
+  --color-sakinah-300: var(--app-border);
+  --color-sakinah-400: var(--app-muted);
+  --color-sakinah-500: var(--app-muted);
+  --color-sakinah-600: var(--app-muted);
+  --color-sakinah-700: var(--app-ink);
+  --color-sakinah-800: var(--app-ink);
+  --color-sakinah-900: var(--app-ink);
+  --color-sakinah-950: var(--app-ink);
+
+  --color-emerald-50: var(--app-primary-subtle);
+  --color-emerald-100: var(--app-primary-light);
+  --color-emerald-200: var(--app-primary-light);
+  --color-emerald-300: var(--app-primary);
+  --color-emerald-400: var(--app-primary);
+  --color-emerald-500: var(--app-primary);
+  --color-emerald-600: var(--app-primary);
+  --color-emerald-700: var(--app-primary);
+  --color-emerald-800: var(--app-primary-hover);
+  --color-emerald-900: var(--app-primary-hover);
+  --color-emerald-950: var(--app-primary-hover);
+
+  --color-stone-50: var(--app-bg);
+  --color-stone-100: var(--app-surface-hover);
+  --color-stone-200: var(--app-border);
+  --color-stone-300: var(--app-border);
+  --color-stone-400: var(--app-muted);
+  --color-stone-500: var(--app-muted);
+  --color-stone-600: var(--app-muted);
+  --color-stone-700: var(--app-ink);
+  --color-stone-800: var(--app-ink);
+  --color-stone-900: var(--app-ink);
+  --color-stone-950: var(--app-ink);
+
+  --color-amber-50: var(--app-link-light);
+  --color-amber-100: var(--app-link-light);
+  --color-amber-200: var(--app-link-light);
+  --color-amber-300: var(--app-link);
+  --color-amber-400: var(--app-link);
+  --color-amber-500: var(--app-link);
+  --color-amber-600: var(--app-link);
+  --color-amber-700: var(--app-link-hover);
+  --color-amber-800: var(--app-link-hover);
+  --color-amber-900: var(--app-link-hover);
+  --color-amber-950: var(--app-link-hover);
+
   --radius-xl: 1.1rem;
   --radius-2xl: 1.4rem;
   --radius-3xl: 1.75rem;
   
-  --shadow-sm: 0 2px 8px rgb(6 78 59 / 4%);
-  --shadow-md: 0 8px 24px rgb(6 78 59 / 6%);
-  --shadow-lg: 0 16px 36px rgb(6 78 59 / 8%);
-  --shadow-glow: 0 0 32px -4px rgba(16, 185, 129, 0.28);
-  --shadow-glow-gold: 0 0 32px -4px rgba(245, 158, 11, 0.32);
+  --shadow-sm: 0 2px 8px rgb(27 94 67 / 6%);
+  --shadow-md: 0 8px 24px rgb(27 94 67 / 8%);
+  --shadow-lg: 0 16px 36px rgb(27 94 67 / 10%);
+  --shadow-glow: 0 0 32px -4px rgba(27, 94, 67, 0.35);
+  --shadow-glow-link: 0 0 32px -4px rgba(217, 107, 20, 0.35);
 }
 
 @layer base {
   :root {
-    --app-accent: #0f765e;
-    --app-secondary: #065f46;
+    /* ── App Specific Custom Colors ── */
+    /* Primary: Sanctuary Mosque Green */
+    --app-primary: #1b5e43;
+    --app-primary-hover: #144833;
+    --app-primary-light: #e8f4ee;
+    --app-primary-subtle: #f2f8f5;
+
+    /* Links & Accents: Minaret Lantern Warm Orange */
+    --app-link: #d96b14;
+    --app-link-hover: #b55309;
+    --app-link-light: #fef3e7;
+
+    /* Surfaces & Neutrals */
     --app-bg: #f8faf8;
     --app-surface: #ffffff;
-    --app-ink: #0f1c18;
-    --app-line: #e3ebe7;
-    --app-muted: #5f7068;
-    --app-gold: #d97706;
+    --app-surface-hover: #f1f5f2;
+    --app-border: #e1e8e4;
+    --app-ink: #111a15;
+    --app-muted: #5a6a62;
+
+    /* System Aliases */
+    --app-accent: var(--app-primary);
+    --app-secondary: var(--app-primary-hover);
+    --app-line: var(--app-border);
+    --app-gold: var(--app-link);
+  }
+
+  html.dark {
+    /* Primary: Luminous Sacred Emerald Jewel (high contrast against obsidian) */
+    --app-primary: #10b981;
+    --app-primary-hover: #34d399;
+    --app-primary-light: rgba(16, 185, 129, 0.15);
+    --app-primary-subtle: rgba(16, 185, 129, 0.08);
+
+    /* Links & Accents: Radiant Minaret Sunset Orange */
+    --app-link: #fb923c;
+    --app-link-hover: #fed7aa;
+    --app-link-light: rgba(251, 146, 60, 0.15);
+
+    /* Obsidian Canvas & Sleek Slate Surfaces (Clean, deep, zero muddy green sludge) */
+    --app-bg: #0b0f0d;
+    --app-surface: #121815;
+    --app-surface-hover: #19221e;
+    --app-border: rgba(255, 255, 255, 0.09);
+    --app-ink: #f3f4f6;
+    --app-muted: #9ca3af;
+
+    /* System Aliases */
+    --app-accent: var(--app-primary);
+    --app-secondary: var(--app-primary-hover);
+    --app-line: var(--app-border);
+    --app-gold: var(--app-link);
+    color-scheme: dark;
   }
 
   html {
@@ -81,9 +194,19 @@
     -moz-osx-font-smoothing: grayscale;
     font-feature-settings: 'cv02', 'cv03', 'cv04', 'tnum';
     background-image: 
-      radial-gradient(ellipse at 85% -10%, rgb(15 118 94 / 6%), transparent 42rem),
-      radial-gradient(ellipse at 15% 100%, rgb(245 158 11 / 3%), transparent 36rem);
+      radial-gradient(ellipse at 85% -10%, rgb(27 94 67 / 6%), transparent 42rem),
+      radial-gradient(ellipse at 15% 100%, rgb(217 107 20 / 4%), transparent 36rem);
     background-attachment: fixed;
+  }
+
+  a {
+    color: var(--app-link);
+    text-decoration-skip-ink: auto;
+    transition: color 0.15s ease;
+  }
+
+  a:hover {
+    color: var(--app-link-hover);
   }
 
   button,
@@ -99,7 +222,7 @@
   }
 
   :focus-visible {
-    outline: 2px solid var(--app-accent);
+    outline: 2px solid var(--app-primary);
     outline-offset: 3px;
   }
 
@@ -112,17 +235,6 @@
   }
 }
 
-html.dark {
-  --app-bg: #08120f;
-  --app-surface: #0e1c17;
-  --app-ink: #f0f7f4;
-  --app-accent: #34d399;
-  --app-secondary: #6ee7b7;
-  --app-line: rgba(52, 211, 153, 0.12);
-  --app-muted: #8ba59b;
-  --app-gold: #fbbf24;
-  color-scheme: dark;
-}
 
 html:not(.dark) {
   color-scheme: light;
@@ -130,7 +242,7 @@ html:not(.dark) {
 
 html.dark body {
   background-image: 
-    radial-gradient(ellipse at 85% -10%, rgb(52 211 153 / 7%), transparent 44rem),
+    radial-gradient(ellipse at 85% -10%, rgb(62 168 124 / 9%), transparent 44rem),
     radial-gradient(ellipse at 15% 100%, rgb(245 158 11 / 4%), transparent 38rem);
 }
 
@@ -313,12 +425,12 @@ input[type='time']::-webkit-calendar-picker-indicator {
 
 /* ── Selection colour ── */
 ::selection {
-  background: rgb(15 118 94 / 24%);
+  background: rgb(28 94 69 / 24%);
   color: inherit;
 }
 
 .dark ::selection {
-  background: rgb(52 211 153 / 30%);
+  background: rgb(92 174 139 / 30%);
   color: inherit;
 }
 

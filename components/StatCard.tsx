@@ -25,17 +25,17 @@ export default function StatCard({ label, value, dark, accent }: StatCardProps) 
       case 'green':
         return {
           icon: dark
-            ? 'text-emerald-300 bg-emerald-500/20 border border-emerald-500/30'
-            : 'text-emerald-800 bg-emerald-50 border border-emerald-600/20',
-          val: dark ? 'text-emerald-300' : 'text-emerald-800',
+            ? 'text-primary bg-primary-light border border-primary/30'
+            : 'text-primary bg-primary-subtle border border-primary/20',
+          val: 'text-primary',
         };
       case 'gold':
       case 'amber':
         return {
           icon: dark
-            ? 'text-amber-300 bg-amber-400/20 border border-amber-400/30'
-            : 'text-amber-800 bg-amber-50 border border-amber-500/25',
-          val: dark ? 'text-amber-300' : 'text-amber-700',
+            ? 'text-link bg-link-light border border-link/30'
+            : 'text-link bg-link-light border border-link/25',
+          val: 'text-link',
         };
       case 'purple':
         return {
@@ -58,11 +58,7 @@ export default function StatCard({ label, value, dark, accent }: StatCardProps) 
 
   return (
     <div
-      className={`group relative overflow-hidden rounded-2xl border p-3.5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md ${
-        dark
-          ? 'border-white/[0.08] bg-[#0c1814]/90 backdrop-blur-md hover:border-emerald-500/30'
-          : 'border-emerald-950/[0.07] bg-white/95 shadow-xs hover:border-emerald-600/30'
-      }`}
+      className="group relative overflow-hidden rounded-2xl border border-border bg-surface/90 backdrop-blur-md p-3.5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:border-primary/40 shadow-xs"
     >
       <div className="flex items-center justify-between gap-2">
         <span

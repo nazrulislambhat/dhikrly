@@ -141,13 +141,10 @@ export default function QuranTrackerModal({
     if (onSaved) onSaved();
   };
 
-  const modalBg = dark
-    ? 'bg-[#14211e] border-white/10 text-stone-100'
-    : 'bg-white border-stone-200 text-stone-900';
+  const modalBg = 'border-border bg-surface text-ink';
 
-  const inputBg = dark
-    ? 'bg-black/20 border-white/10 text-stone-100 placeholder-stone-500 focus:border-emerald-400'
-    : 'bg-stone-50 border-stone-200 text-stone-800 placeholder-stone-400 focus:border-emerald-600';
+  const inputBg =
+    'border-border bg-surface-hover text-ink placeholder-muted focus:border-primary';
 
   return (
     <div className="fixed inset-0 z-[9990] flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm">
@@ -219,7 +216,7 @@ export default function QuranTrackerModal({
                   className={`w-full appearance-none rounded-2xl border px-3.5 py-2.5 text-sm font-semibold transition-colors pr-10 ${inputBg}`}
                 >
                   {ALL_SURAHS.map((s) => (
-                    <option key={s.number} value={s.number} className="text-stone-900 bg-white dark:bg-[#14211e] dark:text-stone-100">
+                    <option key={s.number} value={s.number} className="bg-surface text-ink">
                       {s.number}. {s.englishName} ({s.name}) — {s.numberOfAyahs} Ayahs
                     </option>
                   ))}
