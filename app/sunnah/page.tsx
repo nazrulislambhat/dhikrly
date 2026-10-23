@@ -285,7 +285,7 @@ export default function SunnahPage() {
   const completedCount = Object.values(completed).filter(Boolean).length;
   const progressPct = totalCount ? Math.round((completedCount / totalCount) * 100) : 0;
 
-  const cardClass = `rounded-3xl border border-[var(--app-line)] bg-[var(--app-surface)] shadow-xs dark:bg-[#14211e]`;
+  const cardClass = `rounded-3xl border border-[var(--app-line)] bg-[var(--app-surface)] shadow-xs`;
 
   return (
     <AppShell active="sunnah" dark={dark} onToggleDark={() => setDark((v) => !v)}>

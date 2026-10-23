@@ -120,7 +120,7 @@ export default function QadaPage() {
     setShowWizard(false);
   };
 
-  const cardClass = `rounded-3xl border border-[var(--app-line)] bg-[var(--app-surface)] p-6 shadow-sm dark:bg-[#14211e]`;
+  const cardClass = `rounded-3xl border border-[var(--app-line)] bg-[var(--app-surface)] p-6 shadow-sm`;
 
   return (
     <AppShell active="qada" dark={dark} onToggleDark={() => setDark((v) => !v)}>
@@ -166,7 +166,7 @@ export default function QadaPage() {
             className="fixed inset-0 z-[90] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
             onClick={(e) => e.target === e.currentTarget && setShowWizard(false)}
           >
-            <div className="w-full max-w-md rounded-3xl border border-[var(--app-line)] bg-[var(--app-surface)] p-6 shadow-2xl dark:bg-[#14211e]">
+            <div className="w-full max-w-md rounded-3xl border border-[var(--app-line)] bg-[var(--app-surface)] p-6 shadow-2xl">
               <div className="flex items-center gap-2 mb-2">
                 <Wand2 className="h-5 w-5 text-emerald-600" />
                 <h3 className="text-base font-extrabold text-[var(--app-ink)]">

@@ -271,7 +271,7 @@ export default function TasbeehPage() {
   const progressRatio = target > 0 ? Math.min(1, count / target) : 0;
   const strokeDashoffset = circumference - progressRatio * circumference;
 
-  const cardClass = `rounded-3xl border border-[var(--app-line)] bg-[var(--app-surface)] shadow-sm dark:bg-[#14211e]`;
+  const cardClass = `rounded-3xl border border-[var(--app-line)] bg-[var(--app-surface)] shadow-sm`;
   const muted = dark ? 'text-stone-400' : 'text-stone-500';
 
   return (

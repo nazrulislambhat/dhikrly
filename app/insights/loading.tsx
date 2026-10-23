@@ -12,7 +12,7 @@ export default function InsightsLoading() {
         <StatCardSkeleton />
       </div>
 
-      <div className="rounded-3xl border border-[var(--app-line)] bg-[var(--app-surface)] p-6 dark:bg-[#14211e]">
+      <div className="rounded-3xl border border-[var(--app-line)] bg-[var(--app-surface)] p-6">
         <Skeleton className="h-6 w-48 rounded-lg mb-4" />
         <Skeleton className="h-64 w-full rounded-2xl" />
       </div>

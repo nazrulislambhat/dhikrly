@@ -6,7 +6,7 @@ export default function HalalLoading() {
       <PageHeaderSkeleton />
 
       {/* Barcode Scanner Box Skeleton */}
-      <div className="mb-8 rounded-3xl border border-[var(--app-line)] bg-[var(--app-surface)] p-6 dark:bg-[#14211e]">
+      <div className="mb-8 rounded-3xl border border-[var(--app-line)] bg-[var(--app-surface)] p-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div className="space-y-1.5">
             <Skeleton className="h-5 w-44 rounded-md" />
@@ -30,7 +30,7 @@ export default function HalalLoading() {
         {[1, 2, 3].map((i) => (
           <div
             key={i}
-            className="flex items-center justify-between rounded-2xl border border-[var(--app-line)] bg-[var(--app-surface)] p-4 dark:bg-[#14211e]"
+            className="flex items-center justify-between rounded-2xl border border-[var(--app-line)] bg-[var(--app-surface)] p-4"
           >
             <div className="space-y-1.5">
               <Skeleton className="h-4 w-28 rounded-md" />

@@ -6,7 +6,7 @@ export default function MasjidsLoading() {
       <PageHeaderSkeleton />
 
       {/* Map / Search Skeleton */}
-      <div className="mb-6 rounded-3xl border border-[var(--app-line)] bg-[var(--app-surface)] p-6 dark:bg-[#14211e]">
+      <div className="mb-6 rounded-3xl border border-[var(--app-line)] bg-[var(--app-surface)] p-6">
         <Skeleton className="h-11 w-full rounded-2xl mb-4" />
         <Skeleton className="h-64 w-full rounded-2xl" />
       </div>
@@ -16,7 +16,7 @@ export default function MasjidsLoading() {
         {[1, 2, 3].map((i) => (
           <div
             key={i}
-            className="flex items-center justify-between rounded-2xl border border-[var(--app-line)] bg-[var(--app-surface)] p-4 dark:bg-[#14211e]"
+            className="flex items-center justify-between rounded-2xl border border-[var(--app-line)] bg-[var(--app-surface)] p-4"
           >
             <div className="space-y-1.5">
               <Skeleton className="h-5 w-48 rounded-md" />

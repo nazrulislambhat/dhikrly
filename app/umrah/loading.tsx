@@ -6,7 +6,7 @@ export default function UmrahLoading() {
       <PageHeaderSkeleton />
 
       {/* Talbiyah Player Skeleton */}
-      <div className="mb-8 rounded-3xl border border-[var(--app-line)] bg-[var(--app-surface)] p-6 shadow-xs dark:bg-[#14211e]">
+      <div className="mb-8 rounded-3xl border border-[var(--app-line)] bg-[var(--app-surface)] p-6 shadow-xs">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
           <div className="flex items-center gap-3">
             <Skeleton className="h-12 w-12 rounded-2xl" />
@@ -22,12 +22,12 @@ export default function UmrahLoading() {
 
       {/* Counters Strip Skeleton (Tawaf 7 & Sai 7) */}
       <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div className="rounded-3xl border border-[var(--app-line)] bg-[var(--app-surface)] p-6 shadow-xs dark:bg-[#14211e]">
+        <div className="rounded-3xl border border-[var(--app-line)] bg-[var(--app-surface)] p-6 shadow-xs">
           <Skeleton className="h-5 w-36 rounded-md mb-2" />
           <Skeleton className="h-14 w-28 rounded-2xl mb-4" />
           <Skeleton className="h-10 w-full rounded-2xl" />
         </div>
-        <div className="rounded-3xl border border-[var(--app-line)] bg-[var(--app-surface)] p-6 shadow-xs dark:bg-[#14211e]">
+        <div className="rounded-3xl border border-[var(--app-line)] bg-[var(--app-surface)] p-6 shadow-xs">
           <Skeleton className="h-5 w-36 rounded-md mb-2" />
           <Skeleton className="h-14 w-28 rounded-2xl mb-4" />
           <Skeleton className="h-10 w-full rounded-2xl" />
@@ -39,7 +39,7 @@ export default function UmrahLoading() {
         {[1, 2, 3, 4].map((i) => (
           <div
             key={i}
-            className="rounded-3xl border border-[var(--app-line)] bg-[var(--app-surface)] p-6 shadow-xs dark:bg-[#14211e]"
+            className="rounded-3xl border border-[var(--app-line)] bg-[var(--app-surface)] p-6 shadow-xs"
           >
             <div className="flex items-center justify-between mb-3">
               <Skeleton className="h-6 w-32 rounded-full" />
