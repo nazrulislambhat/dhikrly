@@ -1261,16 +1261,13 @@ export default function QuranPage() {
     ? 'border-white/[0.08] bg-white/[0.04]'
     : 'border-stone-200 bg-white shadow-sm';
   const muted = dark ? 'text-stone-400' : 'text-stone-500';
-  const selectClass = `min-h-11 w-full rounded-xl border px-3 text-sm outline-none focus:border-emerald-500 ${
-    dark
-      ? 'border-white/10 bg-[#14211e] text-stone-100'
-      : 'border-stone-200 bg-white text-stone-800'
-  }`;
+  const selectClass =
+    'min-h-11 w-full rounded-xl border border-border bg-surface text-ink px-3 text-sm outline-none focus:border-primary';
 
   return (
     <div
       suppressHydrationWarning
-      className={`min-h-screen ${dark ? 'bg-[#0d1715] text-stone-200' : 'bg-stone-50 text-stone-800'}`}
+      className="min-h-screen bg-canvas text-ink"
     >
       <AppShell
         active="quran"
@@ -1391,7 +1388,7 @@ export default function QuranPage() {
                   disabled={catalogLoading || surahs.length === 0}
                 >
                   {surahs.map((surah) => (
-                    <option className="bg-white text-stone-900 dark:bg-[#14211e] dark:text-stone-100" key={surah.number} value={surah.number}>
+                    <option className="bg-surface text-ink" key={surah.number} value={surah.number}>
                       {surah.number}. {surah.englishName} · {surah.name}
                     </option>
                   ))}
@@ -1820,7 +1817,7 @@ export default function QuranPage() {
                         key={mushafPage.page}
                         className={`relative isolate mx-auto min-h-[min(72vh,58rem)] w-[min(100%,46rem)] overflow-hidden rounded-[1.4rem] border px-4 pb-20 pt-7 transition-colors [transform-origin:left_center] sm:px-10 sm:pb-24 sm:pt-10 ${
                           dark
-                            ? 'border-emerald-500/25 bg-[#0f1b16] text-[#ecf4ef] shadow-[0_28px_70px_rgba(0,0,0,0.65),inset_0_0_0_1px_rgba(16,185_129,0.14),inset_0_2px_14px_rgba(0,0,0,0.45)]'
+                            ? 'border-primary/30 bg-[#121815] text-[#ecf4ef] shadow-[0_28px_70px_rgba(0,0,0,0.65),inset_0_0_0_1px_rgba(16,185,129,0.14),inset_0_2px_14px_rgba(0,0,0,0.45)]'
                             : 'border-amber-800/20 bg-[#fcfaf5] text-[#14261d] shadow-[0_24px_60px_rgba(20,40,30,0.08),inset_0_0_0_1px_rgba(255,255,255,0.9),inset_0_2px_14px_rgba(180,150,100,0.08)]'
                         } ${
                           pageFlipDirection === 'next'
@@ -2225,15 +2222,9 @@ export default function QuranPage() {
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="quran-settings-title"
-                className={`max-h-[90dvh] w-full overflow-y-auto rounded-t-3xl border p-5 shadow-2xl min-[900px]:h-full min-[900px]:max-h-none min-[900px]:w-[27rem] min-[900px]:rounded-none min-[900px]:rounded-l-3xl ${
-                  dark
-                    ? 'border-white/10 bg-[#14211e] text-stone-100'
-                    : 'border-stone-200 bg-white text-stone-800'
-                }`}
+                className="max-h-[90dvh] w-full overflow-y-auto rounded-t-3xl border border-border bg-surface text-ink p-5 shadow-2xl min-[900px]:h-full min-[900px]:max-h-none min-[900px]:w-[27rem] min-[900px]:rounded-none min-[900px]:rounded-l-3xl"
               >
-              <div className={`sticky top-0 z-10 -mx-5 -mt-5 mb-5 flex items-center justify-between border-b px-5 py-4 ${
-                dark ? 'border-white/10 bg-[#0d1715]' : 'border-stone-200 bg-[var(--app-surface)]'
-              }`}>
+              <div className="sticky top-0 z-10 -mx-5 -mt-5 mb-5 flex items-center justify-between border-b border-border bg-surface px-5 py-4">
                 <div>
                   <h2 id="quran-settings-title" className="text-base font-semibold">Reader settings</h2>
                   <p className={`mt-0.5 text-xs ${muted}`}>Personalize reading and recitation</p>
@@ -2331,7 +2322,7 @@ export default function QuranPage() {
                       disabled={catalogLoading || languageOptions.length === 0}
                     >
                       {languageOptions.map((language) => (
-                        <option className="bg-white text-stone-900 dark:bg-[#14211e] dark:text-stone-100" key={language} value={language}>{languageName(language)}</option>
+                        <option className="bg-surface text-ink" key={language} value={language}>{languageName(language)}</option>
                       ))}
                     </select>
                   </label>
@@ -2348,7 +2339,7 @@ export default function QuranPage() {
                       disabled={translationsLanguage !== settings.language || translations.length === 0}
                     >
                       {translations.map((edition) => (
-                        <option className="bg-white text-stone-900 dark:bg-[#14211e] dark:text-stone-100" key={edition.identifier} value={edition.identifier}>
+                        <option className="bg-surface text-ink" key={edition.identifier} value={edition.identifier}>
                           {labelForEdition(edition)}
                         </option>
                       ))}
@@ -2366,7 +2357,7 @@ export default function QuranPage() {
                       }}
                     >
                       {reciters.map((edition) => (
-                        <option className="bg-white text-stone-900 dark:bg-[#14211e] dark:text-stone-100" key={edition.identifier} value={edition.identifier}>
+                        <option className="bg-surface text-ink" key={edition.identifier} value={edition.identifier}>
                           {labelForEdition(edition)}
                         </option>
                       ))}
@@ -2385,8 +2376,8 @@ export default function QuranPage() {
                         )
                       }
                     >
-                      <option className="bg-white text-stone-900 dark:bg-[#14211e] dark:text-stone-100" value="verse">Single verse</option>
-                      <option className="bg-white text-stone-900 dark:bg-[#14211e] dark:text-stone-100" value="surah">Continuous full surah</option>
+                      <option className="bg-surface text-ink" value="verse">Single verse</option>
+                      <option className="bg-surface text-ink" value="surah">Continuous full surah</option>
                     </select>
                     <span className={`mt-1 block text-[11px] font-normal ${muted}`}>
                       Continuous mode plays from the selected verse through the end of the surah.
@@ -2504,7 +2495,7 @@ export default function QuranPage() {
                 onChange={(event) => updateSetting('playbackRate', Number(event.target.value))}
               >
                 {PLAYBACK_RATES.map((rate) => (
-                  <option className="bg-white text-stone-900 dark:bg-[#14211e] dark:text-stone-100" key={rate} value={rate}>{rate}×</option>
+                  <option className="bg-surface text-ink" key={rate} value={rate}>{rate}×</option>
                 ))}
               </select>
             </label>
