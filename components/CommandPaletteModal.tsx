@@ -273,16 +273,12 @@ export default function CommandPaletteModal({
       aria-label="Quick Command Search"
     >
       <div
-        className={`relative w-full max-w-2xl overflow-hidden rounded-3xl border shadow-2xl transition-all ${
-          dark
-            ? 'border-white/[0.12] bg-[#0e1c17]/95 text-stone-100 shadow-emerald-950/40'
-            : 'border-stone-200/90 bg-white/95 text-stone-800 shadow-stone-900/15'
-        }`}
+        className="relative w-full max-w-2xl overflow-hidden rounded-3xl border border-border bg-surface/95 text-ink shadow-2xl transition-all backdrop-blur-xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Search Input Bar */}
         <div className="flex items-center gap-3 border-b border-[var(--app-line)] px-4 py-3.5 sm:px-5">
-          <Search className="h-5 w-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+          <Search className="h-5 w-5 text-primary shrink-0" />
           <input
             ref={inputRef}
             type="text"
@@ -292,19 +288,19 @@ export default function CommandPaletteModal({
               setSelectedIndex(0);
             }}
             placeholder="Type a spiritual tool, surah, prayer, or topic..."
-            className="w-full bg-transparent text-sm sm:text-base font-medium outline-none placeholder:text-stone-400"
+            className="w-full bg-transparent text-sm sm:text-base font-medium outline-none placeholder:text-muted"
             aria-label="Search Dhikrly command palette"
           />
           {query && (
             <button
               type="button"
               onClick={() => setQuery('')}
-              className="text-stone-400 hover:text-stone-700 dark:hover:text-stone-200"
+              className="text-muted hover:text-ink cursor-pointer"
             >
               <X className="h-4 w-4" />
             </button>
           )}
-          <span className="hidden sm:inline-flex items-center gap-1 rounded-lg border border-[var(--app-line)] px-2 py-0.5 text-[8px] font-bold text-stone-400">
+          <span className="hidden sm:inline-flex items-center gap-1 rounded-lg border border-[var(--app-line)] px-2 py-0.5 text-[8px] font-bold text-muted">
             ESC to close
           </span>
         </div>
@@ -313,9 +309,9 @@ export default function CommandPaletteModal({
         <div className="max-h-[60vh] overflow-y-auto p-2 sm:p-3 space-y-1">
           {filteredItems.length === 0 ? (
             <div className="py-12 text-center">
-              <Sparkles className="mx-auto h-8 w-8 text-stone-400" />
+              <Sparkles className="mx-auto h-8 w-8 text-muted" />
               <p className="mt-2 text-sm font-bold">No matching spiritual tools found</p>
-              <p className="mt-1 text-xs text-stone-400">
+              <p className="mt-1 text-xs text-muted">
                 Try searching for &quot;Morning adhkar&quot;, &quot;Qur&apos;an&quot;, &quot;Salah&quot;, or &quot;Qibla&quot;
               </p>
             </div>
@@ -333,21 +329,15 @@ export default function CommandPaletteModal({
                   onMouseEnter={() => setSelectedIndex(idx)}
                   className={`flex w-full items-center gap-3.5 rounded-2xl p-3 text-left cursor-pointer transition-all ${
                     isSelected
-                      ? dark
-                        ? 'bg-emerald-500/20 text-emerald-200'
-                        : 'bg-emerald-50 text-emerald-900'
+                      ? 'bg-primary-light text-primary'
                       : 'hover:bg-black/5 dark:hover:bg-white/5'
                   }`}
                 >
                   <span
                     className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl transition-transform ${
                       isSelected
-                        ? dark
-                          ? 'bg-emerald-500/30 text-emerald-300 scale-105'
-                          : 'bg-emerald-800 text-white scale-105'
-                        : dark
-                          ? 'bg-white/5 text-emerald-400'
-                          : 'bg-emerald-50 text-emerald-700'
+                        ? 'bg-primary text-white scale-105 shadow-xs'
+                        : 'bg-primary-subtle text-primary'
                     }`}
                   >
                     <item.Icon className="h-5 w-5" />
@@ -358,13 +348,13 @@ export default function CommandPaletteModal({
                       <span className="text-sm font-bold truncate leading-tight">{item.title}</span>
                       <span
                         className={`rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider ${
-                          dark ? 'bg-white/10 text-stone-300' : 'bg-stone-100 text-stone-600'
+                          dark ? 'bg-white/10 text-muted' : 'bg-surface-hover text-muted'
                         }`}
                       >
                         {item.category}
                       </span>
                     </div>
-                    <p className="text-xs text-stone-400 dark:text-stone-400 truncate mt-0.5">
+                    <p className="text-xs text-muted truncate mt-0.5">
                       {item.subtitle}
                     </p>
                   </div>
@@ -372,7 +362,7 @@ export default function CommandPaletteModal({
                   <ArrowRight
                     className={`h-4 w-4 shrink-0 transition-transform ${
                       isSelected
-                        ? 'translate-x-0.5 text-emerald-600 dark:text-emerald-400'
+                        ? 'translate-x-0.5 text-primary'
                         : 'opacity-0'
                     }`}
                   />
@@ -383,7 +373,7 @@ export default function CommandPaletteModal({
         </div>
 
         {/* Footer info */}
-        <div className="flex items-center justify-between border-t border-[var(--app-line)] px-4 py-2.5 text-[11px] text-stone-400">
+        <div className="flex items-center justify-between border-t border-[var(--app-line)] px-4 py-2.5 text-[11px] text-muted">
           <div className="flex items-center gap-2">
             <span>Navigate with</span>
             <span className="rounded border border-[var(--app-line)] px-1 font-mono text-[10px]">↑</span>

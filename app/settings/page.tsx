@@ -665,13 +665,13 @@ export default function SettingsPage() {
                   value={profile.madhhab}
                   onChange={(e) => updateProfileField('madhhab', e.target.value as UserProfileSettings['madhhab'])}
                 >
-                  <option className="bg-white text-stone-900 dark:bg-[#14211e] dark:text-stone-100" value="Standard">
+                  <option className="bg-surface text-ink" value="Standard">
                     Standard (Shāfi‘ī, Mālikī, Ḥanbalī) — earlier ‘Asr shadow
                   </option>
-                  <option className="bg-white text-stone-900 dark:bg-[#14211e] dark:text-stone-100" value="Hanafi">
+                  <option className="bg-surface text-ink" value="Hanafi">
                     Ḥanafī — later ‘Asr shadow
                   </option>
-                  <option className="bg-white text-stone-900 dark:bg-[#14211e] dark:text-stone-100" value="Jafari">
+                  <option className="bg-surface text-ink" value="Jafari">
                     Ja‘farī
                   </option>
                 </select>
@@ -1008,7 +1008,7 @@ export default function SettingsPage() {
                     'Singapore',
                     'Turkey',
                   ].map((method) => (
-                    <option className="bg-white text-stone-900 dark:bg-[#14211e] dark:text-stone-100" key={method} value={method}>
+                    <option className="bg-surface text-ink" key={method} value={method}>
                       {method.replace(/([A-Z])/g, ' $1').trim()}
                     </option>
                   ))}
@@ -1030,10 +1030,10 @@ export default function SettingsPage() {
                     }))
                   }
                 >
-                  <option className="bg-white text-stone-900 dark:bg-[#14211e] dark:text-stone-100" value="Standard">
+                  <option className="bg-surface text-ink" value="Standard">
                     Standard (Shadow = 1×) — Shāfi‘ī, Mālikī, Ḥanbalī
                   </option>
-                  <option className="bg-white text-stone-900 dark:bg-[#14211e] dark:text-stone-100" value="Hanafi">
+                  <option className="bg-surface text-ink" value="Hanafi">
                     Ḥanafī (Shadow = 2×)
                   </option>
                 </select>
@@ -1041,7 +1041,7 @@ export default function SettingsPage() {
 
               <Link
                 href="/salah"
-                className="inline-flex items-center gap-1 text-xs font-bold text-emerald-800 dark:text-emerald-200"
+                className="inline-flex items-center gap-1 text-xs font-bold text-link hover:text-link-hover"
               >
                 View Ṣalāh schedule <ArrowUpRight className="h-3.5 w-3.5" />
               </Link>

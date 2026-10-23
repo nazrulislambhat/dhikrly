@@ -415,7 +415,7 @@ export default function InsightsPage() {
     return ALL_SURAHS;
   }, [surahFilter, quranStats.surahProgressMap]);
 
-  const cardClass = `rounded-3xl border border-[var(--app-line)] bg-[var(--app-surface)] shadow-sm dark:bg-[#14211e]`;
+  const cardClass = `rounded-3xl border border-[var(--app-line)] bg-[var(--app-surface)] shadow-sm`;
 
   const openLogModal = (surahNum = 1) => {
     setQuranModalSurah(surahNum);
@@ -768,7 +768,7 @@ export default function InsightsPage() {
                           if (!active || !payload?.length) return null;
                           const data = payload[0].payload;
                           return (
-                            <div className="rounded-xl border border-[var(--app-line)] bg-[var(--app-surface)] p-3 shadow-lg dark:bg-[#14211e]">
+                            <div className="rounded-xl border border-[var(--app-line)] bg-[var(--app-surface)] p-3 shadow-lg">
                               <p className="text-xs font-bold text-[var(--app-ink)]">{data.label}</p>
                               <p className="text-sm font-extrabold text-emerald-700 dark:text-emerald-300">
                                 {data.score}% Spiritual Completion
@@ -955,7 +955,7 @@ export default function InsightsPage() {
                             day: 'numeric',
                           });
                           return (
-                            <div className="rounded-xl border border-[var(--app-line)] bg-[var(--app-surface)] p-3 shadow-lg dark:bg-[#14211e]">
+                            <div className="rounded-xl border border-[var(--app-line)] bg-[var(--app-surface)] p-3 shadow-lg">
                               <p className="text-xs font-bold text-[var(--app-ink)]">
                                 {dateLabel}
                               </p>
@@ -1219,7 +1219,7 @@ export default function InsightsPage() {
                               if (!active || !payload?.length) return null;
                               const d = payload[0].payload;
                               return (
-                                <div className="rounded-xl border border-[var(--app-line)] bg-[var(--app-surface)] p-3 shadow-lg dark:bg-[#14211e]">
+                                <div className="rounded-xl border border-[var(--app-line)] bg-[var(--app-surface)] p-3 shadow-lg">
                                   <p className="text-xs font-bold text-[var(--app-ink)]">
                                     {d.prayer}
                                   </p>

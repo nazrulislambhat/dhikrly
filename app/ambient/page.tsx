@@ -299,7 +299,7 @@ export default function AmbientPage() {
     return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
   };
 
-  const cardClass = `rounded-3xl border border-[var(--app-line)] bg-[var(--app-surface)] shadow-sm transition-all dark:bg-[#14211e]`;
+  const cardClass = `rounded-3xl border border-[var(--app-line)] bg-[var(--app-surface)] shadow-sm transition-all`;
   const muted = dark ? 'text-stone-400' : 'text-stone-500';
 
   return (

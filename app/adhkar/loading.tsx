@@ -13,7 +13,7 @@ export default function AdhkarLoading() {
       </div>
 
       {/* Category Progress Card Skeleton */}
-      <div className="mb-8 rounded-3xl border border-[var(--app-line)] bg-[var(--app-surface)] p-6 dark:bg-[#14211e]">
+      <div className="mb-8 rounded-3xl border border-[var(--app-line)] bg-[var(--app-surface)] p-6">
         <div className="flex items-center justify-between mb-4">
           <Skeleton className="h-6 w-48 rounded-lg" />
           <Skeleton className="h-4 w-28 rounded-md" />

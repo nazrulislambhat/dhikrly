@@ -369,11 +369,7 @@ export default function PrayerCard({
               );
               if (selected) onStatusChange(selected.status);
             }}
-            className={`min-h-10 w-full rounded-lg border px-3 text-xs ${
-              dark
-                ? 'border-white/10 bg-[#14211e] text-stone-300'
-                : 'border-stone-200 bg-white text-stone-600'
-            }`}
+            className="min-h-10 w-full rounded-lg border border-border bg-surface text-ink px-3 text-xs"
           >
             <option value="">More status options…</option>
             {NEXT_OPTIONS.filter((option) => option.status !== null).map((option) => (

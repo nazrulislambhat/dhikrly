@@ -202,7 +202,7 @@ export default function NamesPage() {
   const memorizedCount = Object.values(memorized).filter(Boolean).length;
   const progressPct = Math.round((memorizedCount / 99) * 100);
 
-  const cardClass = `rounded-3xl border border-[var(--app-line)] bg-[var(--app-surface)] shadow-xs dark:bg-[#14211e]`;
+  const cardClass = `rounded-3xl border border-[var(--app-line)] bg-[var(--app-surface)] shadow-xs`;
 
   return (
     <AppShell active="names" dark={dark} onToggleDark={() => setDark((v) => !v)}>
@@ -564,7 +564,7 @@ export default function NamesPage() {
         {selectedName && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
             <div className="fixed inset-0" onClick={() => setSelectedName(null)} />
-            <div className="relative z-10 w-full max-w-lg rounded-3xl border border-[var(--app-line)] bg-[var(--app-surface)] p-6 shadow-2xl dark:bg-[#14211e]">
+            <div className="relative z-10 w-full max-w-lg rounded-3xl border border-[var(--app-line)] bg-[var(--app-surface)] p-6 shadow-2xl">
               <div className="flex items-center justify-between pb-3 border-b border-[var(--app-line)]">
                 <span className="text-xs font-bold text-[var(--app-muted)]">
                   Name #{selectedName.number} of 99 · {selectedName.category}

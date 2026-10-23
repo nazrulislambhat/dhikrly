@@ -88,7 +88,7 @@ export function AyahReaderSkeleton({ count = 4 }: { count?: number }) {
       {Array.from({ length: count }).map((_, index) => (
         <div
           key={index}
-          className="rounded-3xl border border-[var(--app-line)] bg-[var(--app-surface)] p-6 shadow-xs dark:bg-[#14211e]"
+          className="rounded-3xl border border-[var(--app-line)] bg-[var(--app-surface)] p-6 shadow-xs"
         >
           {/* Card Top: verse badge & audio control skeleton */}
           <div className="flex items-center justify-between border-b border-[var(--app-line)] pb-4">
@@ -166,7 +166,7 @@ export function AdhkarCardSkeleton({ count = 3 }: { count?: number }) {
       {Array.from({ length: count }).map((_, i) => (
         <div
           key={i}
-          className="rounded-3xl border border-[var(--app-line)] bg-[var(--app-surface)] p-6 shadow-xs dark:bg-[#14211e]"
+          className="rounded-3xl border border-[var(--app-line)] bg-[var(--app-surface)] p-6 shadow-xs"
         >
           <div className="flex items-start justify-between gap-4 mb-4">
             <div className="space-y-1.5">
@@ -201,7 +201,7 @@ export function AdhkarCardSkeleton({ count = 3 }: { count?: number }) {
  */
 export function HalalScannerSkeleton() {
   return (
-    <div className="rounded-3xl border border-[var(--app-line)] bg-[var(--app-surface)] p-6 shadow-sm dark:bg-[#14211e] animate-pulse">
+    <div className="rounded-3xl border border-[var(--app-line)] bg-[var(--app-surface)] p-6 shadow-sm animate-pulse">
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-6 border-b border-[var(--app-line)]">
         <div className="space-y-2">
           <Skeleton className="h-3 w-32 rounded-full" />
@@ -237,7 +237,7 @@ export function SunnahCardSkeleton({ count = 3 }: { count?: number }) {
       {Array.from({ length: count }).map((_, i) => (
         <div
           key={i}
-          className="rounded-3xl border border-[var(--app-line)] bg-[var(--app-surface)] p-6 shadow-xs dark:bg-[#14211e]"
+          className="rounded-3xl border border-[var(--app-line)] bg-[var(--app-surface)] p-6 shadow-xs"
         >
           <div className="flex items-start justify-between gap-4 mb-4">
             <div className="space-y-2">
@@ -272,7 +272,7 @@ export function SunnahCardSkeleton({ count = 3 }: { count?: number }) {
  */
 export function StatCardSkeleton() {
   return (
-    <div className="rounded-2xl border border-[var(--app-line)] bg-[var(--app-surface)] p-4 shadow-xs dark:bg-[#14211e]">
+    <div className="rounded-2xl border border-[var(--app-line)] bg-[var(--app-surface)] p-4 shadow-xs">
       <div className="flex items-center justify-between">
         <Skeleton className="h-3.5 w-20 rounded-md" />
         <Skeleton className="h-6 w-6 rounded-lg" />
