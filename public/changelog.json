@@ -1,27 +1,6 @@
 {
-  "current": "2.5",
+  "current": "2.4",
   "releases": [
-    {
-      "version": "2.5",
-      "date": "2026-10-23",
-      "title": "Native Apple iOS Overhaul, SF Pro Typography, OLED Black Sanctuary & Liquid Glass Fluidity",
-      "added": [
-        "Apple SF Pro & New York Typography — authentic Apple system typography stack (-apple-system, SF Pro Text, SF Pro Display, New York) with optical letter-spacing hierarchy (-0.032em display titles, -0.018em headers) and tabular numerals",
-        "True OLED Pure Black Sanctuary (#000000) — native Apple iOS dark mode with deep obsidian backgrounds, specular inner rim highlights, and frosted acrylic surface panels",
-        "Apple System Grouped Background (#f2f2f7) — authentic iOS warm light mode grouped canvas with translucent elevated card surfaces",
-        "Liquid Glass Acrylic Fluidity — ultra-thin backdrop blur materials (blur 28px, 190% saturation), hairline borders, and specular inner rim lighting (inset 0 1px 0 rgba(255,255,255,0.7))",
-        "Mobile Floating Liquid Glass Dock / Tab Bar — floating capsule dock with blur(32px), subtle bounce active states, SF Pro icons, and micro-labels",
-        "Native Apple Segmented Controls — inset slider tracks with elevated white/acrylic active pills and drop-shadows across prayer phases and category filters",
-        "iOS Spotlight Search Modal & Pill Trigger — frosted command palette with smooth spring transitions, rapid arrow navigation, and key badges",
-        "Continuous Squircle Curvatures (22px, 26px, 28px, 32px) — Apple-grade corner smoothing across cards, buttons, widgets, and presentation sheets"
-      ],
-      "improved": [
-        "Tactile Tap Physics (ios-press) — instantaneous active scale (0.965) with Apple spring cubic-bezier transitions",
-        "Remembrances Inset Grouped Cards — overhauled DuaCard with frosted glass material, specular highlights, and pill action buttons",
-        "Hero Sanctuary Dashboard — Dynamic Island style celestial horizon with segmented station picker and luminous radial progress ring"
-      ],
-      "removed": []
-    },
     {
       "version": "2.4",
       "date": "2026-10-23",
@@ -37,9 +16,11 @@
         "Dhikr Ergonomics & Haptics — tactile vibration intensity (Soft, Crisp, Deep), bead click acoustic sound tones (Olive Wood, Stone, Digital Snap), and full-screen tap counter",
         "Live Storage Diagnostics & Data Inspector — live record counters for adhkār, streaks, bookmarks, prayer days, and byte usage",
         "Complete JSON Backup Import & Restore — full data sovereignty enabling seamless cross-device migration and instant recovery",
-        "Sunni Fiqh Library & Book Recommendations (/books) — curated classical and contemporary jurisprudence works across the 4 Sunni Madhhabs (Ḥanafī, Shāfi‘ī, Mālikī, Ḥanbalī) and Usūl al-Fiqh, featuring pedagogical study levels (Beginner, Intermediate, Advanced), interactive reading list bookmarking, curriculum roadmap guide, and verified bookstore purchase links (Mecca Books, White Thread Press, Diwan Press, Amana, Darussalam)"
+        "Sunni Fiqh Library & Book Recommendations (/books) — curated classical and contemporary jurisprudence works across the 4 Sunni Madhhabs (Ḥanafī, Shāfi‘ī, Mālikī, Ḥanbalī) and Usūl al-Fiqh, featuring pedagogical study levels (Beginner, Intermediate, Advanced), interactive reading list bookmarking, curriculum roadmap guide, and verified bookstore purchase links (Mecca Books, White Thread Press, Diwan Press, Amana, Darussalam)",
+        "Dedicated Multi-Platform Download & PWA Hub (/download) — showcase for upcoming native Apple iOS (iPhone/iPad/Watch), Android (Google Play/WearOS), and macOS Sonoma/Sequoia apps, with instant access to the fully-synced, offline-capable Progressive Web App (PWA), interactive installation guides per OS, feature parity comparison matrix, and TestFlight/Play Store beta waitlist"
       ],
       "improved": [
+        "Fixed All Adhkar Completed Toast Behavior — resolved issue where completion celebration toast fired on page reload or navigation; now strictly triggers only on an active user toggle that completes the final remaining adhkar",
         "Overhauled Settings Page Layout — streamlined category filtering tabs (Accent & Theme, Identity & Photo, Qur’an & Hifz, Prayer & Adhān, Dhikr & Sensory, Worship Goals, Data & Storage)",
         "Zero-Flicker Theme Initialization — instant inline root variable execution for saved accent colors and dark appearance on cold boot",
         "Synced UserMenu Avatar Initials with Active Brand Accent Theme",

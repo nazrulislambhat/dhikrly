@@ -5,10 +5,10 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --font-serif: "New York", -apple-system-ui-serif, 'Cormorant Garamond', 'Playfair Display', Georgia, serif;
+  --font-serif: 'Cormorant Garamond', 'Playfair Display', Georgia, serif;
   --font-arabic: 'Scheherazade New', 'Amiri', 'Noto Naskh Arabic', 'Traditional Arabic', serif;
-  --font-ui: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "SF Pro", 'Plus Jakarta Sans', system-ui, sans-serif;
-  --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro", 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-ui: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-display: 'Plus Jakarta Sans', sans-serif;
   
   /* ── Dedicated 5-Color Brand System ── */
   --color-canvas: var(--app-bg);
@@ -115,90 +115,82 @@
   --color-amber-900: var(--scale-orange-900);
   --color-amber-950: var(--scale-orange-950);
 
-  --radius-xl: 1.25rem;
-  --radius-2xl: 1.6rem;
-  --radius-3xl: 2rem;
+  --radius-xl: 1.1rem;
+  --radius-2xl: 1.4rem;
+  --radius-3xl: 1.75rem;
   
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
-  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 16px 36px rgba(0, 0, 0, 0.08);
-  --shadow-glow: 0 0 32px -4px rgba(27, 122, 75, 0.35);
-  --shadow-glow-link: 0 0 32px -4px rgba(255, 159, 10, 0.35);
-  --shadow-ios-glass: inset 0 1px 0 rgba(255, 255, 255, 0.55), 0 4px 20px -2px rgba(0, 0, 0, 0.05);
-  --shadow-ios-dock: inset 0 1px 0 rgba(255, 255, 255, 0.65), 0 16px 40px -4px rgba(0, 0, 0, 0.16);
+  --shadow-sm: 0 2px 8px rgb(27 94 67 / 6%);
+  --shadow-md: 0 8px 24px rgb(27 94 67 / 8%);
+  --shadow-lg: 0 16px 36px rgb(27 94 67 / 10%);
+  --shadow-glow: 0 0 32px -4px rgba(27, 94, 67, 0.35);
+  --shadow-glow-link: 0 0 32px -4px rgba(217, 107, 20, 0.35);
 }
 
 @layer base {
   :root {
-    /* ── Apple iOS System (Light Mode) ── */
-    /* 1. Canvas Background: Native iOS System Grouped Background */
-    --app-bg: #f2f2f7;
+    /* ── App Specific 5-Color System (Light Mode) ── */
+    /* 1. Canvas Background */
+    --app-bg: #f8faf8;
 
-    /* 2. Surface & Panels: Translucent Frosted Glass */
-    --app-surface: rgba(255, 255, 255, 0.82);
-    --app-surface-hover: rgba(255, 255, 255, 0.95);
-    --app-border: rgba(60, 60, 67, 0.12);
+    /* 2. Surface & Panels */
+    --app-surface: #ffffff;
+    --app-surface-hover: #f1f5f2;
+    --app-border: #e1e8e4;
 
-    /* 3. Text (Foreground): Apple System Labels */
-    --app-ink: #000000;
-    --app-muted: rgba(60, 60, 67, 0.65);
+    /* 3. Text (Foreground) */
+    --app-ink: #111a15;
+    --app-muted: #5a6a62;
 
-    /* 4. Brand Green (Primary): Apple Emerald Accent */
-    --app-primary: #1b7a4b;
-    --app-primary-hover: #145e39;
-    --app-primary-light: rgba(27, 122, 75, 0.12);
-    --app-primary-subtle: rgba(27, 122, 75, 0.06);
+    /* 4. Brand Green (Primary) */
+    --app-primary: #165a3e;
+    --app-primary-hover: #124731;
+    --app-primary-light: #e6f4ed;
+    --app-primary-subtle: #f0f7f3;
     --app-primary-fg: #ffffff;
 
-    /* 5. Brand Orange (Links & Accents): Apple Vibrant Amber */
-    --app-link: #d96b14;
-    --app-link-hover: #b3550c;
-    --app-link-light: rgba(217, 107, 20, 0.12);
-    --app-link-subtle: rgba(217, 107, 20, 0.06);
+    /* 5. Brand Orange (Links & Accents) */
+    --app-link: #c25708;
+    --app-link-hover: #9a4204;
+    --app-link-light: #fef3e7;
+    --app-link-subtle: #fff8f0;
     --app-link-fg: #ffffff;
 
-    /* Liquid Glass Materials */
-    --ios-glass-bg: rgba(255, 255, 255, 0.78);
-    --ios-glass-border: rgba(255, 255, 255, 0.65);
-    --ios-glass-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), 0 4px 20px -2px rgba(0, 0, 0, 0.04);
-    --ios-glass-shadow-hover: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 10px 30px -4px rgba(0, 0, 0, 0.08);
-
     /* High-contrast scales (Light Mode) */
-    --scale-neutral-50: #f2f2f7;
-    --scale-neutral-100: #ffffff;
-    --scale-neutral-200: #e5e5ea;
-    --scale-neutral-300: #d1d1d6;
-    --scale-neutral-400: #c7c7cc;
-    --scale-neutral-500: #8e8e93;
-    --scale-neutral-600: #636366;
-    --scale-neutral-700: #48484a;
-    --scale-neutral-800: #3a3a3c;
-    --scale-neutral-900: #1c1c1e;
-    --scale-neutral-950: #000000;
+    --scale-neutral-50: #f8faf8;
+    --scale-neutral-100: #f1f4f2;
+    --scale-neutral-200: #e2e7e4;
+    --scale-neutral-300: #cbcfcd;
+    --scale-neutral-400: #949b97;
+    --scale-neutral-500: #5a6a62;
+    --scale-neutral-600: #444f49;
+    --scale-neutral-700: #313a35;
+    --scale-neutral-800: #202723;
+    --scale-neutral-900: #111a15;
+    --scale-neutral-950: #0a0f0d;
 
-    --scale-green-50: #f0fdf4;
-    --scale-green-100: #dcfce7;
-    --scale-green-200: #bbf7d0;
-    --scale-green-300: #86efac;
-    --scale-green-400: #4ade80;
-    --scale-green-500: #1b7a4b;
-    --scale-green-600: #145e39;
-    --scale-green-700: #0f472b;
-    --scale-green-800: #092e1c;
-    --scale-green-900: #04170e;
-    --scale-green-950: #020d08;
+    --scale-green-50: #f0f7f3;
+    --scale-green-100: #e6f4ed;
+    --scale-green-200: #b9dec9;
+    --scale-green-300: #7ebf99;
+    --scale-green-400: #429d6d;
+    --scale-green-500: #1b5e43;
+    --scale-green-600: #165a3e;
+    --scale-green-700: #124731;
+    --scale-green-800: #0e3424;
+    --scale-green-900: #0a2419;
+    --scale-green-950: #05130d;
 
-    --scale-orange-50: #fffbeb;
-    --scale-orange-100: #fef3c7;
-    --scale-orange-200: #fde68a;
-    --scale-orange-300: #fcd34d;
-    --scale-orange-400: #fbbf24;
+    --scale-orange-50: #fff8f0;
+    --scale-orange-100: #fef3e7;
+    --scale-orange-200: #fcd9b0;
+    --scale-orange-300: #f9b56f;
+    --scale-orange-400: #ee842a;
     --scale-orange-500: #d96b14;
-    --scale-orange-600: #b3550c;
-    --scale-orange-700: #8c3f06;
-    --scale-orange-800: #662c03;
-    --scale-orange-900: #401a01;
-    --scale-orange-950: #1c0b00;
+    --scale-orange-600: #c25708;
+    --scale-orange-700: #9a4204;
+    --scale-orange-800: #733002;
+    --scale-orange-900: #481d00;
+    --scale-orange-950: #2b1100;
 
     /* System Aliases */
     --app-accent: var(--app-primary);
@@ -208,75 +200,69 @@
   }
 
   html.dark {
-    /* ── Apple iOS System (Dark Mode - True OLED Black & Frosted Obsidian) ── */
-    /* 1. Canvas Background: Native Apple OLED Black */
-    --app-bg: #000000;
+    /* ── App Specific 5-Color System (Dark Mode - Obsidian Sanctuary) ── */
+    /* 1. Canvas Background */
+    --app-bg: #0b0f0d;
 
-    /* 2. Surface & Panels: iOS Frosted Obsidian Acrylic */
-    --app-surface: rgba(28, 28, 30, 0.75);
-    --app-surface-hover: rgba(44, 44, 46, 0.85);
+    /* 2. Surface & Panels */
+    --app-surface: #121815;
+    --app-surface-hover: #19221e;
     --app-border: rgba(255, 255, 255, 0.12);
 
-    /* 3. Text (Foreground) - Apple Radiant Pure White & SF Secondary */
-    --app-ink: #ffffff;
-    --app-muted: rgba(235, 235, 245, 0.68);
+    /* 3. Text (Foreground) - Crisp, Radiant, AAA Contrast */
+    --app-ink: #f3f4f6;
+    --app-muted: #9ca3af;
 
-    /* 4. Brand Green (Primary) - Apple iOS Jewel Mint */
-    --app-primary: #30d158;
+    /* 4. Brand Green (Primary) - Luminous Sacred Emerald Jewel */
+    --app-primary: #10b981;
     --app-primary-hover: #34d399;
-    --app-primary-light: rgba(48, 209, 88, 0.18);
-    --app-primary-subtle: rgba(48, 209, 88, 0.08);
-    --app-primary-fg: #001a08;
+    --app-primary-light: rgba(16, 185, 129, 0.16);
+    --app-primary-subtle: rgba(16, 185, 129, 0.08);
+    --app-primary-fg: #021a10;
 
-    /* 5. Brand Orange (Links & Accents) - Apple iOS System Orange */
-    --app-link: #ff9f0a;
-    --app-link-hover: #ffb340;
-    --app-link-light: rgba(255, 159, 10, 0.18);
-    --app-link-subtle: rgba(255, 159, 10, 0.08);
-    --app-link-fg: #1c0a00;
+    /* 5. Brand Orange (Links & Accents) - Radiant Sunset Orange */
+    --app-link: #fb923c;
+    --app-link-hover: #fed7aa;
+    --app-link-light: rgba(251, 146, 60, 0.16);
+    --app-link-subtle: rgba(251, 146, 60, 0.08);
+    --app-link-fg: #1c0702;
 
-    /* Liquid Glass Materials */
-    --ios-glass-bg: rgba(28, 28, 30, 0.72);
-    --ios-glass-border: rgba(255, 255, 255, 0.12);
-    --ios-glass-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 8px 32px rgba(0, 0, 0, 0.65);
-    --ios-glass-shadow-hover: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 14px 44px rgba(0, 0, 0, 0.8);
+    /* High-contrast scales (Dark Mode - Guarantees radiant light text for 100/200/300) */
+    --scale-neutral-50: #060907;
+    --scale-neutral-100: #f3f4f6; /* Crisp radiant text */
+    --scale-neutral-200: #e5e7eb;
+    --scale-neutral-300: #d1d5db;
+    --scale-neutral-400: #9ca3af; /* Muted readable text */
+    --scale-neutral-500: #6b7280;
+    --scale-neutral-600: #4b5563;
+    --scale-neutral-700: #374151;
+    --scale-neutral-800: #19221e;
+    --scale-neutral-900: #121815;
+    --scale-neutral-950: #0b0f0d;
 
-    /* High-contrast scales (Dark Mode) */
-    --scale-neutral-50: #000000;
-    --scale-neutral-100: #ffffff;
-    --scale-neutral-200: #ebebf5;
-    --scale-neutral-300: #aeaeb2;
-    --scale-neutral-400: #8e8e93;
-    --scale-neutral-500: #636366;
-    --scale-neutral-600: #48484a;
-    --scale-neutral-700: #3a3a3c;
-    --scale-neutral-800: #2c2c2e;
-    --scale-neutral-900: #1c1c1e;
-    --scale-neutral-950: #000000;
+    --scale-green-50: #04120a;
+    --scale-green-100: #ecfdf5;  /* Crisp radiant mint text */
+    --scale-green-200: #a7f3d0;  /* Luminous bright mint */
+    --scale-green-300: #6ee7b7;  /* Radiant emerald text */
+    --scale-green-400: #34d399;
+    --scale-green-500: #10b981;  /* Jewel emerald */
+    --scale-green-600: #059669;
+    --scale-green-700: #047857;
+    --scale-green-800: #064e3b;
+    --scale-green-900: #022c22;
+    --scale-green-950: #021a10;  /* Deep green-black for text on emerald buttons */
 
-    --scale-green-50: #011409;
-    --scale-green-100: #dcfce7;
-    --scale-green-200: #bbf7d0;
-    --scale-green-300: #86efac;
-    --scale-green-400: #4ade80;
-    --scale-green-500: #30d158;
-    --scale-green-600: #24b046;
-    --scale-green-700: #1a8f35;
-    --scale-green-800: #126b27;
-    --scale-green-900: #0a4518;
-    --scale-green-950: #001a08;
-
-    --scale-orange-50: #1a0b00;
-    --scale-orange-100: #fff7ed;
-    --scale-orange-200: #ffedd5;
-    --scale-orange-300: #fed7aa;
-    --scale-orange-400: #fdba74;
-    --scale-orange-500: #ff9f0a;
+    --scale-orange-50: #190900;
+    --scale-orange-100: #fff7ed; /* Crisp radiant warm text */
+    --scale-orange-200: #fde68a; /* Luminous warm gold */
+    --scale-orange-300: #fdba74; /* Radiant orange */
+    --scale-orange-400: #fb923c;
+    --scale-orange-500: #f97316;
     --scale-orange-600: #ea580c;
     --scale-orange-700: #c2410c;
-    --scale-orange-800: #9a3412;
+    --scale-orange-800: #7c2d12;
     --scale-orange-900: #431407;
-    --scale-orange-950: #1c0a00;
+    --scale-orange-950: #1c0702;
 
     /* System Aliases */
     --app-accent: var(--app-primary);
@@ -299,29 +285,10 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     font-feature-settings: 'cv02', 'cv03', 'cv04', 'tnum';
-    letter-spacing: -0.012em;
     background-image: 
-      radial-gradient(ellipse at 85% -10%, rgb(27 122 75 / 5%), transparent 42rem),
-      radial-gradient(ellipse at 15% 100%, rgb(217 107 20 / 3%), transparent 36rem);
+      radial-gradient(ellipse at 85% -10%, rgb(27 94 67 / 6%), transparent 42rem),
+      radial-gradient(ellipse at 15% 100%, rgb(217 107 20 / 4%), transparent 36rem);
     background-attachment: fixed;
-  }
-
-  /* Apple SF Typography Optical Tracking */
-  h1, .text-h1 {
-    letter-spacing: -0.032em;
-    font-weight: 700;
-  }
-  h2, .text-h2 {
-    letter-spacing: -0.024em;
-    font-weight: 700;
-  }
-  h3, .text-h3 {
-    letter-spacing: -0.018em;
-    font-weight: 600;
-  }
-  h4, .text-h4 {
-    letter-spacing: -0.012em;
-    font-weight: 600;
   }
 
   /* Unmarked prose links only - does not clobber buttons or explicit text- classes */
@@ -389,8 +356,8 @@ html:not(.dark) {
 
 html.dark body {
   background-image: 
-    radial-gradient(ellipse at 85% -10%, rgba(48, 209, 88, 0.04), transparent 44rem),
-    radial-gradient(ellipse at 15% 100%, rgba(255, 159, 10, 0.02), transparent 38rem);
+    radial-gradient(ellipse at 85% -10%, rgba(16, 185, 129, 0.05), transparent 44rem),
+    radial-gradient(ellipse at 15% 100%, rgba(251, 146, 60, 0.03), transparent 38rem);
 }
 
 /* ── Universal Clickable Cursor Rule ── */
@@ -425,79 +392,61 @@ select:disabled {
 
 .font-editorial {
   font-family: var(--font-serif);
-  letter-spacing: -0.02em;
+  letter-spacing: -0.01em;
 }
 
-/* ── Apple Liquid Glass & Fluidity Utilities ── */
+/* ── Glassmorphism & Surface Tokens ── */
+.glass-sanctuary {
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+/* ── Apple iOS Liquid Glass & Tactile Tokens ── */
 .ios-glass {
-  backdrop-filter: blur(28px) saturate(190%);
-  -webkit-backdrop-filter: blur(28px) saturate(190%);
-  background: var(--ios-glass-bg);
-  border: 1px solid var(--ios-glass-border);
-  box-shadow: var(--ios-glass-shadow);
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(24px) saturate(190%);
+  -webkit-backdrop-filter: blur(24px) saturate(190%);
+  border: 1px solid rgba(255, 255, 255, 0.6);
 }
 
-.ios-glass-dock {
-  backdrop-filter: blur(32px) saturate(200%);
-  -webkit-backdrop-filter: blur(32px) saturate(200%);
-  background: var(--ios-glass-bg);
-  border: 1px solid var(--ios-glass-border);
-  box-shadow: var(--shadow-ios-dock);
+.dark .ios-glass {
+  background: rgba(18, 24, 21, 0.82);
+  backdrop-filter: blur(24px) saturate(190%);
+  -webkit-backdrop-filter: blur(24px) saturate(190%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 .ios-card {
-  border-radius: 26px;
-  backdrop-filter: blur(24px) saturate(185%);
-  -webkit-backdrop-filter: blur(24px) saturate(185%);
-  background: var(--ios-glass-bg);
-  border: 1px solid var(--ios-glass-border);
-  box-shadow: var(--ios-glass-shadow);
-  transition: transform 0.28s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.28s cubic-bezier(0.25, 1, 0.5, 1), border-color 0.2s ease;
+  border-radius: 1.5rem;
+  border: 1px solid var(--app-border);
+  background: var(--app-surface);
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
-.ios-card:hover {
-  box-shadow: var(--ios-glass-shadow-hover);
-}
-
-/* Native Apple Segmented Control */
-.ios-segmented-control {
-  display: inline-flex;
-  align-items: center;
-  padding: 3px;
-  border-radius: 9999px;
-  background: rgba(118, 118, 128, 0.12);
-  border: 1px solid rgba(0, 0, 0, 0.04);
-}
-
-.dark .ios-segmented-control {
-  background: rgba(118, 118, 128, 0.22);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-.ios-spring {
-  transition: transform 0.28s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.28s cubic-bezier(0.25, 1, 0.5, 1), background-color 0.2s ease, border-color 0.2s ease;
+.dark .ios-card {
+  box-shadow: 0 4px 24px -2px rgba(0, 0, 0, 0.45);
 }
 
 .ios-press {
-  transition: transform 0.14s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.14s ease;
+  transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.15s ease;
 }
 
 .ios-press:active {
-  transform: scale(0.965);
+  transform: scale(0.97);
 }
 
-.glass-sanctuary {
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
+.ios-spring {
+  transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 /* ── Micro-Interactions & Tap Effects ── */
 .tap-bounce {
-  transition: transform 0.16s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.16s ease;
+  transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.15s ease;
 }
 
 .tap-bounce:active {
-  transform: scale(0.965);
+  transform: scale(0.96);
 }
 
 /* ── Soundwave animation for audio reciting ── */

@@ -23,6 +23,8 @@ import {
   X,
   ArrowRight,
   Command,
+  Smartphone,
+  Download,
 } from 'lucide-react';
 
 interface CommandItem {
@@ -205,6 +207,15 @@ const COMMAND_ITEMS: CommandItem[] = [
     Icon: UserRound,
     keywords: ['profile', 'login', 'sync', 'notifications', 'athan', 'method'],
   },
+  {
+    id: 'download',
+    title: 'Download App & Install PWA',
+    subtitle: 'iOS, Android & macOS coming soon · Instant PWA live now',
+    category: 'Account',
+    href: '/download',
+    Icon: Smartphone,
+    keywords: ['download', 'install', 'ios', 'android', 'mac', 'macos', 'pwa', 'iphone', 'playstore', 'appstore'],
+  },
 ];
 
 interface CommandPaletteModalProps {
@@ -282,11 +293,11 @@ export default function CommandPaletteModal({
       aria-label="Quick Command Search"
     >
       <div
-        className="relative w-full max-w-2xl overflow-hidden rounded-[28px] border border-white/60 dark:border-white/12 bg-white/92 dark:bg-[#1c1c1e]/92 text-ink shadow-2xl transition-all backdrop-blur-3xl shadow-[inset_0_1px_0_rgba(255,255,255,0.7),0_24px_64px_rgba(0,0,0,0.3)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_30px_70px_rgba(0,0,0,0.85)]"
+        className="relative w-full max-w-2xl overflow-hidden rounded-3xl border border-border bg-surface/95 text-ink shadow-2xl transition-all backdrop-blur-xl"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Search Input Bar (Apple Spotlight style) */}
-        <div className="flex items-center gap-3 border-b border-[var(--app-border)] px-4 py-4 sm:px-5">
+        {/* Search Input Bar */}
+        <div className="flex items-center gap-3 border-b border-border px-4 py-3.5 sm:px-5">
           <Search className="h-5 w-5 text-primary shrink-0" />
           <input
             ref={inputRef}
@@ -296,21 +307,21 @@ export default function CommandPaletteModal({
               setQuery(e.target.value);
               setSelectedIndex(0);
             }}
-            placeholder="Search tools, prayers, surahs, books or guides..."
-            className="w-full bg-transparent text-sm sm:text-base font-semibold outline-none placeholder:text-muted tracking-tight"
+            placeholder="Type a spiritual tool, surah, prayer, or topic..."
+            className="w-full bg-transparent text-sm sm:text-base font-medium outline-none placeholder:text-muted"
             aria-label="Search Dhikrly command palette"
           />
           {query && (
             <button
               type="button"
               onClick={() => setQuery('')}
-              className="ios-press grid h-6 w-6 place-items-center rounded-full bg-black/5 dark:bg-white/10 text-muted hover:text-ink cursor-pointer"
+              className="text-muted hover:text-ink cursor-pointer"
             >
-              <X className="h-3.5 w-3.5" />
+              <X className="h-4 w-4" />
             </button>
           )}
-          <span className="hidden sm:inline-flex items-center gap-1 rounded-full border border-[var(--app-border)] bg-black/[0.03] dark:bg-white/[0.06] px-2.5 py-0.5 text-[9px] font-bold text-muted">
-            esc
+          <span className="hidden sm:inline-flex items-center gap-1 rounded-lg border border-border px-2 py-0.5 text-[8px] font-bold text-muted">
+            ESC to close
           </span>
         </div>
 
@@ -336,17 +347,17 @@ export default function CommandPaletteModal({
                     onClose();
                   }}
                   onMouseEnter={() => setSelectedIndex(idx)}
-                  className={`ios-spring flex w-full items-center gap-3.5 rounded-2xl p-3 text-left cursor-pointer transition-all ${
+                  className={`flex w-full items-center gap-3.5 rounded-2xl p-3 text-left cursor-pointer transition-all ${
                     isSelected
-                      ? 'bg-primary-light text-primary font-semibold shadow-xs'
-                      : 'hover:bg-black/5 dark:hover:bg-white/5 text-ink'
+                      ? 'bg-primary-light text-primary'
+                      : 'hover:bg-black/5 dark:hover:bg-white/5'
                   }`}
                 >
                   <span
                     className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl transition-transform ${
                       isSelected
-                        ? 'bg-primary text-white scale-105 shadow-xs font-bold'
-                        : 'bg-primary-light text-primary'
+                        ? 'bg-primary text-primary-fg scale-105 shadow-xs font-bold'
+                        : 'bg-primary/10 text-primary'
                     }`}
                   >
                     <item.Icon className="h-5 w-5" />
@@ -354,10 +365,10 @@ export default function CommandPaletteModal({
 
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-bold truncate leading-tight tracking-tight">{item.title}</span>
+                      <span className="text-sm font-bold truncate leading-tight">{item.title}</span>
                       <span
                         className={`rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider ${
-                          dark ? 'bg-white/10 text-muted' : 'bg-black/5 text-muted'
+                          dark ? 'bg-white/10 text-muted' : 'bg-surface-hover text-muted'
                         }`}
                       >
                         {item.category}
@@ -382,15 +393,15 @@ export default function CommandPaletteModal({
         </div>
 
         {/* Footer info */}
-        <div className="flex items-center justify-between border-t border-[var(--app-border)] px-4 py-2.5 text-[11px] text-muted">
+        <div className="flex items-center justify-between border-t border-border px-4 py-2.5 text-[11px] text-muted">
           <div className="flex items-center gap-2">
-            <span>Navigate</span>
-            <span className="rounded-md border border-[var(--app-border)] px-1.5 font-mono text-[10px]">↑</span>
-            <span className="rounded-md border border-[var(--app-border)] px-1.5 font-mono text-[10px]">↓</span>
-            <span>Select</span>
-            <span className="rounded-md border border-[var(--app-border)] px-1.5 font-mono text-[10px]">↵</span>
+            <span>Navigate with</span>
+            <span className="rounded border border-border px-1 font-mono text-[10px]">↑</span>
+            <span className="rounded border border-border px-1 font-mono text-[10px]">↓</span>
+            <span>and</span>
+            <span className="rounded border border-border px-1.5 font-mono text-[10px]">↵ Enter</span>
           </div>
-          <span className="font-semibold tracking-tight">Dhikrly Spotlight</span>
+          <span>Dhikrly Quick Nav</span>
         </div>
       </div>
     </div>
