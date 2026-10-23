@@ -55,6 +55,7 @@ import StreakHeatmap from '@/components/StreakHeatmap';
 import NotificationSettings from '@/components/NotificationSettings';
 import AddDuaModal from '@/components/AddDuaModal';
 import AuthModal from '@/components/AuthModal';
+import DhikrFlowModal from '@/components/DhikrFlowModal';
 import UserMenu from '@/components/UserMenu';
 import PWAProvider from '@/components/PWAProvider';
 import DailyTodoWidget from '@/components/DailyTodoWidget';
@@ -78,6 +79,14 @@ const CATS: CatEntry[] = [
   { key: 'dua', label: "Du'ā" },
   { key: 'custom', label: 'Custom' },
 ];
+
+const CELESTIAL_PHASES = [
+  { id: 'fajr', periodId: 'morning', label: 'Dawn & Morning', icon: '🌅', filterTarget: 'athkar', hours: 'Fajr to Midday' },
+  { id: 'duha', periodId: 'midday', label: 'Midday Renewal', icon: '☀️', filterTarget: 'all', hours: 'Dhuhr Window' },
+  { id: 'asr', periodId: 'evening', label: 'Evening Adhkār', icon: '🌤️', filterTarget: 'athkar', hours: '‘Asr to Maghrib' },
+  { id: 'night', periodId: 'evening', label: 'Sleep & Night', icon: '🌙', filterTarget: 'athkar', hours: 'Night Routine' },
+  { id: 'tahajjud', periodId: 'tahajjud', label: 'Tahajjud Sanctuary', icon: '🌌', filterTarget: 'all', hours: 'Third of Night' },
+] as const;
 
 type Modal = 'notifications' | 'addDua' | 'missedDay' | 'auth' | null;
 
@@ -395,6 +404,25 @@ export default function DuasTracker() {
     return true;
   });
 
+  /* ── Khushū‘ Focus Recitation Flow State ── */
+  const [focusFlowOpen, setFocusFlowOpen] = useState(false);
+  const [focusInitialIndex, setFocusInitialIndex] = useState(0);
+
+  const handleStartFocusFlow = useCallback(
+    (targetDua?: Dua) => {
+      const activeList = filtered.length > 0 ? filtered : allDuas;
+      if (targetDua) {
+        const idx = activeList.findIndex((d) => d.id === targetDua.id);
+        setFocusInitialIndex(idx >= 0 ? idx : 0);
+      } else {
+        const firstUnchecked = activeList.findIndex((d) => !checked[d.id]);
+        setFocusInitialIndex(firstUnchecked >= 0 ? firstUnchecked : 0);
+      }
+      setFocusFlowOpen(true);
+    },
+    [filtered, allDuas, checked],
+  );
+
   const bg = 'min-h-screen bg-canvas text-ink antialiased selection:bg-primary/20';
 
   return (
@@ -427,6 +455,18 @@ export default function DuasTracker() {
             onClose={() => setActiveModal(null)}
           />
         )}
+
+        {/* Khushū‘ Focus Flow Recitation Modal */}
+        <DhikrFlowModal
+          isOpen={focusFlowOpen}
+          onClose={() => setFocusFlowOpen(false)}
+          duas={filtered.length > 0 ? filtered : allDuas}
+          initialIndex={focusInitialIndex}
+          checked={checked}
+          onToggle={toggle}
+          dark={dark}
+          soundEnabled={soundEnabled}
+        />
 
         <div className="mx-auto w-[min(calc(100%-2rem),72rem)] px-2 py-4 sm:px-4 sm:py-6">
           {/* Jumu'ah Mode Banner (Active on Fridays or preview) */}
@@ -596,7 +636,18 @@ export default function DuasTracker() {
 
                   {/* Highlights Bar: Streak + Quick Action CTA */}
                   <div className="mt-5 flex flex-wrap items-center gap-2.5">
-                    {/* Guided CTA Button */}
+                    {/* Primary Khushū‘ Flow Recitation Button */}
+                    <button
+                      type="button"
+                      onClick={() => handleStartFocusFlow()}
+                      className="tap-bounce inline-flex items-center gap-2 rounded-2xl bg-white px-4 py-2.5 text-xs font-extrabold text-stone-900 shadow-lg hover:bg-white/90 transition-all cursor-pointer"
+                      title="Enter full-screen focused recitation sanctuary"
+                    >
+                      <Sparkles className="h-4 w-4 text-emerald-700 animate-spin-slow" />
+                      <span>Start Khushū‘ Flow</span>
+                    </button>
+
+                    {/* Guided Category Filter CTA Button */}
                     <button
                       type="button"
                       onClick={() => {
@@ -606,11 +657,11 @@ export default function DuasTracker() {
                         const el = document.getElementById('daily-adhkar');
                         if (el) el.scrollIntoView({ behavior: 'smooth' });
                       }}
-                      className="tap-bounce inline-flex items-center gap-2 rounded-2xl bg-white px-4 py-2 text-xs font-extrabold text-stone-900 shadow-md hover:bg-white/90 dark:bg-primary dark:text-white dark:hover:bg-primary-hover"
+                      className="tap-bounce inline-flex items-center gap-1.5 rounded-2xl border border-white/20 bg-white/10 px-3.5 py-2 text-xs font-bold text-white hover:bg-white/20 transition-all cursor-pointer"
                     >
                       <span>
                         {done === total && total > 0
-                          ? 'Review Today’s Adhkār'
+                          ? 'Review Adhkār'
                           : timeGreeting.cta}
                       </span>
                       <ArrowRight className="h-3.5 w-3.5" />
@@ -625,6 +676,43 @@ export default function DuasTracker() {
                     <div className="inline-flex items-center gap-1.5 rounded-2xl border border-white/15 bg-white/10 px-3 py-2 text-xs font-semibold text-emerald-100">
                       <CheckCircle2 className="h-3.5 w-3.5 text-emerald-300" />
                       <span>{done} / {total} Done</span>
+                    </div>
+                  </div>
+
+                  {/* Celestial Spiritual Horizon: 5 Stations of the Day */}
+                  <div className="mt-5 w-full pt-4 border-t border-white/15 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                    <div className="flex items-center gap-1.5 text-white/90 font-bold uppercase tracking-widest text-[10px]">
+                      <Compass className="h-3.5 w-3.5 text-amber-300" />
+                      <span>Sacred Day Rhythm</span>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      {CELESTIAL_PHASES.map((phase) => {
+                        const isActive = timeGreeting.period === phase.periodId;
+                        return (
+                          <button
+                            key={phase.id}
+                            type="button"
+                            onClick={() => {
+                              setFilter(phase.filterTarget);
+                              const el = document.getElementById('daily-adhkar');
+                              if (el) el.scrollIntoView({ behavior: 'smooth' });
+                            }}
+                            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-semibold transition-all cursor-pointer ${
+                              isActive
+                                ? 'bg-white text-stone-900 shadow-md ring-2 ring-white/60 font-extrabold scale-105'
+                                : 'bg-white/10 text-emerald-100 hover:bg-white/20'
+                            }`}
+                            title={`${phase.label} (${phase.hours})`}
+                          >
+                            <span>{phase.icon}</span>
+                            <span>{phase.label}</span>
+                            {isActive && (
+                              <span className="h-1.5 w-1.5 rounded-full bg-emerald-600 animate-ping" />
+                            )}
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
                 </div>
@@ -900,6 +988,7 @@ export default function DuasTracker() {
                     checked={!!checked[d.id]}
                     onToggle={toggle}
                     onDelete={d.custom ? handleDeleteDua : undefined}
+                    onOpenFocus={() => handleStartFocusFlow(d)}
                     dark={dark}
                     soundEnabled={soundEnabled}
                   />
