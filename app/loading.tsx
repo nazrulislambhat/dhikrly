@@ -24,7 +24,7 @@ export default function Loading() {
       </div>
 
       {/* Heatmap / Streak Skeleton */}
-      <div className="mb-6 rounded-3xl border border-[var(--app-line)] bg-[var(--app-surface)] p-5 dark:bg-[#14211e]">
+      <div className="mb-6 rounded-3xl border border-[var(--app-line)] bg-[var(--app-surface)] p-5">
         <div className="mb-4 flex items-center justify-between">
           <Skeleton className="h-5 w-36 rounded-md" />
           <Skeleton className="h-4 w-20 rounded-md" />
@@ -37,7 +37,7 @@ export default function Loading() {
         {[1, 2, 3, 4].map((i) => (
           <div
             key={i}
-            className="rounded-2xl border border-[var(--app-line)] bg-[var(--app-surface)] p-4 shadow-xs dark:bg-[#14211e]"
+            className="rounded-2xl border border-[var(--app-line)] bg-[var(--app-surface)] p-4 shadow-xs"
           >
             <div className="flex items-start justify-between gap-4">
               <div className="space-y-2 flex-1">

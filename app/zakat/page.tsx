@@ -137,7 +137,7 @@ export default function ZakatPage() {
     })}`;
   };
 
-  const cardClass = `rounded-3xl border border-[var(--app-line)] bg-[var(--app-surface)] p-6 shadow-sm dark:bg-[#14211e]`;
+  const cardClass = `rounded-3xl border border-[var(--app-line)] bg-[var(--app-surface)] p-6 shadow-sm`;
   const inputClass = `w-full rounded-2xl border border-[var(--app-line)] bg-black/5 dark:bg-white/5 px-4 py-3 text-xs font-semibold outline-none transition-colors focus:border-emerald-500`;
 
   return (
@@ -318,7 +318,7 @@ export default function ZakatPage() {
               </p>
             </div>
 
-            <div className="rounded-2xl border border-[var(--app-line)] bg-[var(--app-surface)] p-4 text-xs space-y-1.5 min-w-[240px] dark:bg-[#14211e]">
+            <div className="rounded-2xl border border-[var(--app-line)] bg-[var(--app-surface)] p-4 text-xs space-y-1.5 min-w-[240px]">
               <div className="flex justify-between">
                 <span className="text-[var(--app-muted)]">Zakatable Assets:</span>
                 <span className="font-bold text-[var(--app-ink)]">{formatMoney(totalAssets)}</span>

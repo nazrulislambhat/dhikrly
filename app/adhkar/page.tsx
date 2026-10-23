@@ -142,7 +142,7 @@ export default function AdhkarPage() {
 
   const currentMeta = ADHKAR_CATEGORIES.find((c) => c.key === activeCategory);
 
-  const cardClass = `rounded-3xl border border-[var(--app-line)] bg-[var(--app-surface)] shadow-sm dark:bg-[#14211e]`;
+  const cardClass = `rounded-3xl border border-[var(--app-line)] bg-[var(--app-surface)] shadow-sm`;
   const muted = dark ? 'text-stone-400' : 'text-stone-500';
 
   return (

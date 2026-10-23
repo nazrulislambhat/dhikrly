@@ -20,7 +20,7 @@ export default function TadabburLoading() {
         {[1, 2, 3, 4].map((i) => (
           <div
             key={i}
-            className="rounded-3xl border border-[var(--app-line)] bg-[var(--app-surface)] p-6 shadow-xs dark:bg-[#14211e]"
+            className="rounded-3xl border border-[var(--app-line)] bg-[var(--app-surface)] p-6 shadow-xs"
           >
             <div className="flex items-center justify-between mb-4">
               <Skeleton className="h-6 w-36 rounded-full" />

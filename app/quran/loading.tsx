@@ -7,7 +7,7 @@ export default function QuranLoading() {
       <PageHeaderSkeleton />
 
       {/* Surah Selector & Audio Player Control Toolbar Skeleton */}
-      <div className="mb-6 rounded-3xl border border-[var(--app-line)] bg-[var(--app-surface)] p-4 sm:p-5 shadow-xs dark:bg-[#14211e]">
+      <div className="mb-6 rounded-3xl border border-[var(--app-line)] bg-[var(--app-surface)] p-4 sm:p-5 shadow-xs">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <Skeleton className="h-10 w-44 rounded-2xl" />

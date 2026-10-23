@@ -410,7 +410,7 @@ export default function HalalScannerPage() {
       })
     : [];
 
-  const cardClass = `rounded-3xl border border-[var(--app-line)] bg-[var(--app-surface)] p-6 shadow-sm dark:bg-[#14211e]`;
+  const cardClass = `rounded-3xl border border-[var(--app-line)] bg-[var(--app-surface)] p-6 shadow-sm`;
 
   return (
     <AppShell active="halal" dark={dark} onToggleDark={() => setDark((v) => !v)}>

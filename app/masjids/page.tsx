@@ -478,7 +478,7 @@ export default function MasjidsPage() {
     return masjids.find((m) => m.id === selectedMasjidId) || null;
   }, [masjids, selectedMasjidId]);
 
-  const cardClass = `rounded-3xl border border-[var(--app-line)] bg-[var(--app-surface)] shadow-sm dark:bg-[#14211e]`;
+  const cardClass = `rounded-3xl border border-[var(--app-line)] bg-[var(--app-surface)] shadow-sm`;
 
   return (
     <AppShell active="masjids" dark={dark} onToggleDark={() => setDark((v) => !v)}>
