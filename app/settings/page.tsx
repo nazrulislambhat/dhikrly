@@ -1951,6 +1951,40 @@ export default function SettingsPage() {
               </section>
             )}
 
+            {/* Section: Apps & Multi-Device Sync */}
+            {shouldShowSection('data') && (
+              <section className={cardClass} aria-labelledby="apps-heading">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
+                      <Smartphone className="h-5 w-5" />
+                    </span>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h2 id="apps-heading" className="text-base font-bold text-ink">
+                          Dhikrly on All Devices
+                        </h2>
+                        <span className="rounded-full bg-primary/20 text-primary px-2 py-0.5 text-[10px] font-extrabold">
+                          PWA Active
+                        </span>
+                      </div>
+                      <p className="text-xs text-ink/75">
+                        iOS, Android & macOS native apps coming soon. Use the PWA today with 100% offline access & real-time sync.
+                      </p>
+                    </div>
+                  </div>
+
+                  <Link
+                    href="/download"
+                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2 text-xs font-bold text-primary-fg hover:bg-primary-hover transition-colors shrink-0 no-underline cursor-pointer"
+                  >
+                    <span>Download & Setup Guide</span>
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </Link>
+                </div>
+              </section>
+            )}
+
             {/* Section: Data Sovereignty & Storage Diagnostics (Feature 5) */}
             {shouldShowSection('data') && (
               <section className={cardClass} aria-labelledby="data-heading">

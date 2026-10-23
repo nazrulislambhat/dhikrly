@@ -107,6 +107,12 @@ export default function DuasTracker() {
     [customDuas],
   );
 
+  const { toast, showToast } = useToast();
+
+  const handleAllCompleted = useCallback(() => {
+    showToast('All daily duas completed. Māshā’Allāh, BarakAllahu feek!');
+  }, [showToast]);
+
   /* ── Core hooks ── */
   const {
     checked,
@@ -117,9 +123,10 @@ export default function DuasTracker() {
     pct,
     today,
     localRevision,
-  } = useChecked(allDuas.length);
+  } = useChecked(allDuas.length, {
+    onCompleteAll: handleAllCompleted,
+  });
   const streak = useStreak(done, allDuas.length);
-  const { toast, showToast } = useToast();
 
   /* ── Auth ── */
   const { user, loading: authLoading, signOut } = useAuth();
@@ -196,8 +203,6 @@ export default function DuasTracker() {
   const [activeModal, setActiveModal] = useState<Modal>(null);
   const [showHeatmap, setShowHeatmap] = useState(false);
   const [nextPrayerInfo, setNextPrayerInfo] = useState<{ name: string; timeStr: string } | null>(null);
-
-  const prevDone = useRef(done);
 
   /* ── Load Next Prayer Time if Location is Set ── */
   useEffect(() => {
@@ -311,18 +316,6 @@ export default function DuasTracker() {
     save(SETTINGS_KEY, { dark, sound: soundEnabled });
     document.documentElement.classList.toggle('dark', dark);
   }, [dark, soundEnabled]);
-
-  /* ── Completion toast ── */
-  useEffect(() => {
-    if (
-      done === allDuas.length &&
-      allDuas.length > 0 &&
-      prevDone.current < allDuas.length
-    ) {
-      showToast('All daily duas completed. Māshā’Allāh, BarakAllahu feek!');
-    }
-    prevDone.current = done;
-  }, [done, allDuas.length, showToast]);
 
   /* ── Schedule notifications + re-check on tab focus ── */
   useEffect(() => {

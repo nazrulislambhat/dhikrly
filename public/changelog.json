@@ -16,9 +16,11 @@
         "Dhikr Ergonomics & Haptics — tactile vibration intensity (Soft, Crisp, Deep), bead click acoustic sound tones (Olive Wood, Stone, Digital Snap), and full-screen tap counter",
         "Live Storage Diagnostics & Data Inspector — live record counters for adhkār, streaks, bookmarks, prayer days, and byte usage",
         "Complete JSON Backup Import & Restore — full data sovereignty enabling seamless cross-device migration and instant recovery",
-        "Sunni Fiqh Library & Book Recommendations (/books) — curated classical and contemporary jurisprudence works across the 4 Sunni Madhhabs (Ḥanafī, Shāfi‘ī, Mālikī, Ḥanbalī) and Usūl al-Fiqh, featuring pedagogical study levels (Beginner, Intermediate, Advanced), interactive reading list bookmarking, curriculum roadmap guide, and verified bookstore purchase links (Mecca Books, White Thread Press, Diwan Press, Amana, Darussalam)"
+        "Sunni Fiqh Library & Book Recommendations (/books) — curated classical and contemporary jurisprudence works across the 4 Sunni Madhhabs (Ḥanafī, Shāfi‘ī, Mālikī, Ḥanbalī) and Usūl al-Fiqh, featuring pedagogical study levels (Beginner, Intermediate, Advanced), interactive reading list bookmarking, curriculum roadmap guide, and verified bookstore purchase links (Mecca Books, White Thread Press, Diwan Press, Amana, Darussalam)",
+        "Dedicated Multi-Platform Download & PWA Hub (/download) — showcase for upcoming native Apple iOS (iPhone/iPad/Watch), Android (Google Play/WearOS), and macOS Sonoma/Sequoia apps, with instant access to the fully-synced, offline-capable Progressive Web App (PWA), interactive installation guides per OS, feature parity comparison matrix, and TestFlight/Play Store beta waitlist"
       ],
       "improved": [
+        "Fixed All Adhkar Completed Toast Behavior — resolved issue where completion celebration toast fired on page reload or navigation; now strictly triggers only on an active user toggle that completes the final remaining adhkar",
         "Overhauled Settings Page Layout — streamlined category filtering tabs (Accent & Theme, Identity & Photo, Qur’an & Hifz, Prayer & Adhān, Dhikr & Sensory, Worship Goals, Data & Storage)",
         "Zero-Flicker Theme Initialization — instant inline root variable execution for saved accent colors and dark appearance on cold boot",
         "Synced UserMenu Avatar Initials with Active Brand Accent Theme",

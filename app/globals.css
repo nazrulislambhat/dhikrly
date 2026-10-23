@@ -401,6 +401,45 @@ select:disabled {
   -webkit-backdrop-filter: blur(20px);
 }
 
+/* ── Apple iOS Liquid Glass & Tactile Tokens ── */
+.ios-glass {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(24px) saturate(190%);
+  -webkit-backdrop-filter: blur(24px) saturate(190%);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+}
+
+.dark .ios-glass {
+  background: rgba(18, 24, 21, 0.82);
+  backdrop-filter: blur(24px) saturate(190%);
+  -webkit-backdrop-filter: blur(24px) saturate(190%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.ios-card {
+  border-radius: 1.5rem;
+  border: 1px solid var(--app-border);
+  background: var(--app-surface);
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.dark .ios-card {
+  box-shadow: 0 4px 24px -2px rgba(0, 0, 0, 0.45);
+}
+
+.ios-press {
+  transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.15s ease;
+}
+
+.ios-press:active {
+  transform: scale(0.97);
+}
+
+.ios-spring {
+  transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
 /* ── Micro-Interactions & Tap Effects ── */
 .tap-bounce {
   transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.15s ease;
