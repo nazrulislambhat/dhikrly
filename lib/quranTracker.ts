@@ -231,7 +231,7 @@ export interface QuranStats {
   surahProgressMap: Record<number, { completed: boolean; maxAyahRead: number; totalAyahs: number }>;
 }
 
-export function computeQuranStats(data?: QuranTrackerData, daysRange = 30): QuranStats {
+export function computeQuranStats(data?: QuranTrackerData, daysRange = 30, referenceDate?: Date | string): QuranStats {
   const current = data || getQuranTrackerData();
   const completedSet = new Set(current.completedSurahs);
 
@@ -280,9 +280,9 @@ export function computeQuranStats(data?: QuranTrackerData, daysRange = 30): Qura
 
   // Build daily trend for past daysRange days
   const dailyTrend: { date: string; ayahs: number }[] = [];
-  const today = new Date();
+  const refDate = referenceDate ? new Date(referenceDate) : new Date();
   for (let i = daysRange - 1; i >= 0; i--) {
-    const d = new Date(today);
+    const d = new Date(refDate);
     d.setDate(d.getDate() - i);
     const dateStr = d.toISOString().slice(0, 10);
     dailyTrend.push({
@@ -290,6 +290,15 @@ export function computeQuranStats(data?: QuranTrackerData, daysRange = 30): Qura
       ayahs: ayahsByDate[dateStr] || 0,
     });
   }
+
+  // Ensure any log dates with reading activity are represented
+  const existingDates = new Set(dailyTrend.map((t) => t.date));
+  for (const [dateStr, ayahs] of Object.entries(ayahsByDate)) {
+    if (!existingDates.has(dateStr)) {
+      dailyTrend.push({ date: dateStr, ayahs });
+    }
+  }
+  dailyTrend.sort((a, b) => a.date.localeCompare(b.date));
 
   return {
     completedSurahsCount: current.completedSurahs.length,
