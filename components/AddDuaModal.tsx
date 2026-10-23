@@ -90,16 +90,11 @@ export default function AddDuaModal({
     }));
   };
 
-  const overlay = dark
-    ? 'bg-black/65 backdrop-blur-md'
-    : 'bg-stone-900/40 backdrop-blur-md';
-  const panel = dark
-    ? 'bg-[#14211e] border-white/10 text-stone-100'
-    : 'bg-white border-stone-200';
-  const inputBase = dark
-    ? 'bg-white/5 border-white/10 text-stone-200 placeholder-stone-600 focus:border-emerald-500'
-    : 'bg-stone-50 border-stone-200 text-stone-700 placeholder-stone-400 focus:border-emerald-500';
-  const label = dark ? 'text-stone-400' : 'text-stone-500';
+  const overlay = 'bg-black/60 backdrop-blur-md';
+  const panel = 'border-border bg-surface text-ink shadow-2xl';
+  const inputBase =
+    'border-border bg-surface-hover text-ink placeholder-muted focus:border-primary focus:ring-1 focus:ring-primary/20';
+  const label = 'text-muted';
   const errCls = 'text-red-400 text-[10px] mt-0.5';
 
   const Field = ({

@@ -53,11 +53,9 @@ export default function QuranLoopModal({
 
   if (!isOpen) return null;
 
-  const overlay = dark ? 'bg-black/60 backdrop-blur-sm' : 'bg-stone-900/40 backdrop-blur-sm';
-  const panel = dark
-    ? 'border-white/10 bg-[#14211e] text-stone-100 shadow-2xl'
-    : 'border-stone-200 bg-white text-stone-900 shadow-xl';
-  const card = dark ? 'border-white/10 bg-white/5' : 'border-stone-200 bg-stone-50';
+  const overlay = 'bg-black/60 backdrop-blur-sm';
+  const panel = 'border-border bg-surface text-ink shadow-2xl';
+  const card = 'border-border bg-surface-hover';
 
   const handleStartRange = () => {
     const s = Math.max(1, Math.min(startInput, totalVerses));

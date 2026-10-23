@@ -69,9 +69,7 @@ export default function UserMenu({
           ? 'bg-stone-400'
           : 'bg-amber-400 animate-pulse';
 
-  const panel = dark
-    ? 'bg-[#14211e] border-white/10 shadow-2xl'
-    : 'bg-white border-stone-200 shadow-xl';
+  const panel = 'border-border bg-surface text-ink shadow-2xl';
 
   const handleManualSyncClick = async () => {
     if (!onManualSync || isSyncInProgress) return;
@@ -87,11 +85,7 @@ export default function UserMenu({
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen((v) => !v)}
-        className={`flex items-center cursor-pointer gap-2 rounded-full border px-2 py-1 transition-all hover:scale-105 active:scale-95 ${
-          dark
-            ? 'border-white/10 bg-white/5 hover:bg-white/10'
-            : 'border-stone-200 bg-white hover:bg-stone-50 shadow-sm'
-        }`}
+        className="flex items-center cursor-pointer gap-2 rounded-full border border-border bg-surface hover:bg-surface-hover px-2 py-1 transition-all hover:scale-105 active:scale-95 shadow-xs"
       >
         {/* Avatar */}
         <div className="relative">
@@ -120,9 +114,7 @@ export default function UserMenu({
           </div>
           {/* Sync indicator dot */}
           <span
-            className={`absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full border ${
-              dark ? 'border-[#14211e]' : 'border-white'
-            } ${syncColor}`}
+            className={`absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full border border-surface ${syncColor}`}
           />
         </div>
 

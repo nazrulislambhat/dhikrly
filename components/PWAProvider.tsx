@@ -61,15 +61,11 @@ export default function PWAProvider({
     <>
       {children}
       <div
-        className={`fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom))] min-[900px]:bottom-6 left-1/2 z-[9998] w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 rounded-2xl border p-4 shadow-2xl ${
-          dark ? 'border-white/10 bg-[#14211e]' : 'border-stone-200 bg-white'
-        }`}
+        className="fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom))] min-[900px]:bottom-6 left-1/2 z-[9998] w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 rounded-2xl border border-border bg-surface text-ink p-4 shadow-2xl"
       >
       <div className="flex items-start gap-3">
         <div
-          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-xl ${
-            dark ? 'bg-emerald-400/15 text-emerald-200' : 'bg-emerald-50 text-emerald-800'
-          }`}
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-xl bg-primary-light text-primary"
         >
           <Smartphone className="h-5 w-5" aria-hidden="true" />
         </div>

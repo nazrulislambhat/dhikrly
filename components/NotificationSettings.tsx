@@ -305,12 +305,10 @@ export default function NotificationSettings({
     setTimeout(() => setStatus('idle'), 2500);
   }, [settings, permission, userId, subscribe, unsubscribe]);
 
-  /* ── Styles ── */
-  const overlay = dark ? 'bg-black/65 backdrop-blur-md' : 'bg-stone-900/45 backdrop-blur-md';
-  const panel = dark ? 'bg-[#14211e] border-white/10 text-stone-100' : 'bg-white border-stone-200';
-  const input = dark
-    ? 'bg-white/5 border-white/10 text-stone-200 focus:border-emerald-400/50'
-    : 'bg-stone-50 border-stone-200 text-stone-700 focus:border-emerald-400';
+  const overlay = 'bg-black/60 backdrop-blur-md';
+  const panel = 'bg-surface border-border text-ink';
+  const input =
+    'bg-surface-hover border-border text-ink focus:border-primary';
 
   return (
     <div

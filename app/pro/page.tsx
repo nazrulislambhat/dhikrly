@@ -294,7 +294,7 @@ export default function DhikrlyProPage() {
                     className="inline-flex items-center justify-center gap-2 rounded-2xl border border-amber-500/40 bg-[#FFDD00]/25 px-4 py-3 text-xs font-bold text-amber-950 dark:bg-amber-400/20 dark:text-amber-200 hover:bg-[#FFDD00]/40 transition-colors shadow-xs no-underline text-center"
                   >
                     <Coffee className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0" />
-                    <span>Buy me a coffee</span>
+                    <span>Support Dhikrly</span>
                   </a>
                 </div>
               </div>

@@ -10,11 +10,9 @@ import {
   Clock3,
   Coffee,
   Compass,
-  Cpu,
   Headphones,
   HeartHandshake,
   Landmark,
-  Layers,
   LineChart,
   Moon,
   MoonStar,
@@ -128,10 +126,8 @@ export default function AppShell({
   const [desktopDropdownOpen, setDesktopDropdownOpen] = useState(false);
   const desktopDropdownRef = useRef<HTMLDivElement>(null);
 
-  const muted = dark ? 'text-stone-400' : 'text-stone-500';
-  const surface = dark
-    ? 'border-white/[0.08] bg-[#0c1814]/90'
-    : 'border-emerald-950/[0.06] bg-white/90';
+  const muted = dark ? 'text-sakinah-400' : 'text-sakinah-500';
+  const surface = 'border-border bg-surface/90 backdrop-blur-xl';
 
   useEffect(() => {
     scheduleNotifications();
@@ -147,7 +143,7 @@ export default function AppShell({
   useEffect(() => {
     document
       .querySelector('meta[name="theme-color"]')
-      ?.setAttribute('content', dark ? '#08120f' : '#f8faf8');
+      ?.setAttribute('content', dark ? '#0b0f0d' : '#f8faf8');
   }, [dark]);
 
   // Global Cmd+K / Ctrl+K keyboard shortcut for Command Palette
@@ -211,12 +207,12 @@ export default function AppShell({
           >
             <div className="relative">
               <span
-                className="grid h-10 w-10 place-items-center rounded-2xl bg-gradient-to-br from-emerald-700 via-emerald-800 to-teal-900 text-xl font-bold text-white shadow-md transition-transform group-hover:scale-105 dark:from-emerald-400 dark:via-emerald-500 dark:to-teal-400 dark:text-emerald-950 dark:shadow-emerald-950/40"
+                className="grid h-10 w-10 place-items-center rounded-2xl bg-gradient-to-br from-dhikr-700 via-dhikr-800 to-dhikr-900 text-xl font-bold text-white shadow-md transition-transform group-hover:scale-105 dark:from-dhikr-400 dark:via-dhikr-500 dark:to-dhikr-600 dark:text-dhikr-950 dark:shadow-dhikr-950/40"
                 aria-hidden="true"
               >
                 ذ
               </span>
-              <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-amber-400 border-2 border-[var(--app-surface)]" />
+              <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-noor-400 border-2 border-[var(--app-surface)]" />
             </div>
             <span>
               <span className="block text-xl font-extrabold tracking-tight text-[var(--app-ink)] leading-none font-display">
@@ -234,14 +230,14 @@ export default function AppShell({
             onClick={() => setShowCommandPalette(true)}
             className={`hidden lg:flex items-center gap-2 rounded-2xl border px-3 py-1.5 text-xs font-semibold transition-all hover:scale-105 active:scale-95 ${
               dark
-                ? 'border-white/[0.08] bg-white/[0.04] text-stone-300 hover:border-emerald-500/40'
-                : 'border-emerald-950/[0.08] bg-white text-stone-600 hover:border-emerald-600/40 shadow-xs'
+                ? 'border-white/[0.08] bg-white/[0.04] text-sakinah-300 hover:border-dhikr-500/40'
+                : 'border-dhikr-950/[0.08] bg-white text-sakinah-600 hover:border-dhikr-600/40 shadow-xs'
             }`}
             title="Search tools, prayers and duas (Cmd+K)"
           >
-            <Search className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+            <Search className="h-3.5 w-3.5 text-dhikr-600 dark:text-dhikr-400" />
             <span>Quick Search</span>
-            <span className="inline-flex items-center gap-0.5 rounded-lg border border-[var(--app-line)] px-1.5 py-0.2 text-[10px] font-mono text-stone-400">
+            <span className="inline-flex items-center gap-0.5 rounded-lg border border-[var(--app-line)] px-1.5 py-0.2 text-[10px] font-mono text-sakinah-400">
               <Command className="h-2.5 w-2.5" />K
             </span>
           </button>
@@ -261,9 +257,9 @@ export default function AppShell({
                   className={`flex min-h-9 items-center gap-1.5 whitespace-nowrap rounded-xl px-3 text-xs font-bold no-underline transition-all ${
                     isCurrent
                       ? dark
-                        ? 'bg-emerald-500/20 text-emerald-300 shadow-xs'
-                        : 'bg-emerald-50 text-emerald-900 border border-emerald-600/20 shadow-xs'
-                      : `${muted} hover:bg-emerald-500/10 hover:text-emerald-800 dark:hover:text-emerald-200`
+                        ? 'bg-dhikr-500/20 text-dhikr-300 shadow-xs'
+                        : 'bg-dhikr-50 text-dhikr-900 border border-dhikr-600/20 shadow-xs'
+                      : `${muted} hover:bg-dhikr-500/10 hover:text-dhikr-800 dark:hover:text-dhikr-200`
                   }`}
                 >
                   <item.Icon className="h-3.5 w-3.5" aria-hidden="true" />
@@ -281,9 +277,9 @@ export default function AppShell({
                 className={`flex min-h-9 items-center gap-1.5 whitespace-nowrap rounded-xl px-3 text-xs font-bold transition-all ${
                   isDropdownActive
                     ? dark
-                      ? 'bg-emerald-500/20 text-emerald-300 shadow-xs'
-                      : 'bg-emerald-50 text-emerald-900 border border-emerald-600/20 shadow-xs'
-                    : `${muted} hover:bg-emerald-500/10 hover:text-emerald-800 dark:hover:text-emerald-200`
+                      ? 'bg-dhikr-500/20 text-dhikr-300 shadow-xs'
+                      : 'bg-dhikr-50 text-dhikr-900 border border-dhikr-600/20 shadow-xs'
+                    : `${muted} hover:bg-dhikr-500/10 hover:text-dhikr-800 dark:hover:text-dhikr-200`
                 }`}
               >
                 <span>{activeDropdownItem ? activeDropdownItem.label : 'Explore'}</span>
@@ -295,18 +291,14 @@ export default function AppShell({
 
               {desktopDropdownOpen && (
                 <div
-                  className={`absolute right-0 top-full mt-2 w-[34rem] rounded-3xl border p-4 shadow-2xl backdrop-blur-2xl z-50 animate-in fade-in zoom-in-95 duration-150 ${
-                    dark
-                      ? 'border-white/[0.12] bg-[#0c1814]/98 text-stone-200'
-                      : 'border-emerald-950/[0.08] bg-white/98 text-stone-800'
-                  }`}
+                  className="absolute right-0 top-full mt-2 w-[34rem] rounded-3xl border border-border bg-surface/98 text-ink p-4 shadow-2xl backdrop-blur-2xl z-50 animate-in fade-in zoom-in-95 duration-150"
                 >
                   <div className="px-2 pb-3 mb-2 border-b border-[var(--app-line)] flex items-center justify-between">
                     <div>
-                      <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
+                      <span className="text-xs font-extrabold uppercase tracking-wider text-dhikr-700 dark:text-dhikr-400">
                         Explore Dhikrly
                       </span>
-                      <p className="text-[11px] text-stone-400">All spiritual tools for your daily deen</p>
+                      <p className="text-[11px] text-sakinah-400">All spiritual tools for your daily deen</p>
                     </div>
                     <button
                       type="button"
@@ -314,7 +306,7 @@ export default function AppShell({
                         setDesktopDropdownOpen(false);
                         setShowCommandPalette(true);
                       }}
-                      className="inline-flex items-center gap-1 rounded-xl border border-[var(--app-line)] px-2.5 py-1 text-[11px] font-semibold text-stone-400 hover:text-stone-700 dark:hover:text-stone-200"
+                      className="inline-flex items-center gap-1 rounded-xl border border-[var(--app-line)] px-2.5 py-1 text-[11px] font-semibold text-sakinah-400 hover:text-sakinah-700 dark:hover:text-sakinah-200"
                     >
                       <Search className="h-3 w-3" />
                       <span>Search All</span>
@@ -324,7 +316,7 @@ export default function AppShell({
                   <div className="grid grid-cols-2 gap-3 max-h-[25rem] overflow-y-auto pr-1">
                     {HUB_CATEGORIES.map((cat) => (
                       <div key={cat.title} className="space-y-1">
-                        <span className="block px-2 text-[10px] font-extrabold uppercase tracking-wider text-stone-400">
+                        <span className="block px-2 text-[10px] font-extrabold uppercase tracking-wider text-sakinah-400">
                           {cat.title}
                         </span>
                         {cat.items.map((item) => {
@@ -338,16 +330,16 @@ export default function AppShell({
                               onClick={() => setDesktopDropdownOpen(false)}
                               className={`flex items-start gap-2.5 rounded-xl p-2 text-xs no-underline transition-colors ${
                                 isCurrent
-                                  ? 'bg-emerald-500/15 text-emerald-900 dark:text-emerald-200 font-bold'
-                                  : 'hover:bg-emerald-500/10 text-stone-700 dark:text-stone-300'
+                                  ? 'bg-dhikr-500/15 text-dhikr-900 dark:text-dhikr-200 font-bold'
+                                  : 'hover:bg-dhikr-500/10 text-sakinah-700 dark:text-sakinah-300'
                               }`}
                             >
-                              <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300 mt-0.5">
+                              <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-dhikr-50 text-dhikr-700 dark:bg-dhikr-500/15 dark:text-dhikr-300 mt-0.5">
                                 <item.Icon className="h-3.5 w-3.5" />
                               </span>
                               <div className="min-w-0">
                                 <p className="font-semibold leading-tight truncate">{item.label}</p>
-                                <p className="text-[10px] text-stone-400 leading-tight truncate mt-0.5">{item.desc}</p>
+                                <p className="text-[10px] text-sakinah-400 leading-tight truncate mt-0.5">{item.desc}</p>
                               </div>
                             </Link>
                           );
@@ -361,16 +353,16 @@ export default function AppShell({
                       href="https://buymeacoffee.com/nazrulislambhat"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 rounded-xl py-2 px-3 text-xs font-bold text-amber-950 bg-amber-400/20 hover:bg-amber-400/35 dark:bg-amber-400/15 dark:text-amber-200 transition-colors no-underline"
+                      className="inline-flex items-center gap-2 rounded-xl py-2 px-3 text-xs font-bold text-noor-950 bg-noor-400/20 hover:bg-noor-400/35 dark:bg-noor-400/15 dark:text-noor-200 transition-colors no-underline"
                     >
-                      <Coffee className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
-                      <span>Support Dhikrly · Buy me a coffee</span>
+                      <Coffee className="h-3.5 w-3.5 text-noor-600 dark:text-noor-400" />
+                      <span>Support Dhikrly</span>
                     </a>
 
                     <Link
                       href="/settings"
                       onClick={() => setDesktopDropdownOpen(false)}
-                      className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 hover:underline"
+                      className="text-xs font-semibold text-dhikr-700 dark:text-dhikr-400 hover:underline"
                     >
                       Settings & Profile →
                     </Link>
@@ -386,9 +378,9 @@ export default function AppShell({
               href="/settings"
               aria-label="Settings and Profile"
               title="Settings & Profile"
-              className={`flex min-h-9 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-xl border border-[var(--app-line)] px-3 text-xs font-bold transition-all hover:bg-emerald-500/10 ${
+              className={`flex min-h-9 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-xl border border-[var(--app-line)] px-3 text-xs font-bold transition-all hover:bg-dhikr-500/10 ${
                 active === 'settings'
-                  ? 'bg-emerald-50 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-200'
+                  ? 'bg-dhikr-50 text-dhikr-800 dark:bg-dhikr-500/15 dark:text-dhikr-200'
                   : muted
               }`}
             >
@@ -398,7 +390,7 @@ export default function AppShell({
 
             <button
               type="button"
-              className={`flex min-h-9 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-xl border border-[var(--app-line)] px-3 text-xs font-bold transition-all hover:bg-emerald-500/10 ${muted}`}
+              className={`flex min-h-9 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-xl border border-[var(--app-line)] px-3 text-xs font-bold transition-all hover:bg-dhikr-500/10 ${muted}`}
               onClick={onToggleDark}
               aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'}
             >
@@ -415,7 +407,7 @@ export default function AppShell({
         <div className="sticky top-0 z-30 flex min-h-[4.25rem] items-center border-b border-[var(--app-line)] bg-[var(--app-bg)]/90 px-4 pt-[max(0.5rem,env(safe-area-inset-top))] pb-2 backdrop-blur-xl md:hidden">
           <div className="mx-auto flex h-full w-full items-center justify-between">
             <Link href="/" className="inline-flex items-center gap-2.5 no-underline" aria-label="Dhikrly home">
-              <span className="grid h-9 w-9 place-items-center rounded-2xl bg-gradient-to-br from-emerald-700 to-teal-800 text-lg font-bold text-white shadow-sm dark:from-emerald-400 dark:to-teal-500 dark:text-emerald-950" aria-hidden="true">
+              <span className="grid h-9 w-9 place-items-center rounded-2xl bg-gradient-to-br from-dhikr-700 to-dhikr-900 text-lg font-bold text-white shadow-sm dark:from-dhikr-400 dark:to-dhikr-600 dark:text-dhikr-950" aria-hidden="true">
                 ذ
               </span>
               <span className="text-lg font-extrabold tracking-tight text-[var(--app-ink)] font-display">
@@ -428,7 +420,7 @@ export default function AppShell({
               <button
                 type="button"
                 onClick={() => setShowCommandPalette(true)}
-                className="grid h-9 w-9 place-items-center rounded-full border border-[var(--app-line)] bg-[var(--app-surface)] text-stone-500 hover:text-stone-900 dark:hover:text-stone-100 shadow-xs"
+                className="grid h-9 w-9 place-items-center rounded-full border border-[var(--app-line)] bg-[var(--app-surface)] text-sakinah-500 hover:text-sakinah-900 dark:hover:text-sakinah-100 shadow-xs"
                 aria-label="Open search command palette"
                 title="Search"
               >
@@ -437,7 +429,7 @@ export default function AppShell({
 
               <button
                 type="button"
-                className="grid h-9 w-9 place-items-center rounded-full border border-[var(--app-line)] bg-[var(--app-surface)] text-emerald-800 dark:text-emerald-200 shadow-xs"
+                className="grid h-9 w-9 place-items-center rounded-full border border-[var(--app-line)] bg-[var(--app-surface)] text-dhikr-800 dark:text-dhikr-200 shadow-xs"
                 onClick={onToggleDark}
                 aria-label={dark ? 'Use light appearance' : 'Use dark appearance'}
                 title={dark ? 'Use light appearance' : 'Use dark appearance'}
@@ -466,8 +458,8 @@ export default function AppShell({
               className={`flex min-h-12 flex-col items-center justify-center gap-0.5 rounded-2xl text-[10px] font-bold no-underline transition-all ${
                 isCurrent
                   ? dark
-                    ? 'bg-emerald-500/20 text-emerald-300 shadow-xs'
-                    : 'bg-emerald-50 text-emerald-900 border border-emerald-600/20 shadow-xs'
+                    ? 'bg-dhikr-500/20 text-dhikr-300 shadow-xs'
+                    : 'bg-dhikr-50 text-dhikr-900 border border-dhikr-600/20 shadow-xs'
                   : muted
               }`}
             >
@@ -484,8 +476,8 @@ export default function AppShell({
           className={`flex min-h-12 flex-col items-center justify-center gap-0.5 rounded-2xl text-[10px] font-bold transition-all ${
             isDropdownActive
               ? dark
-                ? 'bg-emerald-500/20 text-emerald-300 shadow-xs'
-                : 'bg-emerald-50 text-emerald-900 border border-emerald-600/20 shadow-xs'
+                ? 'bg-dhikr-500/20 text-dhikr-300 shadow-xs'
+                : 'bg-dhikr-50 text-dhikr-900 border border-dhikr-600/20 shadow-xs'
               : muted
           }`}
           aria-expanded={showMoreMenu}
@@ -504,8 +496,8 @@ export default function AppShell({
             onClick={() => setShowMoreMenu(false)}
             aria-hidden="true"
           />
-          <div className="relative z-10 max-h-[85dvh] overflow-y-auto rounded-t-3xl border-t border-[var(--app-line)] bg-[var(--app-surface)] p-5 shadow-2xl dark:bg-[#0c1814]">
-            <div className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-stone-300 dark:bg-stone-700" />
+          <div className="relative z-10 max-h-[85dvh] overflow-y-auto rounded-t-3xl border-t border-[var(--app-line)] bg-[var(--app-surface)] p-5 shadow-2xl">
+            <div className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-sakinah-300 dark:bg-sakinah-700" />
             <div className="mb-4 flex items-center justify-between">
               <div>
                 <h3 className="text-base font-extrabold text-[var(--app-ink)]">Explore Dhikrly</h3>
@@ -514,7 +506,7 @@ export default function AppShell({
               <button
                 type="button"
                 onClick={() => setShowMoreMenu(false)}
-                className="grid h-8 w-8 place-items-center rounded-full border border-[var(--app-line)] text-stone-500 hover:text-stone-900 dark:hover:text-stone-100"
+                className="grid h-8 w-8 place-items-center rounded-full border border-[var(--app-line)] text-sakinah-500 hover:text-sakinah-900 dark:hover:text-sakinah-100"
                 aria-label="Close menu"
               >
                 <X className="h-4 w-4" />
@@ -524,7 +516,7 @@ export default function AppShell({
             <div className="space-y-4">
               {HUB_CATEGORIES.map((cat) => (
                 <div key={cat.title}>
-                  <h4 className="mb-2 text-[10px] font-extrabold uppercase tracking-wider text-stone-400">
+                  <h4 className="mb-2 text-[10px] font-extrabold uppercase tracking-wider text-sakinah-400">
                     {cat.title}
                   </h4>
                   <div className="grid gap-2">
@@ -541,11 +533,11 @@ export default function AppShell({
                           onClick={() => setShowMoreMenu(false)}
                           className={`flex items-center gap-3.5 rounded-2xl border p-3 no-underline transition-all ${
                             isCurrent
-                              ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-900 dark:text-emerald-200'
-                              : 'border-[var(--app-line)] bg-black/5 hover:bg-emerald-500/5 dark:bg-white/[0.03]'
+                              ? 'border-dhikr-500/40 bg-dhikr-500/10 text-dhikr-900 dark:text-dhikr-200'
+                              : 'border-[var(--app-line)] bg-black/5 hover:bg-dhikr-500/5 dark:bg-white/[0.03]'
                           }`}
                         >
-                          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-emerald-50 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-200">
+                          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-dhikr-50 text-dhikr-800 dark:bg-dhikr-500/20 dark:text-dhikr-200">
                             <item.Icon className="h-5 w-5" />
                           </span>
                           <div className="min-w-0 flex-1">
@@ -560,16 +552,15 @@ export default function AppShell({
               ))}
             </div>
 
-            {/* Support Dhikrly Buy Me A Coffee */}
             <div className="mt-5 pt-3 border-t border-[var(--app-line)]">
               <a
                 href="https://buymeacoffee.com/nazrulislambhat"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center justify-center gap-2 w-full rounded-2xl py-3 px-4 text-xs font-bold text-amber-950 bg-amber-400/25 hover:bg-amber-400/40 dark:bg-amber-400/15 dark:text-amber-200 transition-colors shadow-xs no-underline"
+                className="flex items-center justify-center gap-2 w-full rounded-2xl py-3 px-4 text-xs font-bold text-noor-950 bg-noor-400/25 hover:bg-noor-400/40 dark:bg-noor-400/15 dark:text-noor-200 transition-colors shadow-xs no-underline"
               >
-                <Coffee className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-                <span>Support Dhikrly · Buy me a coffee</span>
+                <Coffee className="h-4 w-4 text-noor-600 dark:text-noor-400" />
+                <span>Support Dhikrly</span>
               </a>
             </div>
           </div>

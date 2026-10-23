@@ -127,17 +127,17 @@ export default function DuaCard({
       className={`group relative rounded-3xl border transition-all duration-300 hover:shadow-xl ${
         checked
           ? dark
-            ? 'border-emerald-500/35 bg-gradient-to-b from-emerald-950/30 to-[#0c1814] shadow-sm'
-            : 'border-emerald-600/30 bg-gradient-to-b from-emerald-50/70 to-white shadow-sm'
+            ? 'border-primary/40 bg-gradient-to-b from-primary/15 to-surface shadow-sm'
+            : 'border-primary/30 bg-gradient-to-b from-primary-subtle to-white shadow-sm'
           : dark
-            ? 'border-white/[0.08] bg-[#0c1814]/90 hover:border-emerald-500/40'
-            : 'border-emerald-950/[0.07] bg-white hover:border-emerald-600/40 shadow-xs'
+            ? 'border-white/[0.08] bg-surface/90 hover:border-primary/40'
+            : 'border-border bg-white hover:border-primary/40 shadow-xs'
       }`}
     >
       {/* Decorative top accent highlight for priority or completed */}
       {dua.priority && (
         <div
-          className="absolute inset-x-8 top-0 h-0.5 rounded-full bg-gradient-to-r from-amber-400 via-emerald-400 to-amber-400 opacity-80"
+          className="absolute inset-x-8 top-0 h-0.5 rounded-full bg-gradient-to-r from-link via-primary to-link opacity-80"
           aria-hidden="true"
         />
       )}
@@ -148,11 +148,7 @@ export default function DuaCard({
         <div className="flex flex-wrap items-center gap-1.5 min-w-0">
           {/* Category Pill */}
           <span
-            className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider ${
-              dark
-                ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/25'
-                : 'bg-emerald-50 text-emerald-800 border border-emerald-600/20'
-            }`}
+            className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider bg-primary-light text-primary border border-primary/20"
           >
             {dua.category === 'quran'
               ? "Qur'ān"
@@ -167,8 +163,8 @@ export default function DuaCard({
               key={s}
               className={`rounded-full px-2.5 py-0.5 text-[10px] font-semibold ${
                 dark
-                  ? 'bg-white/[0.06] text-stone-300'
-                  : 'bg-stone-100 text-stone-600'
+                  ? 'bg-white/[0.06] text-muted'
+                  : 'bg-surface-hover text-muted'
               }`}
             >
               {s}
@@ -180,8 +176,8 @@ export default function DuaCard({
             <span
               className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-extrabold ${
                 checked
-                  ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-300'
-                  : 'bg-amber-400/20 text-amber-800 dark:text-amber-300'
+                  ? 'bg-primary-light text-primary'
+                  : 'bg-link-light text-link'
               }`}
             >
               <span>{checked ? `${targetCount}× done` : `${tapCount}/${targetCount}×`}</span>
@@ -200,7 +196,7 @@ export default function DuaCard({
           {dua.priority && (
             <span
               title="Priority Remembrance"
-              className="grid h-7 w-7 place-items-center rounded-lg text-amber-500"
+              className="grid h-7 w-7 place-items-center rounded-lg text-link"
             >
               <Star className="h-3.5 w-3.5 fill-current" />
             </span>
@@ -212,10 +208,10 @@ export default function DuaCard({
             onClick={cycleFontSize}
             title={`Adjust Arabic font size (current: ${arabicFontSize})`}
             aria-label={`Adjust Arabic font size (current: ${arabicFontSize})`}
-            className={`grid h-7 w-7 place-items-center rounded-lg border text-xs font-bold transition-all ${
+            className={`grid h-7 w-7 place-items-center rounded-lg border text-xs font-bold transition-all cursor-pointer ${
               dark
-                ? 'border-white/10 bg-white/5 text-stone-400 hover:text-stone-200'
-                : 'border-stone-200 bg-stone-50 text-stone-500 hover:text-stone-800'
+                ? 'border-white/10 bg-white/5 text-sakinah-400 hover:text-sakinah-200'
+                : 'border-sakinah-200 bg-sakinah-50 text-sakinah-500 hover:text-sakinah-800'
             }`}
           >
             <span className="text-[11px] font-serif">A±</span>
@@ -227,12 +223,12 @@ export default function DuaCard({
             onClick={handleAudio}
             title={isPlaying ? 'Stop recitation' : 'Listen to authentic recitation'}
             aria-label={isPlaying ? 'Stop recitation' : 'Listen to authentic recitation'}
-            className={`flex h-7 items-center justify-center gap-1 rounded-lg border px-2 transition-all ${
+            className={`flex h-7 items-center justify-center gap-1 rounded-lg border px-2 transition-all cursor-pointer ${
               isPlaying
-                ? 'border-emerald-500 bg-emerald-600 text-white shadow-sm'
+                ? 'border-dhikr-600 bg-dhikr-700 text-white shadow-sm'
                 : dark
-                  ? 'border-white/10 bg-white/5 text-stone-400 hover:text-emerald-300 hover:border-emerald-500/40'
-                  : 'border-stone-200 bg-stone-50 text-stone-500 hover:text-emerald-800 hover:border-emerald-500/40'
+                  ? 'border-white/10 bg-white/5 text-sakinah-400 hover:text-dhikr-300 hover:border-dhikr-500/40'
+                  : 'border-sakinah-200 bg-sakinah-50 text-sakinah-500 hover:text-dhikr-800 hover:border-dhikr-500/40'
             }`}
           >
             {isPlaying ? (
@@ -255,12 +251,12 @@ export default function DuaCard({
             onClick={handleCopy}
             title={copied ? 'Copied to clipboard!' : 'Copy remembrance'}
             aria-label={copied ? 'Copied to clipboard' : 'Copy remembrance'}
-            className={`grid h-7 w-7 place-items-center rounded-lg border transition-all ${
+            className={`grid h-7 w-7 place-items-center rounded-lg border transition-all cursor-pointer ${
               copied
-                ? 'border-emerald-500 bg-emerald-600 text-white'
+                ? 'border-dhikr-600 bg-dhikr-700 text-white'
                 : dark
-                  ? 'border-white/10 bg-white/5 text-stone-400 hover:text-stone-200'
-                  : 'border-stone-200 bg-stone-50 text-stone-500 hover:text-stone-800'
+                  ? 'border-white/10 bg-white/5 text-sakinah-400 hover:text-sakinah-200'
+                  : 'border-sakinah-200 bg-sakinah-50 text-sakinah-500 hover:text-sakinah-800'
             }`}
           >
             {copied ? (
@@ -276,7 +272,7 @@ export default function DuaCard({
               type="button"
               onClick={() => onDelete(dua.id)}
               aria-label="Delete custom remembrance"
-              className="grid h-7 w-7 place-items-center rounded-lg text-stone-400 hover:text-red-500 transition-colors"
+              className="grid h-7 w-7 place-items-center rounded-lg text-sakinah-400 hover:text-red-500 transition-colors cursor-pointer"
             >
               ✕
             </button>
@@ -291,18 +287,18 @@ export default function DuaCard({
             className={`font-display text-base sm:text-lg font-bold tracking-tight ${
               checked
                 ? dark
-                  ? 'text-emerald-300'
-                  : 'text-emerald-900'
+                  ? 'text-dhikr-300'
+                  : 'text-dhikr-900'
                 : dark
-                  ? 'text-stone-100'
-                  : 'text-stone-900'
+                  ? 'text-sakinah-100'
+                  : 'text-sakinah-900'
             }`}
           >
             {dua.title}
           </h3>
           {dua.titleAr && (
             <span
-              className="font-arabic text-sm text-stone-400 dark:text-stone-500"
+              className="font-arabic text-sm text-sakinah-400 dark:text-sakinah-500"
               dir="rtl"
             >
               {dua.titleAr}
@@ -318,18 +314,18 @@ export default function DuaCard({
           className={`rounded-2xl p-4 sm:p-5 transition-colors ${
             dark
               ? 'bg-black/30 border border-white/[0.04]'
-              : 'bg-emerald-950/[0.02] border border-emerald-900/[0.06]'
+              : 'bg-dhikr-950/[0.02] border border-dhikr-900/[0.06]'
           }`}
         >
           <p
             className={`font-quran text-right font-normal select-text ${arabicSizeClasses} ${
               checked
                 ? dark
-                  ? 'text-emerald-200/90'
-                  : 'text-emerald-950'
+                  ? 'text-dhikr-200/90'
+                  : 'text-dhikr-950'
                 : dark
-                  ? 'text-stone-100'
-                  : 'text-stone-900'
+                  ? 'text-sakinah-100'
+                  : 'text-sakinah-900'
             }`}
             dir="rtl"
             lang="ar"
@@ -345,7 +341,7 @@ export default function DuaCard({
             {dua.transliteration && (
               <p
                 className={`font-serif text-xs sm:text-[13px] leading-relaxed italic ${
-                  dark ? 'text-emerald-300/85' : 'text-emerald-800/90'
+                  dark ? 'text-dhikr-300/85' : 'text-dhikr-800/90'
                 }`}
               >
                 {dua.transliteration}
@@ -355,7 +351,7 @@ export default function DuaCard({
             {dua.en && (
               <p
                 className={`text-xs sm:text-[13px] leading-relaxed ${
-                  dark ? 'text-stone-300' : 'text-stone-600'
+                  dark ? 'text-sakinah-300' : 'text-sakinah-600'
                 }`}
               >
                 &ldquo;{dua.en}&rdquo;
@@ -371,8 +367,8 @@ export default function DuaCard({
         <button
           type="button"
           onClick={() => setExpanded((v) => !v)}
-          className={`inline-flex items-center gap-1 text-[11px] font-semibold transition-colors ${
-            dark ? 'text-stone-400 hover:text-stone-200' : 'text-stone-500 hover:text-stone-800'
+          className={`inline-flex items-center gap-1 text-[11px] font-semibold transition-colors cursor-pointer ${
+            dark ? 'text-sakinah-400 hover:text-sakinah-200' : 'text-sakinah-500 hover:text-sakinah-800'
           }`}
         >
           <span>{expanded ? 'Less' : 'Meaning & Pronunciation'}</span>
@@ -388,13 +384,9 @@ export default function DuaCard({
               onClick={handleBeadTap}
               title={`Tap to count (${tapCount}/${targetCount})`}
               aria-label={`Tap to count (${tapCount} of ${targetCount})`}
-              className={`tap-bounce inline-flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-bold transition-all ${
-                dark
-                  ? 'border-amber-400/40 bg-amber-400/15 text-amber-200 hover:bg-amber-400/25'
-                  : 'border-amber-500/40 bg-amber-50 text-amber-900 hover:bg-amber-100 shadow-xs'
-              }`}
+              className="tap-bounce inline-flex items-center gap-1.5 rounded-xl border border-link/40 bg-link-light text-link hover:text-link-hover px-3 py-1.5 text-xs font-bold transition-all cursor-pointer shadow-xs"
             >
-              <span className="grid h-4 w-4 place-items-center rounded-full bg-amber-500/30 text-[10px] font-extrabold">
+              <span className="grid h-4 w-4 place-items-center rounded-full bg-link/20 text-[10px] font-extrabold text-link">
                 {tapCount}
               </span>
               <span>Tap Bead ({targetCount - tapCount} left)</span>
@@ -406,14 +398,14 @@ export default function DuaCard({
             type="button"
             onClick={() => onToggle(dua.id, soundEnabled)}
             aria-label={checked ? 'Completed. Click to undo.' : 'Mark complete'}
-            className={`tap-bounce inline-flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold transition-all shadow-xs ${
+            className={`tap-bounce inline-flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold transition-all shadow-xs cursor-pointer ${
               checked
                 ? dark
-                  ? 'bg-emerald-500/25 text-emerald-300 border border-emerald-500/45 hover:bg-emerald-500/35'
-                  : 'bg-emerald-700 text-white hover:bg-emerald-800'
+                  ? 'bg-primary-light text-primary border border-primary/45 hover:bg-primary-light'
+                  : 'bg-primary text-white hover:bg-primary-hover'
                 : dark
-                  ? 'border border-emerald-500/35 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20'
-                  : 'border border-emerald-700/25 bg-emerald-50 text-emerald-900 hover:bg-emerald-100'
+                  ? 'border border-primary/35 bg-primary-subtle text-primary hover:bg-primary-light'
+                  : 'border border-primary/25 bg-primary-subtle text-primary hover:bg-primary-light'
             }`}
           >
             {checked ? (
