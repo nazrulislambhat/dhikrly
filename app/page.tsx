@@ -518,14 +518,14 @@ export default function DuasTracker() {
                 }}
                 title={soundEnabled ? 'Sound Enabled' : 'Sound Muted'}
                 aria-label={soundEnabled ? 'Sound Enabled' : 'Sound Muted'}
-                className={`inline-flex h-8 items-center gap-1.5 rounded-full border px-3 text-xs font-semibold transition-all hover:scale-105 active:scale-95 ${
+                className={`ios-press inline-flex h-8 items-center gap-1.5 rounded-full border px-3 text-xs font-semibold transition-all cursor-pointer shadow-xs ${
                   soundEnabled
                     ? dark
                       ? 'border-emerald-500/30 bg-emerald-500/15 text-emerald-300'
                       : 'border-emerald-600/30 bg-emerald-50 text-emerald-800'
                     : dark
-                      ? 'border-white/10 bg-white/5 text-stone-400'
-                      : 'border-stone-200 bg-white text-stone-500'
+                      ? 'border-white/10 bg-white/5 text-muted'
+                      : 'border-[var(--app-border)] bg-white text-muted'
                 }`}
               >
                 {soundEnabled ? <Volume2 className="h-3.5 w-3.5" /> : <VolumeX className="h-3.5 w-3.5" />}
@@ -537,11 +537,7 @@ export default function DuasTracker() {
                 onClick={() => setActiveModal('notifications')}
                 title="Notification Reminders"
                 aria-label="Notification Reminders"
-                className={`inline-flex h-8 items-center gap-1.5 rounded-full border px-3 text-xs font-semibold transition-all hover:scale-105 active:scale-95 ${
-                  dark
-                    ? 'border-white/10 bg-white/5 text-stone-300 hover:text-white'
-                    : 'border-stone-200 bg-white text-stone-600 hover:text-stone-900 shadow-xs'
-                }`}
+                className="ios-press inline-flex h-8 items-center gap-1.5 rounded-full border border-[var(--app-border)] bg-black/[0.03] dark:bg-white/[0.06] hover:bg-black/[0.06] dark:hover:bg-white/10 px-3 text-xs font-semibold transition-all text-muted hover:text-ink shadow-xs cursor-pointer"
               >
                 <Bell className="h-3.5 w-3.5" />
                 <span className="hidden sm:inline">Reminders</span>
@@ -565,7 +561,7 @@ export default function DuasTracker() {
                 <button
                   type="button"
                   onClick={() => setActiveModal('auth')}
-                  className="inline-flex h-8 items-center gap-1.5 rounded-full border border-primary/30 bg-primary px-3.5 text-xs font-bold text-white transition-all hover:bg-primary-hover shadow-xs active:scale-95 cursor-pointer"
+                  className="ios-press inline-flex h-8 items-center gap-1.5 rounded-full border border-primary/30 bg-primary px-3.5 text-xs font-bold text-white transition-all hover:bg-primary-hover shadow-xs active:scale-95 cursor-pointer"
                 >
                   <span>Sync / Login</span>
                 </button>
@@ -576,10 +572,10 @@ export default function DuasTracker() {
           {/* ── Hero Sanctuary Dashboard ── */}
           <div className="mb-8">
             <section
-              className={`relative overflow-hidden rounded-3xl border p-6 sm:p-9 text-white shadow-2xl transition-all ${
+              className={`relative overflow-hidden rounded-[32px] border p-6 sm:p-9 text-white shadow-2xl transition-all ${
                 dark
-                  ? `border-emerald-500/25 bg-gradient-to-br ${timeGreeting.gradient}`
-                  : `border-emerald-800 bg-gradient-to-br ${timeGreeting.gradient}`
+                  ? `border-white/15 bg-gradient-to-br ${timeGreeting.gradient} shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_20px_50px_rgba(0,0,0,0.7)]`
+                  : `border-emerald-800 bg-gradient-to-br ${timeGreeting.gradient} shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_20px_45px_rgba(27,122,75,0.18)]`
               }`}
               aria-label="Daily Remembrance Sanctuary"
             >
@@ -608,7 +604,7 @@ export default function DuasTracker() {
               <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
                 {/* Left: Inspiring Headline & Context */}
                 <div>
-                  <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-400/15 px-3 py-1 text-[11px] font-extrabold uppercase tracking-wider text-emerald-100">
+                  <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-400/15 px-3 py-1 text-[11px] font-extrabold uppercase tracking-wider text-emerald-100 shadow-xs">
                     <Sparkles className="h-3 w-3 text-amber-300" />
                     <span>{timeGreeting.title}</span>
                   </div>
@@ -640,7 +636,7 @@ export default function DuasTracker() {
                     <button
                       type="button"
                       onClick={() => handleStartFocusFlow()}
-                      className="tap-bounce inline-flex items-center gap-2 rounded-2xl bg-white px-4 py-2.5 text-xs font-extrabold text-stone-900 shadow-lg hover:bg-white/90 transition-all cursor-pointer"
+                      className="ios-press inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-xs font-bold text-black shadow-lg hover:bg-white/95 transition-all cursor-pointer"
                       title="Enter full-screen focused recitation sanctuary"
                     >
                       <Sparkles className="h-4 w-4 text-emerald-700 animate-spin-slow" />
@@ -657,7 +653,7 @@ export default function DuasTracker() {
                         const el = document.getElementById('daily-adhkar');
                         if (el) el.scrollIntoView({ behavior: 'smooth' });
                       }}
-                      className="tap-bounce inline-flex items-center gap-1.5 rounded-2xl border border-white/20 bg-white/10 px-3.5 py-2 text-xs font-bold text-white hover:bg-white/20 transition-all cursor-pointer"
+                      className="ios-press inline-flex items-center gap-1.5 rounded-full border border-white/25 bg-white/10 px-4 py-2 text-xs font-bold text-white hover:bg-white/20 transition-all cursor-pointer"
                     >
                       <span>
                         {done === total && total > 0
@@ -667,26 +663,26 @@ export default function DuasTracker() {
                       <ArrowRight className="h-3.5 w-3.5" />
                     </button>
 
-                    <div className="inline-flex items-center gap-1.5 rounded-2xl border border-link/30 bg-link-light px-3 py-2 text-xs font-bold text-link">
+                    <div className="inline-flex items-center gap-1.5 rounded-full border border-link/30 bg-link-light px-3.5 py-2 text-xs font-bold text-link shadow-xs">
                       <Flame className="h-4 w-4 text-link fill-link/30" />
                       <span>{streak.current}d Streak</span>
                       <span className="opacity-60 font-normal text-[10px]">• Best: {streak.best}d</span>
                     </div>
 
-                    <div className="inline-flex items-center gap-1.5 rounded-2xl border border-white/15 bg-white/10 px-3 py-2 text-xs font-semibold text-emerald-100">
+                    <div className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/10 px-3.5 py-2 text-xs font-semibold text-emerald-100">
                       <CheckCircle2 className="h-3.5 w-3.5 text-emerald-300" />
                       <span>{done} / {total} Done</span>
                     </div>
                   </div>
 
-                  {/* Celestial Spiritual Horizon: 5 Stations of the Day */}
+                  {/* Celestial Spiritual Horizon: 5 Stations of the Day (Apple Segmented Track) */}
                   <div className="mt-5 w-full pt-4 border-t border-white/15 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
                     <div className="flex items-center gap-1.5 text-white/90 font-bold uppercase tracking-widest text-[10px]">
                       <Compass className="h-3.5 w-3.5 text-amber-300" />
                       <span>Sacred Day Rhythm</span>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-1.5">
+                    <div className="inline-flex items-center gap-1 p-1 rounded-full bg-black/25 backdrop-blur-xl border border-white/15 overflow-x-auto max-w-full">
                       {CELESTIAL_PHASES.map((phase) => {
                         const isActive = timeGreeting.period === phase.periodId;
                         return (
@@ -698,10 +694,10 @@ export default function DuasTracker() {
                               const el = document.getElementById('daily-adhkar');
                               if (el) el.scrollIntoView({ behavior: 'smooth' });
                             }}
-                            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-semibold transition-all cursor-pointer ${
+                            className={`ios-spring inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-semibold transition-all cursor-pointer ${
                               isActive
-                                ? 'bg-white text-stone-900 shadow-md ring-2 ring-white/60 font-extrabold scale-105'
-                                : 'bg-white/10 text-emerald-100 hover:bg-white/20'
+                                ? 'bg-white text-black shadow-md font-bold'
+                                : 'text-white/80 hover:text-white hover:bg-white/10'
                             }`}
                             title={`${phase.label} (${phase.hours})`}
                           >
@@ -801,16 +797,16 @@ export default function DuasTracker() {
               <Link
                 key={pillar.title}
                 href={pillar.href}
-                className={`group flex items-center gap-3 rounded-2xl border p-3.5 no-underline transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg ${
+                className={`ios-press group flex items-center gap-3.5 rounded-[22px] border p-3.5 no-underline transition-all duration-200 cursor-pointer ${
                   pillar.active
-                    ? 'border-primary/40 bg-primary-light text-primary shadow-xs'
+                    ? 'border-primary/40 bg-primary-light text-primary shadow-xs font-bold'
                     : dark
-                      ? 'border-white/[0.08] bg-surface/90 hover:border-primary/30 text-ink'
-                      : 'border-border bg-white hover:border-primary/30 text-ink shadow-xs'
+                      ? 'border-white/10 bg-[#1c1c1e]/75 backdrop-blur-xl hover:border-white/20 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_8px_24px_rgba(0,0,0,0.5)]'
+                      : 'border-black/[0.06] bg-white/80 backdrop-blur-xl hover:border-black/15 text-black shadow-[inset_0_1px_0_rgba(255,255,255,0.7),0_4px_16px_rgba(0,0,0,0.03)]'
                 }`}
               >
                 <span
-                  className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl transition-transform group-hover:scale-105 ${
+                  className={`grid h-10 w-10 shrink-0 place-items-center rounded-2xl transition-transform group-hover:scale-105 ${
                     pillar.active
                       ? 'bg-primary text-white shadow-xs'
                       : 'bg-primary-subtle text-primary'
@@ -819,7 +815,7 @@ export default function DuasTracker() {
                   <pillar.Icon className="h-5 w-5" />
                 </span>
                 <div className="min-w-0 flex-1">
-                  <div className="truncate text-xs font-extrabold leading-tight">{pillar.title}</div>
+                  <div className="truncate text-xs font-bold leading-tight">{pillar.title}</div>
                   <div className="truncate text-[10px] text-muted mt-0.5">
                     {pillar.desc}
                   </div>
@@ -842,7 +838,7 @@ export default function DuasTracker() {
                   <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[var(--app-ink)]">
                     Daily Remembrances
                   </h2>
-                  <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
+                  <p className="text-xs text-muted mt-0.5">
                     Authentic athkār and prophetic supplications for daily barakah
                   </p>
                 </div>
@@ -850,7 +846,7 @@ export default function DuasTracker() {
                 <div className="flex items-center gap-2 self-start sm:self-auto">
                   <span
                     suppressHydrationWarning
-                    className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-xs font-bold text-emerald-800 dark:text-emerald-300"
+                    className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/25 bg-emerald-500/15 px-3 py-1 text-xs font-bold text-emerald-800 dark:text-emerald-300"
                   >
                     <span>{done} of {total} Completed</span>
                   </span>
@@ -859,7 +855,7 @@ export default function DuasTracker() {
                     type="button"
                     onClick={handleReset}
                     title="Reset today's checks"
-                    className="inline-flex h-7 items-center gap-1 rounded-lg border border-stone-200 dark:border-white/10 px-2 text-[11px] font-semibold text-stone-500 hover:text-red-600 transition-colors"
+                    className="ios-press inline-flex h-7 items-center gap-1 rounded-full border border-[var(--app-border)] bg-black/[0.03] dark:bg-white/[0.06] hover:bg-black/[0.06] dark:hover:bg-white/10 px-2.5 text-[11px] font-semibold text-muted hover:text-red-500 transition-colors cursor-pointer"
                   >
                     <RotateCcw className="h-3 w-3" />
                     <span>Reset</span>
@@ -873,23 +869,23 @@ export default function DuasTracker() {
                 <div className="flex flex-wrap items-center gap-2">
                   <label className="relative min-w-[14rem] flex-1">
                     <Search
-                      className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-400"
+                      className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted"
                       aria-hidden="true"
                     />
                     <input
                       type="text"
-                      placeholder="Search remembrances by title, meaning or Arabic..."
+                      placeholder="Spotlight search by title, meaning or Arabic..."
                       value={search}
                       onChange={(e) => setSearch(e.target.value)}
                       aria-label="Search remembrances"
-                      className="h-11 w-full rounded-2xl border border-border bg-surface pl-10 pr-9 text-xs text-ink placeholder-muted outline-none transition-all focus:border-primary focus:ring-2 focus:ring-primary/20 shadow-xs"
+                      className="h-11 w-full rounded-full border border-[var(--app-border)] bg-white/80 dark:bg-white/[0.07] backdrop-blur-xl pl-10 pr-9 text-xs text-ink placeholder:text-muted outline-none transition-all focus:border-primary focus:ring-2 focus:ring-primary/25 shadow-xs"
                     />
                     {search && (
                       <button
                         type="button"
                         onClick={() => setSearch('')}
                         aria-label="Clear search"
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-700 dark:hover:text-stone-200"
+                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted hover:text-ink cursor-pointer"
                       >
                         <X className="h-3.5 w-3.5" />
                       </button>
@@ -900,14 +896,14 @@ export default function DuasTracker() {
                     type="button"
                     onClick={() => setPriOnly((p) => !p)}
                     aria-pressed={priOnly}
-                    className={`tap-bounce inline-flex h-11 items-center gap-1.5 rounded-2xl border px-3.5 text-xs font-bold transition-all ${
+                    className={`ios-press inline-flex h-11 items-center gap-1.5 rounded-full border px-4 text-xs font-semibold transition-all cursor-pointer shadow-xs ${
                       priOnly
-                        ? 'border-link/50 bg-link-light text-link shadow-xs'
-                        : 'border-border bg-surface text-muted hover:text-ink shadow-xs'
+                        ? 'border-amber-500/40 bg-amber-500/15 text-amber-700 dark:text-amber-400 font-bold'
+                        : 'border-[var(--app-border)] bg-white/80 dark:bg-white/[0.07] text-muted hover:text-ink backdrop-blur-xl'
                     }`}
                   >
                     <Star
-                      className={`h-3.5 w-3.5 ${priOnly ? 'fill-current text-amber-500' : 'text-stone-400'}`}
+                      className={`h-3.5 w-3.5 ${priOnly ? 'fill-current text-amber-500' : 'text-muted'}`}
                       aria-hidden="true"
                     />
                     <span>Priority</span>
@@ -916,15 +912,15 @@ export default function DuasTracker() {
                   <button
                     type="button"
                     onClick={() => setActiveModal('addDua')}
-                    className="tap-bounce inline-flex h-11 items-center gap-1.5 rounded-2xl border border-primary/30 bg-primary-light px-4 text-xs font-bold text-primary transition hover:bg-primary/20 shadow-xs"
+                    className="ios-press inline-flex h-11 items-center gap-1.5 rounded-full border border-primary/30 bg-primary px-4 text-xs font-bold text-white transition hover:bg-primary-hover shadow-xs cursor-pointer"
                   >
                     <Plus className="h-3.5 w-3.5" aria-hidden="true" />
                     <span>Add Custom</span>
                   </button>
                 </div>
 
-                {/* Category Filter Chips */}
-                <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+                {/* Category Filter Chips (Native Apple Segmented Control) */}
+                <div className="flex p-1 rounded-full bg-black/[0.04] dark:bg-white/[0.06] border border-black/[0.04] dark:border-white/[0.08] backdrop-blur-xl gap-1 overflow-x-auto max-w-full scrollbar-none">
                   {CATS.map(({ key, label }: CatEntry) => {
                     const active = filter === key;
                     const count = catCount(key);
@@ -934,17 +930,17 @@ export default function DuasTracker() {
                         key={key}
                         onClick={() => setFilter(key)}
                         aria-pressed={active}
-                        className={`tap-bounce inline-flex min-h-8 shrink-0 items-center gap-2 rounded-xl px-3.5 text-xs font-bold transition-all ${
+                        className={`ios-spring inline-flex min-h-8 shrink-0 items-center gap-2 rounded-full px-3.5 text-xs font-semibold transition-all cursor-pointer ${
                           active
-                            ? 'bg-primary text-white shadow-sm'
-                            : 'border border-border bg-surface text-muted hover:text-ink shadow-xs'
+                            ? 'bg-white text-black shadow-sm dark:bg-white/20 dark:text-white font-bold'
+                            : 'text-muted hover:text-ink hover:bg-black/5 dark:hover:bg-white/5'
                         }`}
                       >
                         <span>{label}</span>
                         <span
                           className={`rounded-full px-1.5 py-0.2 text-[10px] tabular-nums font-mono ${
                             active
-                              ? 'bg-white/20 text-white'
+                              ? 'bg-black/10 dark:bg-white/25 text-inherit'
                               : 'bg-black/5 dark:bg-white/10 text-muted'
                           }`}
                         >
