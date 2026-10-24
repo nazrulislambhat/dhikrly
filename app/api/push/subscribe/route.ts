@@ -1,4 +1,7 @@
 import { NextResponse } from 'next/server';
+import { db } from '@/db';
+import { pushSubscriptions } from '@/db/schema';
+import { eq, or } from 'drizzle-orm';
 import { hasSupabaseConfig, supabaseAdmin } from '@/lib/supabase-admin';
 import type { NotifSettings } from '@/types';
 
@@ -31,9 +34,10 @@ function validTimezone(value: unknown): value is string {
 }
 
 export async function POST(request: Request) {
-  if (!hasSupabaseConfig) {
+  const hasDb = Boolean(process.env.DATABASE_URL);
+  if (!hasDb && !hasSupabaseConfig) {
     return NextResponse.json(
-      { error: 'Push scheduling is unavailable until Supabase is configured.' },
+      { error: 'Push scheduling is unavailable until database is configured.' },
       { status: 503 },
     );
   }
@@ -54,7 +58,7 @@ export async function POST(request: Request) {
     eveningEnabled: body.eveningEnabled === true,
     eveningTime: typeof body.eveningTime === 'string' ? body.eveningTime : '',
   };
-  const timezone = body.timezone;
+  const timezone = typeof body.timezone === 'string' ? body.timezone : 'UTC';
 
   if (
     typeof endpoint !== 'string' ||
@@ -81,68 +85,93 @@ export async function POST(request: Request) {
       ? body.userId
       : null;
 
-  const { data: existing, error: lookupError } = await supabaseAdmin
-    .from('push_subscriptions')
-    .select('id')
-    .eq('device_id', deviceId)
-    .limit(1)
-    .maybeSingle();
+  // 1. Neon Serverless Drizzle Path (Preferred & High Scale)
+  if (hasDb) {
+    try {
+      await db
+        .insert(pushSubscriptions)
+        .values({
+          userId: userId ?? undefined,
+          deviceId,
+          endpoint,
+          p256dh: keys.p256dh,
+          auth: keys.auth,
+          morningEnabled: settings.morningEnabled,
+          morningTime: settings.morningTime,
+          eveningEnabled: settings.eveningEnabled,
+          eveningTime: settings.eveningTime,
+          timezone,
+          updatedAt: new Date(),
+        })
+        .onConflictDoUpdate({
+          target: pushSubscriptions.endpoint,
+          set: {
+            userId: userId ?? undefined,
+            deviceId,
+            p256dh: keys.p256dh,
+            auth: keys.auth,
+            morningEnabled: settings.morningEnabled,
+            morningTime: settings.morningTime,
+            eveningEnabled: settings.eveningEnabled,
+            eveningTime: settings.eveningTime,
+            timezone,
+            updatedAt: new Date(),
+          },
+        });
 
-  if (lookupError) {
-    console.error('Could not find existing push subscription:', lookupError.message);
-    const isMissing =
-      lookupError.code === 'PGRST205' ||
-      lookupError.code === '42P01' ||
-      lookupError.message?.includes('schema cache') ||
-      lookupError.message?.includes('does not exist');
-
-    return NextResponse.json(
-      {
-        ok: false,
-        isTableMissing: isMissing,
-        error: isMissing
-          ? "Database table 'push_subscriptions' is missing in Supabase. Please run the SQL migration in supabase-migrations/20261016_push_subscriptions.sql in your Supabase SQL Editor."
-          : `Could not check push subscription: ${lookupError.message}`,
-      },
-      { status: isMissing ? 400 : 500 },
-    );
+      return NextResponse.json({ ok: true });
+    } catch (dbErr) {
+      console.error('Neon DB push subscription error:', dbErr);
+      if (!hasSupabaseConfig) {
+        return NextResponse.json(
+          { ok: false, error: 'Could not record push subscription in serverless database.' },
+          { status: 500 }
+        );
+      }
+    }
   }
 
-  const subscription = {
-    user_id: userId,
-    device_id: deviceId,
-    subscription: body.subscription,
-    morning_enabled: settings.morningEnabled,
-    morning_time: settings.morningTime,
-    evening_enabled: settings.eveningEnabled,
-    evening_time: settings.eveningTime,
-    timezone,
-  };
-  const result = existing
-    ? await supabaseAdmin
-        .from('push_subscriptions')
-        .update(subscription)
-        .eq('id', existing.id)
-    : await supabaseAdmin.from('push_subscriptions').insert(subscription);
+  // 2. Supabase Fallback Path (if configured and Neon DB not reachable)
+  if (hasSupabaseConfig) {
+    const { data: existing, error: lookupError } = await supabaseAdmin
+      .from('push_subscriptions')
+      .select('id')
+      .eq('device_id', deviceId)
+      .limit(1)
+      .maybeSingle();
 
-  if (result.error) {
-    console.error('Could not save push subscription:', result.error.message);
-    const isMissing =
-      result.error.code === 'PGRST205' ||
-      result.error.code === '42P01' ||
-      result.error.message?.includes('schema cache') ||
-      result.error.message?.includes('does not exist');
+    if (lookupError) {
+      console.error('Could not find existing push subscription in Supabase:', lookupError.message);
+      return NextResponse.json(
+        { ok: false, error: `Could not check push subscription: ${lookupError.message}` },
+        { status: 500 }
+      );
+    }
 
-    return NextResponse.json(
-      {
-        ok: false,
-        isTableMissing: isMissing,
-        error: isMissing
-          ? "Database table 'push_subscriptions' is missing in Supabase. Please run the SQL migration in supabase-migrations/20261016_push_subscriptions.sql in your Supabase SQL Editor."
-          : `Could not save notification settings: ${result.error.message}`,
-      },
-      { status: isMissing ? 400 : 500 },
-    );
+    const subscription = {
+      user_id: userId,
+      device_id: deviceId,
+      subscription: body.subscription,
+      morning_enabled: settings.morningEnabled,
+      morning_time: settings.morningTime,
+      evening_enabled: settings.eveningEnabled,
+      evening_time: settings.eveningTime,
+      timezone,
+    };
+
+    const result = existing
+      ? await supabaseAdmin.from('push_subscriptions').update(subscription).eq('id', existing.id)
+      : await supabaseAdmin.from('push_subscriptions').insert(subscription);
+
+    if (result.error) {
+      console.error('Could not save push subscription in Supabase:', result.error.message);
+      return NextResponse.json(
+        { ok: false, error: `Could not save notification settings: ${result.error.message}` },
+        { status: 500 }
+      );
+    }
+    return NextResponse.json({ ok: true });
   }
+
   return NextResponse.json({ ok: true });
 }
