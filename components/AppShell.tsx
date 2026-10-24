@@ -81,37 +81,135 @@ const HUB_CATEGORIES: HubCategory[] = [
   {
     title: 'Daily Worship & Tadabbur',
     items: [
-      { href: '/names', label: '99 Names of Allāh', desc: 'Asmā’ al-Ḥusnā, audio & memorization', section: 'names', Icon: Sparkles },
-      { href: '/tadabbur', label: 'Situational Du‘ā', desc: 'Du‘ās for anxiety, grief & life situations', section: 'tadabbur', Icon: BookOpen },
-      { href: '/sunnah', label: 'Daily Sunnah Player', desc: 'Revive prophetic daily habits & audio', section: 'sunnah', Icon: HeartHandshake },
-      { href: '/adhkar', label: 'Adhkār Library', desc: 'Authentic Ḥiṣn al-Muslim collection', section: 'adhkar', Icon: Sparkles },
-      { href: '/books', label: 'Sunni Fiqh Library', desc: 'Recommended books across 4 Madhhabs & where to buy', section: 'books', Icon: BookOpen, badge: 'New' },
+      {
+        href: '/names',
+        label: '99 Names of Allāh',
+        desc: 'Asmā’ al-Ḥusnā, audio & memorization',
+        section: 'names',
+        Icon: Sparkles,
+      },
+      {
+        href: '/tadabbur',
+        label: 'Situational Du‘ā',
+        desc: 'Du‘ās for anxiety, grief & life situations',
+        section: 'tadabbur',
+        Icon: BookOpen,
+      },
+      {
+        href: '/sunnah',
+        label: 'Daily Sunnah Player',
+        desc: 'Revive prophetic daily habits & audio',
+        section: 'sunnah',
+        Icon: HeartHandshake,
+      },
+      {
+        href: '/adhkar',
+        label: 'Adhkār Library',
+        desc: 'Authentic Ḥiṣn al-Muslim collection',
+        section: 'adhkar',
+        Icon: Sparkles,
+      },
+      {
+        href: '/books',
+        label: 'Sunni Fiqh Library',
+        desc: 'Recommended books across 4 Madhhabs & where to buy',
+        section: 'books',
+        Icon: BookOpen,
+        badge: 'New',
+      },
     ],
   },
   {
     title: 'Deen Companions',
     items: [
-      { href: '/qibla', label: 'Qibla Compass', desc: 'Accurate Ka’bah direction anywhere', section: 'qibla', Icon: Compass },
-      { href: '/masjids', label: 'Masjid Finder', desc: 'Nearby verified mosques & prayer times', section: 'masjids', Icon: Landmark },
-      { href: '/halal', label: 'Halal Food Scanner', desc: 'Barcode lookup & E-number additives', section: 'halal', Icon: ShieldCheck },
-      { href: '/qada', label: 'Qadā Tracker', desc: 'Track & repay missed prayers systematically', section: 'qada', Icon: CalendarCheck },
+      {
+        href: '/qibla',
+        label: 'Qibla Compass',
+        desc: 'Accurate Ka’bah direction anywhere',
+        section: 'qibla',
+        Icon: Compass,
+      },
+      {
+        href: '/masjids',
+        label: 'Masjid Finder',
+        desc: 'Nearby verified mosques & prayer times',
+        section: 'masjids',
+        Icon: Landmark,
+      },
+      {
+        href: '/halal',
+        label: 'Halal Food Scanner',
+        desc: 'Barcode lookup & E-number additives',
+        section: 'halal',
+        Icon: ShieldCheck,
+      },
+      {
+        href: '/qada',
+        label: 'Qadā Tracker',
+        desc: 'Track & repay missed prayers systematically',
+        section: 'qada',
+        Icon: CalendarCheck,
+      },
     ],
   },
   {
     title: 'Sacred Seasons & Pillars',
     items: [
-      { href: '/ramadan', label: 'Ramaḍān Hub', desc: 'Suhoor/Iftar countdowns & Khatmah', section: 'ramadan', Icon: MoonStar },
-      { href: '/zakat', label: 'Zakāt & Nisāb', desc: 'Live gold/silver rates & wealth calculator', section: 'zakat', Icon: Scale },
-      { href: '/umrah', label: 'Ḥajj & ‘Umrah', desc: 'Live Ṭawāf & Sa‘ī round counters & Talbiyah', section: 'umrah', Icon: Compass },
+      {
+        href: '/ramadan',
+        label: 'Ramaḍān Hub',
+        desc: 'Suhoor/Iftar countdowns & Khatmah',
+        section: 'ramadan',
+        Icon: MoonStar,
+      },
+      {
+        href: '/zakat',
+        label: 'Zakāt & Nisāb',
+        desc: 'Live gold/silver rates & wealth calculator',
+        section: 'zakat',
+        Icon: Scale,
+      },
+      {
+        href: '/umrah',
+        label: 'Ḥajj & ‘Umrah',
+        desc: 'Live Ṭawāf & Sa‘ī round counters & Talbiyah',
+        section: 'umrah',
+        Icon: Compass,
+      },
     ],
   },
   {
     title: 'Mind, Heart & Growth',
     items: [
-      { href: '/ambient', label: 'Ambient Focus', desc: 'Islamic soundscapes & dhikr breathing', section: 'ambient', Icon: Headphones },
-      { href: '/insights', label: 'Spiritual Insights', desc: 'Daily trends, consistency & habit streaks', section: 'insights', Icon: LineChart },
-      { href: '/settings', label: 'Settings & Cloud Sync', desc: 'Calculation methods, sounds & backup', section: 'settings', Icon: UserRound },
-      { href: '/download', label: 'Download & Apps', desc: 'iOS, Android, macOS & Instant PWA', section: 'download', Icon: Smartphone, badge: 'PWA' },
+      {
+        href: '/ambient',
+        label: 'Ambient Focus',
+        desc: 'Islamic soundscapes & dhikr breathing',
+        section: 'ambient',
+        Icon: Headphones,
+      },
+      {
+        href: '/insights',
+        label: 'Spiritual Insights',
+        desc: 'Daily trends, consistency & habit streaks',
+        section: 'insights',
+        Icon: LineChart,
+      },
+      {
+        href: '/settings',
+        label: 'Settings & Cloud Sync',
+        desc: 'Calculation methods, sounds & backup',
+        section: 'settings',
+        Icon: UserRound,
+      },
+      {
+        href: '/download',
+        label: 'Download & Apps',
+        desc: 'iOS, Android, macOS & Instant PWA',
+        section: 'download',
+        Icon: Smartphone,
+        badge: 'PWA',
+      },
     ],
   },
 ];
@@ -143,7 +241,8 @@ export default function AppShell({
       }
     };
     document.addEventListener('visibilitychange', handleVisibility);
-    return () => document.removeEventListener('visibilitychange', handleVisibility);
+    return () =>
+      document.removeEventListener('visibilitychange', handleVisibility);
   }, []);
 
   useEffect(() => {
@@ -185,7 +284,9 @@ export default function AppShell({
   }, [desktopDropdownOpen]);
 
   const activeDropdownItem = allMoreItems.find(
-    (item) => item.section === active || (item.section === 'ramadan' && active === 'ramadhan'),
+    (item) =>
+      item.section === active ||
+      (item.section === 'ramadan' && active === 'ramadhan'),
   );
   const isDropdownActive = Boolean(activeDropdownItem);
 
@@ -224,7 +325,9 @@ export default function AppShell({
               <span className="block text-xl font-extrabold tracking-tight text-[var(--app-ink)] leading-none font-display">
                 Dhikrly
               </span>
-              <span className={`block text-[10px] font-medium tracking-wide ${muted} mt-1`}>
+              <span
+                className={`block text-[10px] font-medium tracking-wide ${muted} mt-1`}
+              >
                 Daily Spiritual Sanctuary
               </span>
             </span>
@@ -245,7 +348,10 @@ export default function AppShell({
           </button>
 
           {/* Main 4 Navigation Tabs */}
-          <nav className="flex items-center gap-1 py-1" aria-label="Main navigation">
+          <nav
+            className="flex items-center gap-1 py-1"
+            aria-label="Main navigation"
+          >
             {mainNavItems.map((item) => {
               const isCurrent =
                 active === item.section ||
@@ -280,7 +386,9 @@ export default function AppShell({
                     : 'text-muted hover:bg-surface-hover hover:text-ink'
                 }`}
               >
-                <span>{activeDropdownItem ? activeDropdownItem.label : 'Explore'}</span>
+                <span>
+                  {activeDropdownItem ? activeDropdownItem.label : 'Explore'}
+                </span>
                 <ChevronDown
                   className={`h-3 w-3 transition-transform duration-200 ${desktopDropdownOpen ? 'rotate-180' : ''}`}
                   aria-hidden="true"
@@ -288,15 +396,15 @@ export default function AppShell({
               </button>
 
               {desktopDropdownOpen && (
-                <div
-                  className="absolute right-0 top-full mt-2 w-[34rem] rounded-3xl border border-border bg-surface/98 text-ink p-4 shadow-2xl backdrop-blur-2xl z-50 animate-in fade-in zoom-in-95 duration-150"
-                >
+                <div className="absolute right-0 top-full mt-2 w-[34rem] rounded-3xl border border-border bg-surface/98 text-ink p-4 shadow-2xl backdrop-blur-2xl z-50 animate-in fade-in zoom-in-95 duration-150">
                   <div className="px-2 pb-3 mb-2 border-b border-[var(--app-line)] flex items-center justify-between">
                     <div>
                       <span className="text-xs font-extrabold uppercase tracking-wider text-dhikr-700 dark:text-dhikr-400">
                         Explore Dhikrly
                       </span>
-                      <p className="text-[11px] text-sakinah-400">All spiritual tools for your daily deen</p>
+                      <p className="text-[11px] text-sakinah-400">
+                        All spiritual tools for your daily deen
+                      </p>
                     </div>
                     <button
                       type="button"
@@ -320,7 +428,8 @@ export default function AppShell({
                         {cat.items.map((item) => {
                           const isCurrent =
                             active === item.section ||
-                            (item.section === 'ramadan' && active === 'ramadhan');
+                            (item.section === 'ramadan' &&
+                              active === 'ramadhan');
                           return (
                             <Link
                               key={item.href}
@@ -336,8 +445,12 @@ export default function AppShell({
                                 <item.Icon className="h-3.5 w-3.5" />
                               </span>
                               <div className="min-w-0">
-                                <p className="font-semibold leading-tight truncate">{item.label}</p>
-                                <p className="text-[10px] text-sakinah-400 leading-tight truncate mt-0.5">{item.desc}</p>
+                                <p className="font-semibold leading-tight truncate">
+                                  {item.label}
+                                </p>
+                                <p className="text-[10px] text-sakinah-400 leading-tight truncate mt-0.5">
+                                  {item.desc}
+                                </p>
                               </div>
                             </Link>
                           );
@@ -382,7 +495,10 @@ export default function AppShell({
                   : muted
               }`}
             >
-              <Smartphone className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
+              <Smartphone
+                className="h-3.5 w-3.5 text-primary"
+                aria-hidden="true"
+              />
               <span className="hidden xl:inline">Get App</span>
             </Link>
 
@@ -397,7 +513,6 @@ export default function AppShell({
               }`}
             >
               <UserRound className="h-3.5 w-3.5" aria-hidden="true" />
-              <span className="hidden xl:inline">Settings</span>
             </Link>
 
             <button
@@ -407,8 +522,11 @@ export default function AppShell({
               aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'}
               title={dark ? 'Switch to light mode' : 'Switch to dark mode'}
             >
-              {dark ? <Sun className="h-3.5 w-3.5" aria-hidden="true" /> : <Moon className="h-3.5 w-3.5" aria-hidden="true" />}
-              <span className="hidden xl:inline">{dark ? 'Light' : 'Dark'}</span>
+              {dark ? (
+                <Sun className="h-3.5 w-3.5" aria-hidden="true" />
+              ) : (
+                <Moon className="h-3.5 w-3.5" aria-hidden="true" />
+              )}
             </button>
           </div>
         </div>
@@ -419,8 +537,15 @@ export default function AppShell({
         {/* Mobile Top Header (Visible on screens < 768px: md:hidden) */}
         <div className="sticky top-0 z-30 flex min-h-[4.25rem] items-center border-b border-[var(--app-line)] bg-[var(--app-bg)]/90 px-4 pt-[max(0.5rem,env(safe-area-inset-top))] pb-2 backdrop-blur-xl md:hidden">
           <div className="mx-auto flex h-full w-full items-center justify-between">
-            <Link href="/" className="inline-flex items-center gap-2.5 no-underline" aria-label="Dhikrly home">
-              <span className="grid h-9 w-9 place-items-center rounded-2xl bg-gradient-to-br from-dhikr-700 to-dhikr-900 text-lg font-bold text-white shadow-sm dark:from-dhikr-400 dark:to-dhikr-600 dark:text-dhikr-950" aria-hidden="true">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-2.5 no-underline"
+              aria-label="Dhikrly home"
+            >
+              <span
+                className="grid h-9 w-9 place-items-center rounded-2xl bg-gradient-to-br from-dhikr-700 to-dhikr-900 text-lg font-bold text-white shadow-sm dark:from-dhikr-400 dark:to-dhikr-600 dark:text-dhikr-950"
+                aria-hidden="true"
+              >
                 ذ
               </span>
               <span className="text-lg font-extrabold tracking-tight text-[var(--app-ink)] font-display">
@@ -454,10 +579,16 @@ export default function AppShell({
                 type="button"
                 className="grid h-9 w-9 place-items-center rounded-full border border-[var(--app-line)] bg-[var(--app-surface)] text-dhikr-800 dark:text-dhikr-200 shadow-xs"
                 onClick={onToggleDark}
-                aria-label={dark ? 'Use light appearance' : 'Use dark appearance'}
+                aria-label={
+                  dark ? 'Use light appearance' : 'Use dark appearance'
+                }
                 title={dark ? 'Use light appearance' : 'Use dark appearance'}
               >
-                {dark ? <Sun className="h-4 w-4" aria-hidden="true" /> : <Moon className="h-4 w-4" aria-hidden="true" />}
+                {dark ? (
+                  <Sun className="h-4 w-4" aria-hidden="true" />
+                ) : (
+                  <Moon className="h-4 w-4" aria-hidden="true" />
+                )}
               </button>
             </div>
           </div>
@@ -472,7 +603,9 @@ export default function AppShell({
         aria-label="Main mobile navigation"
       >
         {mainNavItems.map((item) => {
-          const isCurrent = active === item.section || (item.section === 'adhkar' && active === 'adhkaar');
+          const isCurrent =
+            active === item.section ||
+            (item.section === 'adhkar' && active === 'adhkaar');
           return (
             <Link
               key={item.href}
@@ -519,8 +652,12 @@ export default function AppShell({
             <div className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-sakinah-300 dark:bg-sakinah-700" />
             <div className="mb-4 flex items-center justify-between">
               <div>
-                <h3 className="text-base font-extrabold text-[var(--app-ink)]">Explore Dhikrly</h3>
-                <p className="text-xs text-[var(--app-muted)]">All daily tools for your deen</p>
+                <h3 className="text-base font-extrabold text-[var(--app-ink)]">
+                  Explore Dhikrly
+                </h3>
+                <p className="text-xs text-[var(--app-muted)]">
+                  All daily tools for your deen
+                </p>
               </div>
               <button
                 type="button"
@@ -560,8 +697,12 @@ export default function AppShell({
                             <item.Icon className="h-5 w-5" />
                           </span>
                           <div className="min-w-0 flex-1">
-                            <span className="block text-sm font-bold text-[var(--app-ink)]">{item.label}</span>
-                            <span className="block text-xs text-[var(--app-muted)] truncate">{item.desc}</span>
+                            <span className="block text-sm font-bold text-[var(--app-ink)]">
+                              {item.label}
+                            </span>
+                            <span className="block text-xs text-[var(--app-muted)] truncate">
+                              {item.desc}
+                            </span>
                           </div>
                         </Link>
                       );
