@@ -106,18 +106,6 @@ export default function AuthModal({ dark, onClose }: AuthModalProps) {
           >✕</button>
         </div>
 
-        {!hasSupabaseConfig && (
-          <div
-            className={`mb-4 rounded-xl border p-3 text-[11px] leading-relaxed ${
-              dark
-                ? 'border-amber-400/20 bg-amber-400/10 text-amber-300'
-                : 'border-amber-200 bg-amber-50 text-amber-800'
-            }`}
-          >
-            <p className="font-semibold mb-0.5">Cloud sync setup required</p>
-            Supabase is not configured yet. Add your credentials to <code className="font-mono text-[10px] bg-black/10 dark:bg-white/10 px-1 py-0.5 rounded">.env.local</code> to enable cross-device sync.
-          </div>
-        )}
 
         {/* Google button (not on reset view) */}
         {view !== 'reset' && (
