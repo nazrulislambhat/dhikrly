@@ -57,7 +57,7 @@ export default function UpdateBanner({ dark }: UpdateBannerProps) {
       {/* ── Pill notification ── */}
       <div className="fixed left-1/2 top-4 z-[9990] -translate-x-1/2 animate-slide-down">
         <div
-          className="flex items-center gap-3 rounded-2xl border border-border bg-surface/95 text-ink px-4 py-3 shadow-2xl backdrop-blur-md w-screen transition-all justify-center "
+          className="flex items-center gap-3 rounded-2xl border border-border bg-surface/95 text-ink px-4 py-3 shadow-2xl backdrop-blur-md w-100 transition-all justify-center "
         >
           {isUpdating ? (
             /* Mini in-pill progress view */

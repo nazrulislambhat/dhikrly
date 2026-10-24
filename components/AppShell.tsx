@@ -397,7 +397,7 @@ export default function AppShell({
               }`}
             >
               <UserRound className="h-3.5 w-3.5" aria-hidden="true" />
-              <span className="hidden xl:inline">Profile</span>
+    
             </Link>
 
             <button
@@ -407,7 +407,7 @@ export default function AppShell({
               aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'}
             >
               {dark ? <Sun className="h-3.5 w-3.5" aria-hidden="true" /> : <Moon className="h-3.5 w-3.5" aria-hidden="true" />}
-              <span>{dark ? 'Light' : 'Dark'}</span>
+              
             </button>
           </div>
         </div>
