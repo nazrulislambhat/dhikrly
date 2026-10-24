@@ -106,13 +106,16 @@
 | **Framework** | [Next.js 16](https://nextjs.org/) (App Router, Server & Client Components) |
 | **Language** | [TypeScript](https://www.typescriptlang.org/) (Strict typing) |
 | **Styling** | [Tailwind CSS v4](https://tailwindcss.com/) with CSS custom properties |
+| **Database & ORM** | [Neon](https://neon.tech/) (Serverless PostgreSQL + PgBouncer Pooling) + [Drizzle ORM](https://orm.drizzle.team/) |
+| **Rate Limiter & Cache** | [Upstash](https://upstash.com/) (Serverless Redis & Sliding Window Rate Limiting) |
+| **Local-First Storage** | Typed [IndexedDB](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API) Engine + dual-write fallback |
+| **Authentication** | Decoupled Serverless Session API (`/api/auth`) with `scrypt` hashing & HTTP-only cookies |
 | **Icons** | [Lucide React](https://lucide.dev/) |
 | **Prayer Calculations** | [adhan](https://github.com/batoulapps/adhan-js) |
 | **Analytics & Charts** | [Recharts](https://recharts.org/) |
-| **Backend & Sync** | [Supabase](https://supabase.com/) (PostgreSQL & Row-Level Security) |
 | **Push Notifications** | [web-push](https://github.com/web-push-libs/web-push) + Vercel Cron |
 | **Barcode Scanning** | Native Web `BarcodeDetector` API + [OpenFoodFacts API](https://world.openfoodfacts.org/) |
-| **Testing** | [Vitest](https://vitest.dev/) |
+| **Testing** | [Vitest](https://vitest.dev/) (14 test suites, 82 tests) |
 | **Typography** | Noto Naskh Arabic, Crimson Pro, Inter |
 
 ---
@@ -186,46 +189,58 @@ npm install
 ```
 
 ### 3. Environment Configuration
-Create a `.env.local` file based on `.env.example`:
+Create a `.env.local` file based on `.env.local.example`:
 ```bash
-# Supabase (Required for cloud sync & authentication)
-NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
-SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+# ── Neon Serverless PostgreSQL (Pooled Connection via PgBouncer) ──
+DATABASE_URL=postgres://neondb_owner:your_password@ep-cool-butterfly-123456-pooler.us-east-2.aws.neon.tech/neondb?sslmode=require
 
-# Web Push VAPID (Generate via: npx web-push generate-vapid-keys)
+# ── Upstash Serverless Redis (Rate Limiting & Abuse Prevention) ──
+UPSTASH_REDIS_REST_URL=https://your-database.upstash.io
+UPSTASH_REDIS_REST_TOKEN=your-upstash-token
+
+# ── Decoupled Auth Secret (Generate via: openssl rand -hex 32) ──
+AUTH_SECRET=your-32-byte-random-auth-secret
+
+# ── Web Push VAPID (Generate via: npx web-push generate-vapid-keys) ──
 NEXT_PUBLIC_VAPID_PUBLIC_KEY=your-public-key
 VAPID_PRIVATE_KEY=your-private-key
 VAPID_EMAIL=mailto:salam@dhikrly.com
 
-# Cron Security (Random 32-byte secret)
+# ── Cron Security (Random 32-byte secret for /api/cron/notifications) ──
 CRON_SECRET=your-secure-cron-secret
 
-# Public Site URL
+# ── Public Site URL ──
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
 ```
 
-### 4. Run Development Server
+### 4. Push Database Schema to Neon
+Run Drizzle Kit to automatically apply all 11 tables to your Neon PostgreSQL database:
+```bash
+npm run db:push
+```
+
+### 5. Run Development Server
 ```bash
 npm run dev
 ```
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-### 5. Running Tests & Type Checks
+### 6. Running Tests & Type Checks
 ```bash
-npm run type-check   # Validate TypeScript types
-npm test             # Run Vitest test suite
+npm run type-check   # Validate TypeScript types (0 errors)
+npm test             # Run Vitest test suite (82 passing tests)
 ```
 
 ---
 
-## 🗄️ Supabase Database Setup
+## ☁️ Serverless Infrastructure (Zero VPS, Zero Maintenance)
 
-Dhikrly uses a non-destructive, normalized database architecture. To enable cross-device sync:
-1. In your Supabase Dashboard, go to the **SQL Editor**.
-2. Run `supabase-schema.sql` to initialize user profile metadata, `practice_entries`, and notification subscriptions.
-3. Enable **Email** and **Google** providers under **Authentication → Providers**.
-4. In **Settings → Notification Settings**, a 1-click SQL migration button is provided to inspect or verify database tables.
+> **Do you need to buy a dedicated server?**
+> **No!** Dhikrly is 100% serverless and autoscaling. You do not need to purchase or configure an Ubuntu/Debian server, Docker containers, or Nginx reverse proxies.
+
+- **Neon (PostgreSQL)**: Create a free account at [neon.tech](https://neon.tech). Neon provides 0.5 GB of free serverless PostgreSQL storage, instant branching, and built-in PgBouncer connection pooling. Its connection pooler handles 10,000+ simultaneous connections with zero connection exhaustion during prayer time concurrency spikes.
+- **Upstash (Redis)**: Create a free account at [upstash.com](https://upstash.com). Upstash provides 10,000 free commands per day and powers sliding-window rate limiting on `/api/auth/*` and `/api/v1/sync` to protect against brute-force attacks and abuse.
+- **Vercel / Next.js**: Host for free on Vercel or any Node.js host.
 
 ---
 

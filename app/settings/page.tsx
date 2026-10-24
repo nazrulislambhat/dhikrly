@@ -55,6 +55,7 @@ import {
   STREAK_KEY,
   CUSTOM_DUAS_KEY,
 } from '@/lib/storage';
+import { flushSync, pullRemoteSyncState, migrateLocalDataToCloud } from '@/lib/syncEngine';
 import {
   DEFAULT_QURAN_SETTINGS,
   DEFAULT_RECITERS,
@@ -247,6 +248,8 @@ export default function SettingsPage() {
   const [showUrlInput, setShowUrlInput] = useState(false);
   const [customUrlInput, setCustomUrlInput] = useState('');
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [isMigrating, setIsMigrating] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const importInputRef = useRef<HTMLInputElement>(null);
@@ -427,6 +430,52 @@ export default function SettingsPage() {
     setHasUnsavedChanges(false);
     setStatusMessage('All settings saved successfully across device and cloud!');
     setTimeout(() => setStatusMessage(''), 3500);
+  };
+
+  const handleManualSync = async () => {
+    setIsSyncing(true);
+    setStatusMessage('');
+    try {
+      await flushSync();
+      const success = await pullRemoteSyncState();
+      if (success) {
+        setStatusMessage('Cloud synchronization complete. All records up to date.');
+      } else {
+        setStatusMessage('Sync complete. Offline changes pushed to cloud.');
+      }
+    } catch (err) {
+      console.error('Manual sync failed:', err);
+      setErrorMessage('Sync failed. Please check your internet connection.');
+      setTimeout(() => setErrorMessage(''), 3500);
+    } finally {
+      setIsSyncing(false);
+      setTimeout(() => setStatusMessage(''), 3500);
+    }
+  };
+
+  const handleManualCloudBackup = async () => {
+    if (!user) {
+      setShowAuth(true);
+      return;
+    }
+    setIsMigrating(true);
+    setStatusMessage('');
+    try {
+      const res = await migrateLocalDataToCloud(user.id, true);
+      if (res.success) {
+        setStatusMessage(`Successfully backed up ${res.migratedCount} local records to your cloud account.`);
+      } else {
+        setErrorMessage('Backup could not be completed. Please check your connection.');
+        setTimeout(() => setErrorMessage(''), 3500);
+      }
+    } catch (err) {
+      console.error('Backup failed:', err);
+      setErrorMessage('Backup failed. Please check your internet connection.');
+      setTimeout(() => setErrorMessage(''), 3500);
+    } finally {
+      setIsMigrating(false);
+      setTimeout(() => setStatusMessage(''), 4000);
+    }
   };
 
   // Upload Photo handler with instant client-side canvas compression to ~256x256 WebP/JPEG (<35KB)
@@ -911,8 +960,17 @@ export default function SettingsPage() {
                 <div className="min-w-0 space-y-1">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-2.5 py-0.5 text-[11px] font-bold text-primary">
-                      <ShieldCheck className="h-3 w-3" />
-                      {user ? 'Cloud Synced' : 'Offline Pilgrim'}
+                      {user ? (
+                        <>
+                          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                          Neon Cloud Synced
+                        </>
+                      ) : (
+                        <>
+                          <HardDrive className="h-3 w-3" />
+                          Offline Local Mode
+                        </>
+                      )}
                     </span>
                     <span className="inline-flex items-center gap-1 rounded-full border border-border bg-canvas px-2.5 py-0.5 text-[11px] font-bold text-ink">
                       <Palette className="h-3 w-3 text-primary" />
@@ -952,13 +1010,25 @@ export default function SettingsPage() {
               {/* Account Sign In / Sign Out Button */}
               <div className="flex flex-wrap items-center gap-2 self-start md:self-center">
                 {user ? (
-                  <button
-                    type="button"
-                    onClick={() => void signOut()}
-                    className="min-h-10 rounded-xl border border-border px-4 text-xs font-semibold hover:bg-canvas transition-colors cursor-pointer text-ink"
-                  >
-                    Sign out
-                  </button>
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => void handleManualSync()}
+                      disabled={isSyncing}
+                      title="Force sync with Neon Serverless DB"
+                      className="min-h-10 inline-flex items-center gap-1.5 rounded-xl border border-primary/30 bg-primary/10 px-3.5 text-xs font-bold text-primary hover:bg-primary/20 transition-all cursor-pointer disabled:opacity-50"
+                    >
+                      <RefreshCw className={`h-3.5 w-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
+                      <span>{isSyncing ? 'Syncing…' : 'Sync Now'}</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => void signOut()}
+                      className="min-h-10 rounded-xl border border-border px-4 text-xs font-semibold hover:bg-canvas transition-colors cursor-pointer text-ink"
+                    >
+                      Sign out
+                    </button>
+                  </>
                 ) : (
                   <button
                     type="button"
@@ -2003,6 +2073,65 @@ export default function SettingsPage() {
                 </div>
 
                 <div className="mt-5 space-y-5">
+                  {/* Neon Cloud Synchronization Card */}
+                  <div className="rounded-2xl border border-border bg-canvas p-4 sm:p-5 space-y-3">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-bold text-ink uppercase tracking-wider">
+                            Neon + Upstash Cloud Sync
+                          </span>
+                          <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                            user ? 'bg-emerald-500/10 text-emerald-600 border border-emerald-500/30' : 'bg-ink/5 text-ink/60 border border-border'
+                          }`}>
+                            <span className={`h-1.5 w-1.5 rounded-full ${user ? 'bg-emerald-500 animate-pulse' : 'bg-ink/40'}`} />
+                            {user ? 'Cloud Active' : 'Offline Mode'}
+                          </span>
+                        </div>
+                        <p className="text-xs text-ink/70 mt-1">
+                          {user
+                            ? `Synchronizing with Neon Serverless DB (${user.email}). Records are safely pooled and synced in real time.`
+                            : 'All data is stored locally in IndexedDB. Sign in to enable cross-device backup and serverless sync.'}
+                        </p>
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-2 shrink-0">
+                        {user ? (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => void handleManualSync()}
+                              disabled={isSyncing}
+                              className="inline-flex items-center gap-1.5 rounded-xl border border-primary/30 bg-primary/10 px-3.5 py-2 text-xs font-bold text-primary hover:bg-primary/20 transition-all cursor-pointer disabled:opacity-50"
+                            >
+                              <RefreshCw className={`h-3.5 w-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
+                              <span>{isSyncing ? 'Syncing…' : 'Sync to Cloud'}</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => void handleManualCloudBackup()}
+                              disabled={isMigrating}
+                              className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-surface px-3.5 py-2 text-xs font-bold text-ink hover:bg-canvas transition-all cursor-pointer disabled:opacity-50"
+                              title="Upload all local IndexedDB history to Neon Cloud"
+                            >
+                              <Upload className="h-3.5 w-3.5 text-primary" />
+                              <span>{isMigrating ? 'Backing Up…' : 'Backup Local History to Cloud'}</span>
+                            </button>
+                          </>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => setShowAuth(true)}
+                            className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-3.5 py-2 text-xs font-bold text-primary-fg hover:bg-primary-hover transition-all cursor-pointer"
+                          >
+                            <UserRound className="h-3.5 w-3.5" />
+                            <span>Sign In to Enable Cloud Sync</span>
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
                   {/* Storage Diagnostics Inspector */}
                   <div className="rounded-2xl border border-border bg-canvas p-4 sm:p-5 space-y-3">
                     <div className="flex items-center justify-between">
@@ -2094,7 +2223,7 @@ export default function SettingsPage() {
           </div>
 
           {/* Sticky Bottom Save Bar */}
-          <div className="sticky bottom-4 z-20 flex items-center justify-between gap-4 rounded-3xl border border-primary/40 bg-surface/95 p-4 shadow-xl backdrop-blur-xl">
+          <div className="sticky bottom-20 z-20 flex items-center justify-between gap-4 rounded-3xl border border-primary/40 bg-surface/95 p-4 shadow-xl backdrop-blur-xl">
             <div className="flex items-center gap-2 text-xs font-bold text-primary">
               <Sparkles className="h-4 w-4 shrink-0 text-primary" />
               <span>

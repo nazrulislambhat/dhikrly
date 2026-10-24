@@ -31,6 +31,8 @@ import {
 
 import { useServiceWorker } from '@/hooks/useServiceWorker';
 import { scheduleNotifications } from '@/components/NotificationSettings';
+import { initClientStorage } from '@/lib/storage';
+import { pullRemoteSyncState } from '@/lib/syncEngine';
 import UpdateBanner from '@/components/UpdateBanner';
 import DhikrlyProModal from '@/components/DhikrlyProModal';
 import CommandPaletteModal from '@/components/CommandPaletteModal';
@@ -136,6 +138,8 @@ export default function AppShell({
   const surface = 'border-border bg-surface/90 backdrop-blur-xl';
 
   useEffect(() => {
+    initClientStorage();
+    pullRemoteSyncState().catch(() => {});
     scheduleNotifications();
     const handleVisibility = () => {
       if (document.visibilityState === 'visible') {
