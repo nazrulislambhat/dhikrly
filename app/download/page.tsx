@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   Apple,
   Smartphone,
@@ -185,7 +186,7 @@ export default function DownloadPage() {
           )}
 
           {/* ── Hero Section ── */}
-          <header className={`${cardClass} relative overflow-hidden text-center sm:text-left`}>
+          <header className={`${cardClass} relative overflow-hidden`}>
             {/* Ambient Background Glow */}
             <div
               className="pointer-events-none absolute -top-24 -right-24 h-96 w-96 rounded-full bg-primary/10 blur-3xl"
@@ -196,79 +197,96 @@ export default function DownloadPage() {
               aria-hidden="true"
             />
 
-            <div className="relative z-10 max-w-4xl mx-auto sm:mx-0 space-y-5">
-              {/* Top Badge */}
-              <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3.5 py-1.5 text-xs font-extrabold uppercase tracking-wider text-primary">
-                <span className="h-2 w-2 rounded-full bg-primary animate-pulse" />
-                <span>Native Apps in Development · PWA Available Worldwide</span>
+            <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-center">
+              <div className="lg:col-span-7 space-y-5 text-center sm:text-left">
+                {/* Top Badge */}
+                <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3.5 py-1.5 text-xs font-extrabold uppercase tracking-wider text-primary">
+                  <span className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+                  <span>Native Apps in Development · PWA Available Worldwide</span>
+                </div>
+
+                {/* Title */}
+                <h1 className="text-3xl sm:text-5xl lg:text-5xl xl:text-6xl font-extrabold tracking-tight font-display text-ink leading-[1.1]">
+                  Carry Dhikrly On <br className="hidden sm:inline" />
+                  <span className="bg-gradient-to-r from-primary via-emerald-500 to-link bg-clip-text text-transparent">
+                    Every Screen You Own.
+                  </span>
+                </h1>
+
+                {/* Description */}
+                <p className="text-base sm:text-lg text-ink/80 max-w-2xl leading-relaxed">
+                  Native apps for <strong>Apple iOS</strong>, <strong>Android</strong>, and <strong>macOS</strong> are currently being crafted. In the meantime, you don’t have to wait: install our <strong>Progressive Web App (PWA)</strong> today — it installs in seconds, works 100% offline, and seamlessly syncs across all your devices in real-time.
+                </p>
+
+                {/* Quick Actions & CTA Buttons */}
+                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 pt-2">
+                  <Link
+                    href="/"
+                    className="ios-press inline-flex items-center justify-center gap-2.5 rounded-2xl bg-primary hover:bg-primary-hover text-primary-fg font-extrabold text-sm px-6 py-3.5 shadow-lg shadow-primary/20 no-underline cursor-pointer"
+                  >
+                    <Zap className="h-4 w-4" />
+                    <span>Launch Web App (PWA)</span>
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+
+                  <button
+                    type="button"
+                    onClick={handleTriggerInstall}
+                    className="ios-press inline-flex items-center justify-center gap-2 rounded-2xl border border-border bg-surface hover:bg-surface-hover text-ink font-bold text-sm px-5 py-3.5 shadow-xs cursor-pointer"
+                  >
+                    <Download className="h-4 w-4 text-primary" />
+                    <span>{installPrompt ? 'Install App (1-Click)' : 'Installation Guide'}</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleCopyShareLink}
+                    className="ios-press inline-flex items-center justify-center gap-2 rounded-2xl border border-border bg-surface hover:bg-surface-hover text-ink font-semibold text-xs px-4 py-3.5 shadow-xs cursor-pointer"
+                    title="Copy link to install on other devices"
+                  >
+                    {copiedLink ? (
+                      <>
+                        <Check className="h-3.5 w-3.5 text-primary" />
+                        <span className="text-primary font-bold">Link Copied!</span>
+                      </>
+                    ) : (
+                      <>
+                        <Share2 className="h-3.5 w-3.5 text-muted" />
+                        <span>Share / Sync to Device</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                {/* Live Capabilities Ticker */}
+                <div className="pt-4 border-t border-border/60 flex flex-wrap items-center justify-center sm:justify-start gap-4 sm:gap-6 text-xs font-semibold text-muted">
+                  <div className="flex items-center gap-1.5">
+                    <Cloud className="h-3.5 w-3.5 text-primary" />
+                    <span>Real-Time Cloud Sync</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <WifiOff className="h-3.5 w-3.5 text-primary" />
+                    <span>Works 100% Offline</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <ShieldCheck className="h-3.5 w-3.5 text-primary" />
+                    <span>0 MB Storage Bloat · Ad-Free</span>
+                  </div>
+                </div>
               </div>
 
-              {/* Title */}
-              <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight font-display text-ink leading-[1.1]">
-                Carry Dhikrly On <br className="hidden sm:inline" />
-                <span className="bg-gradient-to-r from-primary via-emerald-500 to-link bg-clip-text text-transparent">
-                  Every Screen You Own.
-                </span>
-              </h1>
-
-              {/* Description */}
-              <p className="text-base sm:text-lg text-ink/80 max-w-2xl leading-relaxed">
-                Native apps for <strong>Apple iOS</strong>, <strong>Android</strong>, and <strong>macOS</strong> are currently being crafted. In the meantime, you don’t have to wait: install our <strong>Progressive Web App (PWA)</strong> today — it installs in seconds, works 100% offline, and seamlessly syncs across all your devices in real-time.
-              </p>
-
-              {/* Quick Actions & CTA Buttons */}
-              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 pt-2">
-                <Link
-                  href="/"
-                  className="ios-press inline-flex items-center justify-center gap-2.5 rounded-2xl bg-primary hover:bg-primary-hover text-primary-fg font-extrabold text-sm px-6 py-3.5 shadow-lg shadow-primary/20 no-underline cursor-pointer"
-                >
-                  <Zap className="h-4 w-4" />
-                  <span>Launch Web App (PWA)</span>
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-
-                <button
-                  type="button"
-                  onClick={handleTriggerInstall}
-                  className="ios-press inline-flex items-center justify-center gap-2 rounded-2xl border border-border bg-surface hover:bg-surface-hover text-ink font-bold text-sm px-5 py-3.5 shadow-xs cursor-pointer"
-                >
-                  <Download className="h-4 w-4 text-primary" />
-                  <span>{installPrompt ? 'Install App (1-Click)' : 'Installation Guide'}</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={handleCopyShareLink}
-                  className="ios-press inline-flex items-center justify-center gap-2 rounded-2xl border border-border bg-surface hover:bg-surface-hover text-ink font-semibold text-xs px-4 py-3.5 shadow-xs cursor-pointer"
-                  title="Copy link to install on other devices"
-                >
-                  {copiedLink ? (
-                    <>
-                      <Check className="h-3.5 w-3.5 text-primary" />
-                      <span className="text-primary font-bold">Link Copied!</span>
-                    </>
-                  ) : (
-                    <>
-                      <Share2 className="h-3.5 w-3.5 text-muted" />
-                      <span>Share / Sync to Device</span>
-                    </>
-                  )}
-                </button>
-              </div>
-
-              {/* Live Capabilities Ticker */}
-              <div className="pt-4 border-t border-border/60 flex flex-wrap items-center justify-center sm:justify-start gap-4 sm:gap-6 text-xs font-semibold text-muted">
-                <div className="flex items-center gap-1.5">
-                  <Cloud className="h-3.5 w-3.5 text-primary" />
-                  <span>Real-Time Cloud Sync</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <WifiOff className="h-3.5 w-3.5 text-primary" />
-                  <span>Works 100% Offline</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <ShieldCheck className="h-3.5 w-3.5 text-primary" />
-                  <span>0 MB Storage Bloat · Ad-Free</span>
+              {/* Featured Multi-Device Cloud Sync Hero Graphic */}
+              <div className="lg:col-span-5 relative">
+                <div className="relative mx-auto max-w-md lg:max-w-none rounded-3xl overflow-hidden border border-border/80 bg-black/40 shadow-2xl p-1.5 group">
+                  <Image
+                    src="/download-sync-devices.png"
+                    alt="Carry Dhikrly on every screen with real-time sync across laptop, tablet, and mobile"
+                    width={1024}
+                    height={576}
+                    priority
+                    className="w-full h-auto rounded-[1.25rem] object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 rounded-3xl pointer-events-none ring-1 ring-inset ring-white/10" />
                 </div>
               </div>
             </div>
@@ -513,7 +531,7 @@ export default function DownloadPage() {
               <div className="lg:col-span-7 space-y-4">
                 <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
                   <Cloud className="h-3.5 w-3.5" />
-                  <span>REAL-TIME SUPABASE CLOUD ARCHITECTURE</span>
+                  <span>REAL-TIME SERVERLESS CLOUD ARCHITECTURE</span>
                 </div>
                 
                 <h2 id="sync-heading" className="text-2xl sm:text-3xl font-extrabold text-ink tracking-tight">
@@ -558,56 +576,22 @@ export default function DownloadPage() {
                 </div>
               </div>
 
-              {/* Visual Sync Diagram Card */}
-              <div className="lg:col-span-5 rounded-2xl border border-border bg-canvas p-6 space-y-4">
-                <div className="flex items-center justify-between pb-3 border-b border-border">
-                  <span className="text-xs font-extrabold uppercase tracking-wider text-muted">Active Sync Mesh</span>
-                  <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-primary">
-                    <span className="h-2 w-2 rounded-full bg-primary animate-ping" />
-                    Live & Connected
-                  </span>
-                </div>
-
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between p-3 rounded-xl border border-border bg-surface">
-                    <div className="flex items-center gap-2.5">
-                      <Smartphone className="h-4 w-4 text-primary" />
-                      <div>
-                        <p className="text-xs font-bold text-ink">iPhone (PWA Safari)</p>
-                        <p className="text-[10px] text-muted">Morning Adhkār: Completed</p>
-                      </div>
+              {/* Visual Sync Diagram Card with Uploaded Device Mesh Illustration */}
+              <div className="lg:col-span-5 rounded-3xl overflow-hidden border border-border/80 bg-black/40 p-2 shadow-xl group">
+                <div className="relative rounded-2xl overflow-hidden">
+                  <Image
+                    src="/download-sync-devices.png"
+                    alt="Dhikrly active sync mesh connecting iPhone, iPad, and Mac"
+                    width={1024}
+                    height={576}
+                    className="w-full h-auto object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                  <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between p-2.5 rounded-xl bg-surface/90 backdrop-blur-md border border-border/60 text-xs shadow-md">
+                    <div className="flex items-center gap-2">
+                      <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                      <span className="font-bold text-ink">Unified Spiritual Sync Mesh</span>
                     </div>
-                    <span className="text-[10px] font-mono font-bold text-primary">Instant</span>
-                  </div>
-
-                  <div className="flex justify-center text-muted">
-                    <RotateCw className="h-4 w-4 animate-spin text-primary/60" style={{ animationDuration: '6s' }} />
-                  </div>
-
-                  <div className="flex items-center justify-between p-3 rounded-xl border border-border bg-surface">
-                    <div className="flex items-center gap-2.5">
-                      <Laptop className="h-4 w-4 text-primary" />
-                      <div>
-                        <p className="text-xs font-bold text-ink">MacBook / Desktop</p>
-                        <p className="text-[10px] text-muted">Ṣalāh Times & Qadā synced</p>
-                      </div>
-                    </div>
-                    <span className="text-[10px] font-mono font-bold text-primary">Synced</span>
-                  </div>
-
-                  <div className="flex justify-center text-muted">
-                    <RotateCw className="h-4 w-4 animate-spin text-primary/60" style={{ animationDuration: '6s' }} />
-                  </div>
-
-                  <div className="flex items-center justify-between p-3 rounded-xl border border-border bg-surface">
-                    <div className="flex items-center gap-2.5">
-                      <Cloud className="h-4 w-4 text-link" />
-                      <div>
-                        <p className="text-xs font-bold text-ink">Upcoming Native Apps</p>
-                        <p className="text-[10px] text-muted">Automatic day-one cloud import</p>
-                      </div>
-                    </div>
-                    <span className="text-[10px] font-extrabold text-link">Ready</span>
+                    <span className="text-[10px] font-extrabold text-primary font-mono">100% Synced</span>
                   </div>
                 </div>
               </div>

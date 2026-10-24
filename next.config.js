@@ -31,6 +31,11 @@ const nextConfig = {
         destination: '/ramadan',
         permanent: true,
       },
+      {
+        source: '/downloads',
+        destination: '/download',
+        permanent: true,
+      },
     ];
   },
 
