@@ -272,21 +272,96 @@ export const usersRelations = relations(users, ({ many, one }) => ({
   adhkarCompletions: many(adhkarCompletions),
   customDuas: many(customDuas),
   salahLogs: many(salahLogs),
-  qadaBalance: one(qadaBalances, {
-    fields: [users.id],
-    references: [qadaBalances.userId],
-  }),
+  qadaBalance: one(qadaBalances),
   qadaHistory: many(qadaHistory),
-  quranProgress: one(quranProgress, {
-    fields: [users.id],
-    references: [quranProgress.userId],
-  }),
+  quranProgress: one(quranProgress),
   quranBookmarks: many(quranBookmarks),
   tasbihSessions: many(tasbihSessions),
-  streak: one(userStreaks, {
-    fields: [users.id],
-    references: [userStreaks.userId],
-  }),
+  streak: one(userStreaks),
   ramadanLogs: many(ramadanLogs),
   pushSubscriptions: many(pushSubscriptions),
+}));
+
+export const sessionsRelations = relations(sessions, ({ one }) => ({
+  user: one(users, {
+    fields: [sessions.userId],
+    references: [users.id],
+  }),
+}));
+
+export const adhkarCompletionsRelations = relations(adhkarCompletions, ({ one }) => ({
+  user: one(users, {
+    fields: [adhkarCompletions.userId],
+    references: [users.id],
+  }),
+}));
+
+export const customDuasRelations = relations(customDuas, ({ one }) => ({
+  user: one(users, {
+    fields: [customDuas.userId],
+    references: [users.id],
+  }),
+}));
+
+export const salahLogsRelations = relations(salahLogs, ({ one }) => ({
+  user: one(users, {
+    fields: [salahLogs.userId],
+    references: [users.id],
+  }),
+}));
+
+export const qadaBalancesRelations = relations(qadaBalances, ({ one }) => ({
+  user: one(users, {
+    fields: [qadaBalances.userId],
+    references: [users.id],
+  }),
+}));
+
+export const qadaHistoryRelations = relations(qadaHistory, ({ one }) => ({
+  user: one(users, {
+    fields: [qadaHistory.userId],
+    references: [users.id],
+  }),
+}));
+
+export const quranProgressRelations = relations(quranProgress, ({ one }) => ({
+  user: one(users, {
+    fields: [quranProgress.userId],
+    references: [users.id],
+  }),
+}));
+
+export const quranBookmarksRelations = relations(quranBookmarks, ({ one }) => ({
+  user: one(users, {
+    fields: [quranBookmarks.userId],
+    references: [users.id],
+  }),
+}));
+
+export const tasbihSessionsRelations = relations(tasbihSessions, ({ one }) => ({
+  user: one(users, {
+    fields: [tasbihSessions.userId],
+    references: [users.id],
+  }),
+}));
+
+export const userStreaksRelations = relations(userStreaks, ({ one }) => ({
+  user: one(users, {
+    fields: [userStreaks.userId],
+    references: [users.id],
+  }),
+}));
+
+export const ramadanLogsRelations = relations(ramadanLogs, ({ one }) => ({
+  user: one(users, {
+    fields: [ramadanLogs.userId],
+    references: [users.id],
+  }),
+}));
+
+export const pushSubscriptionsRelations = relations(pushSubscriptions, ({ one }) => ({
+  user: one(users, {
+    fields: [pushSubscriptions.userId],
+    references: [users.id],
+  }),
 }));
