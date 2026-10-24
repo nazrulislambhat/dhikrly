@@ -390,24 +390,25 @@ export default function AppShell({
               href="/settings"
               aria-label="Settings and Profile"
               title="Settings & Profile"
-              className={`flex min-h-9 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-xl border border-[var(--app-line)] px-3 text-xs font-bold transition-all hover:bg-dhikr-500/10 ${
+              className={`flex min-h-9 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-xl border border-[var(--app-line)] px-3 text-xs font-bold transition-all hover:bg-dhikr-500/10 cursor-pointer ${
                 active === 'settings'
                   ? 'bg-dhikr-50 text-dhikr-800 dark:bg-dhikr-500/15 dark:text-dhikr-200'
                   : muted
               }`}
             >
               <UserRound className="h-3.5 w-3.5" aria-hidden="true" />
-              <span className="hidden xl:inline">Profile</span>
+              <span className="hidden xl:inline">Settings</span>
             </Link>
 
             <button
               type="button"
-              className={`flex min-h-9 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-xl border border-[var(--app-line)] px-3 text-xs font-bold transition-all hover:bg-dhikr-500/10 ${muted}`}
+              className={`flex min-h-9 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-xl border border-[var(--app-line)] px-3 text-xs font-bold transition-all hover:bg-dhikr-500/10 cursor-pointer ${muted}`}
               onClick={onToggleDark}
               aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'}
+              title={dark ? 'Switch to light mode' : 'Switch to dark mode'}
             >
               {dark ? <Sun className="h-3.5 w-3.5" aria-hidden="true" /> : <Moon className="h-3.5 w-3.5" aria-hidden="true" />}
-              <span>{dark ? 'Light' : 'Dark'}</span>
+              <span className="hidden xl:inline">{dark ? 'Light' : 'Dark'}</span>
             </button>
           </div>
         </div>

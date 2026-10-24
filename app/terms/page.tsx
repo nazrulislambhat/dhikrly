@@ -13,7 +13,7 @@ export default function TermsPage() {
       subtitle="Please read these terms carefully before using Dhikrly"
       lastUpdated="March 2025"
     >
-      <div className="mb-6 rounded-xl border border-amber-300 px-5 py-4 text-amber-800 [&_p]:mb-0 [&_p]:text-[13px] [&_p]:text-amber-800">
+      <div className="mb-6 rounded-2xl border border-amber-500/30 bg-amber-500/10 px-5 py-4 text-amber-900 dark:text-amber-200 [&_p]:mb-0 [&_p]:text-[13px] [&_p]:text-amber-900 dark:[&_p]:text-amber-200">
         <p>
           <strong>Summary:</strong> Dhikrly is a free tool to help you track
           your daily adhkār. Use it respectfully. We provide it as-is and are
@@ -24,7 +24,7 @@ export default function TermsPage() {
       <h2>1. Acceptance of Terms</h2>
       <p>
         By accessing or using Dhikrly at{' '}
-        <a href="https://dhikrly.com">https://dhikrly.com</a> (the `App``), you
+        <a href="https://dhikrly.com">https://dhikrly.com</a> (&ldquo;the App&rdquo;), you
         agree to be bound by these Terms and Conditions. If you do not agree,
         please do not use the App.
       </p>

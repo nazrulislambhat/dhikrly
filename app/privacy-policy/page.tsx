@@ -13,7 +13,7 @@ export default function Privacy() {
       subtitle="How Dhikrly collects, uses, and protects your information"
       lastUpdated="March 2025"
     >
-      <div className="mb-6 rounded-xl border border-amber-300 px-5 py-4 text-amber-800 [&_p]:mb-0 [&_p]:text-[13px] [&_p]:text-amber-800">
+      <div className="mb-6 rounded-2xl border border-amber-500/30 bg-amber-500/10 px-5 py-4 text-amber-900 dark:text-amber-200 [&_p]:mb-0 [&_p]:text-[13px] [&_p]:text-amber-900 dark:[&_p]:text-amber-200">
         <p>
           <strong>Summary:</strong> Dhikrly stores your progress locally on your
           device by default. If you create an account, your data is synced to
@@ -37,7 +37,7 @@ export default function Privacy() {
       <p>
         When you use Dhikrly without signing in, no personal information is
         collected. All data — your daily completion records, streaks, custom
-        duas, and settings — is stored exclusively in your browser`s{' '}
+        duas, and settings — is stored exclusively in your browser’s{' '}
         <code>localStorage</code> on your own device. This data never leaves
         your device and is never transmitted to any server.
       </p>
