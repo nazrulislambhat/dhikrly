@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { User, Session } from '@supabase/supabase-js';
 import { supabase, hasSupabaseConfig } from '@/lib/supabase';
+import { migrateLocalDataToCloud } from '@/lib/syncEngine';
 
 export interface AuthState {
   user: User | null;
@@ -76,6 +77,7 @@ export function useAuth() {
             session: { user: authUser } as unknown as Session,
             loading: false,
           });
+          void migrateLocalDataToCloud(authUser.id);
           return;
         }
       }
@@ -132,6 +134,7 @@ export function useAuth() {
         if (data.user) {
           const authUser = toAuthUser(data.user);
           setState({ user: authUser, session: { user: authUser } as unknown as Session, loading: false });
+          void migrateLocalDataToCloud(authUser.id);
         }
         return { error: null };
       } catch (err) {
@@ -162,6 +165,7 @@ export function useAuth() {
         if (data.user) {
           const authUser = toAuthUser(data.user);
           setState({ user: authUser, session: { user: authUser } as unknown as Session, loading: false });
+          void migrateLocalDataToCloud(authUser.id);
         }
         return { error: null };
       } catch (err) {

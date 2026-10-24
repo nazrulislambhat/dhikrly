@@ -285,6 +285,166 @@ export async function pullRemoteSyncState(): Promise<boolean> {
   }
 }
 
+/**
+ * Automatically migrate all historical local data to the cloud on user login
+ */
+export async function migrateLocalDataToCloud(
+  userId: string,
+  force = false
+): Promise<{ success: boolean; migratedCount: number }> {
+  if (typeof window === 'undefined') return { success: false, migratedCount: 0 };
+
+  const migrationKey = `dhikrly_cloud_migrated_${userId}`;
+  if (!force && localStorage.getItem(migrationKey)) {
+    return { success: true, migratedCount: 0 };
+  }
+
+  try {
+    const mutations: SyncPayload['mutations'] = {};
+
+    // 1. Gather all Adhkār completions
+    const localAdhkar = load<Record<string, Record<string, boolean>>>(STORAGE_KEY, {});
+    const adhkarMutations: AdhkarMutation[] = [];
+    for (const [date, checkedMap] of Object.entries(localAdhkar)) {
+      if (!checkedMap || typeof checkedMap !== 'object') continue;
+      for (const [duaId, isDone] of Object.entries(checkedMap)) {
+        if (isDone) {
+          adhkarMutations.push({
+            date,
+            duaId,
+            completed: true,
+            timestamp: Date.now(),
+          });
+        }
+      }
+    }
+    if (adhkarMutations.length > 0) {
+      mutations.adhkar = adhkarMutations;
+    }
+
+    // 2. Gather Ṣalāh logs from localStorage
+    const salahMutations: SalahMutation[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith('salah_log_')) {
+        const date = key.replace('salah_log_', '');
+        try {
+          const raw = localStorage.getItem(key);
+          if (raw) {
+            const dayLog = JSON.parse(raw);
+            if (dayLog.prayers && typeof dayLog.prayers === 'object') {
+              for (const [prayer, status] of Object.entries(dayLog.prayers)) {
+                if (status) {
+                  salahMutations.push({
+                    date,
+                    prayer,
+                    status: String(status),
+                    isCongregation: status === 'jamah',
+                    timestamp: Date.now(),
+                  });
+                }
+              }
+            }
+          }
+        } catch {
+          // ignore
+        }
+      }
+    }
+    if (salahMutations.length > 0) {
+      mutations.salah = salahMutations;
+    }
+
+    // 3. Gather Qadā state
+    const qada = load<Record<string, unknown> | null>(QADA_STORAGE_KEY, null);
+    if (qada) {
+      mutations.qada = {
+        balances: {
+          fajr: Number(qada.fajr) || 0,
+          dhuhr: Number(qada.dhuhr) || 0,
+          asr: Number(qada.asr) || 0,
+          maghrib: Number(qada.maghrib) || 0,
+          isha: Number(qada.isha) || 0,
+          witr: Number(qada.witr) || 0,
+        },
+      };
+    }
+
+    // 4. Gather Streak
+    const streak = load<{ current?: number; best?: number; lastComplete?: string } | null>(STREAK_KEY, null);
+    if (streak) {
+      mutations.streak = {
+        currentStreak: streak.current || 0,
+        longestStreak: streak.best || 0,
+        lastCompletedDate: streak.lastComplete || undefined,
+      };
+    }
+
+    // 5. Gather Custom Du‘ās
+    const custom = load<Array<{ id: string; title?: string; arabic?: string; transliteration?: string; translation?: string; repeat?: number; category?: string }>>(CUSTOM_DUAS_KEY, []);
+    if (Array.isArray(custom) && custom.length > 0) {
+      mutations.customDuas = custom.map((d) => ({
+        clientDuaId: d.id,
+        title: d.title || 'Untitled',
+        arabic: d.arabic,
+        transliteration: d.transliteration,
+        translation: d.translation,
+        repeatCount: d.repeat || 1,
+        category: d.category || 'custom',
+      }));
+    }
+
+    // 6. Gather Qur'an Progress & Bookmarks
+    const quranProg = load<{ surah: number; ayah: number; page?: number; juz?: number } | null>(QURAN_PROGRESS_KEY, null);
+    if (quranProg) {
+      mutations.quran = {
+        progress: quranProg,
+      };
+    }
+
+    const bookmarks = load<Array<{ surah: number; ayah: number; note?: string }>>(QURAN_BOOKMARKS_KEY, []);
+    if (Array.isArray(bookmarks) && bookmarks.length > 0) {
+      if (!mutations.quran) mutations.quran = {};
+      mutations.quran.bookmarks = bookmarks.map((b) => ({
+        surah: b.surah,
+        ayah: b.ayah,
+        note: b.note,
+      }));
+    }
+
+    const totalCount =
+      (mutations.adhkar?.length || 0) +
+      (mutations.salah?.length || 0) +
+      (mutations.customDuas?.length || 0) +
+      (mutations.quran?.bookmarks?.length || 0) +
+      (mutations.qada ? 1 : 0);
+
+    if (totalCount > 0) {
+      const res = await fetch('/api/v1/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          deviceId: getDeviceId(),
+          mutations,
+        }),
+      });
+
+      if (res.ok) {
+        localStorage.setItem(migrationKey, Date.now().toString());
+        console.log(`[Cloud Migration] Migrated ${totalCount} local records to cloud account.`);
+        return { success: true, migratedCount: totalCount };
+      }
+    } else {
+      localStorage.setItem(migrationKey, Date.now().toString());
+    }
+
+    return { success: true, migratedCount: totalCount };
+  } catch (err) {
+    console.warn('[Cloud Migration] Migration failed, will retry next session:', err);
+    return { success: false, migratedCount: 0 };
+  }
+}
+
 // Automatically flush pending mutations when tab is backgrounded
 if (typeof window !== 'undefined') {
   window.addEventListener('visibilitychange', () => {
@@ -296,3 +456,4 @@ if (typeof window !== 'undefined') {
     void flushSync();
   });
 }
+
