@@ -2108,14 +2108,13 @@ export default function SettingsPage() {
               <button
                 type="button"
                 onClick={() => void handleProfileSave()}
-                className={`inline-flex items-center gap-2 rounded-2xl px-6 py-2.5 text-xs font-bold shadow-md transition-all active:scale-95 cursor-pointer ${
+                className={`inline-flex items-center gap-2 rounded-xl px-6 py-2.5 text-xs font-bold transition-all active:scale-95 cursor-pointer ${
                   hasUnsavedChanges
                     ? 'bg-primary text-primary-fg hover:bg-primary-hover animate-pulse'
                     : 'bg-primary text-primary-fg hover:bg-primary-hover'
                 }`}
               >
-                <Check className="h-4 w-4" />
-                <span>Save All (⌘S)</span>
+                <span>Save</span>
               </button>
             </div>
           </div>
