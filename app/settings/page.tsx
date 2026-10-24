@@ -2094,7 +2094,7 @@ export default function SettingsPage() {
           </div>
 
           {/* Sticky Bottom Save Bar */}
-          <div className="sticky bottom-4 z-20 flex items-center justify-between gap-4 rounded-3xl border border-primary/40 bg-surface/95 p-4 shadow-xl backdrop-blur-xl">
+          <div className="sticky bottom-20 z-20 flex items-center justify-between gap-4 rounded-3xl border border-primary/40 bg-surface/95 p-4 shadow-xl backdrop-blur-xl">
             <div className="flex items-center gap-2 text-xs font-bold text-primary">
               <Sparkles className="h-4 w-4 shrink-0 text-primary" />
               <span>
@@ -2114,8 +2114,8 @@ export default function SettingsPage() {
                     : 'bg-primary text-primary-fg hover:bg-primary-hover'
                 }`}
               >
-                <Check className="h-4 w-4" />
-                <span>Save All (⌘S)</span>
+                
+                <span>Save</span>
               </button>
             </div>
           </div>

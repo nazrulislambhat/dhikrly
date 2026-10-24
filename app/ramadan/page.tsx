@@ -350,7 +350,7 @@ export default function RamadanPage() {
 
         {/* ── Segmented Navigation (Minified clean layout) ── */}
         <div
-          className={`mb-6 flex rounded-2xl border p-1 ${
+          className={`mb-6 flex flex-wrap items-center justify-between rounded-2xl border p-1 ${
             dark ? 'border-white/[0.08] bg-white/[0.03]' : 'border-sakinah-200 bg-sakinah-100/80'
           }`}
         >
