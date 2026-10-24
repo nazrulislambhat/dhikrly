@@ -54,14 +54,15 @@ export default function LegalLayout({
             <button
               type="button"
               onClick={() => setDark((v) => !v)}
-              className="grid h-9 w-9 place-items-center rounded-xl border border-[var(--app-line)] text-stone-500 hover:text-stone-700 dark:text-stone-400 dark:hover:text-stone-200"
+              className="grid h-9 w-9 place-items-center rounded-xl border border-[var(--app-line)] text-stone-500 hover:text-stone-700 dark:text-stone-400 dark:hover:text-stone-200 transition-colors hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer"
               aria-label={dark ? 'Use light mode' : 'Use dark mode'}
+              title={dark ? 'Use light mode' : 'Use dark mode'}
             >
               {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </button>
             <Link
               href="/"
-              className="rounded-xl border border-[var(--app-line)] px-3.5 py-2 text-xs font-semibold text-[var(--app-muted)] transition-colors hover:text-[var(--app-ink)] hover:bg-black/5 dark:hover:bg-white/5"
+              className="rounded-xl border border-[var(--app-line)] px-3.5 py-2 text-xs font-semibold text-[var(--app-muted)] transition-colors hover:text-[var(--app-ink)] hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer"
             >
               ← Back to App
             </Link>

@@ -55,13 +55,11 @@ export default function UpdateBanner({ dark }: UpdateBannerProps) {
   return (
     <>
       {/* ── Pill notification ── */}
-      <div className="fixed left-1/2 top-4 z-[9990] -translate-x-1/2 animate-slide-down">
-        <div
-          className="flex items-center gap-3 rounded-2xl border border-border bg-surface/95 text-ink px-4 py-3 shadow-2xl backdrop-blur-md w-100 transition-all justify-center "
-        >
+      <div className="fixed left-1/2 top-4 z-[9990] -translate-x-1/2 w-[min(calc(100%-2rem),36rem)] animate-slide-down">
+        <div className="flex flex-wrap sm:flex-nowrap items-center justify-between sm:justify-center gap-2.5 sm:gap-3 rounded-2xl border border-border/80 bg-surface/95 px-3.5 sm:px-4 py-2 sm:py-2.5 shadow-2xl backdrop-blur-xl ring-1 ring-black/5 dark:ring-white/10 text-ink transition-all">
           {isUpdating ? (
             /* Mini in-pill progress view */
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 w-full sm:w-auto justify-center">
               <RefreshCw className="h-4 w-4 shrink-0 animate-spin text-emerald-500" />
               <div className="flex flex-col min-w-[170px] sm:min-w-[210px]">
                 <div className="flex items-center justify-between text-[11px] font-bold">
@@ -81,55 +79,59 @@ export default function UpdateBanner({ dark }: UpdateBannerProps) {
           ) : (
             /* Normal Pill View */
             <>
-              {/* Pulse dot */}
-              <span className="relative flex h-2 w-2 shrink-0">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-amber-500" />
-              </span>
+              {/* Left Side: Status & Version */}
+              <div className="flex items-center gap-2 min-w-0">
+                {/* Pulse dot */}
+                <span className="relative flex h-2 w-2 shrink-0">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-amber-500" />
+                </span>
 
-              <span className={`text-[12px] font-medium ${dark ? 'text-stone-200' : 'text-stone-700'}`}>
-                Update available
-                {releases[0] && (
-                  <span className={`ml-1.5 text-[10px] ${dark ? 'text-stone-500' : 'text-stone-400'}`}>
-                    v{releases[0].version}
-                  </span>
-                )}
-              </span>
+                <span className={`text-[12px] font-medium truncate ${dark ? 'text-stone-200' : 'text-stone-700'}`}>
+                  Update available
+                  {releases[0] && (
+                    <span className={`ml-1.5 font-mono text-[10px] ${dark ? 'text-stone-500' : 'text-stone-400'}`}>
+                      v{releases[0].version}
+                    </span>
+                  )}
+                </span>
+              </div>
 
-              <button
-                type="button"
-                onClick={() => setShowModal(true)}
-                className={`rounded-full px-3 py-1 text-[11px] font-medium transition-all active:scale-95 ${
-                  dark
-                    ? 'bg-white/10 text-stone-200 hover:bg-white/15'
-                    : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
-                }`}
-              >
-                What&apos;s new
-              </button>
+              {/* Right Side: Action Controls */}
+              <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setShowModal(true)}
+                  className={`rounded-full px-2.5 sm:px-3 py-1 text-[11px] font-medium transition-all active:scale-95 cursor-pointer ${
+                    dark
+                      ? 'bg-white/10 text-stone-200 hover:bg-white/15'
+                      : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
+                  }`}
+                >
+                  What&apos;s new
+                </button>
 
-              <button
-                type="button"
-                onClick={handleStartUpdate}
-                className={`rounded-full px-3 py-1 text-[11px] font-bold transition-all active:scale-95 ${
-                  dark
-                    ? 'bg-emerald-400 text-emerald-950 hover:bg-emerald-300'
-                    : 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-xs'
-                }`}
-              >
-                Update now
-              </button>
+                <button
+                  type="button"
+                  onClick={handleStartUpdate}
+                  className={`rounded-full px-3 py-1 text-[11px] font-bold transition-all active:scale-95 cursor-pointer ${
+                    dark
+                      ? 'bg-emerald-400 text-emerald-950 hover:bg-emerald-300'
+                      : 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-xs'
+                  }`}
+                >
+                  Update now
+                </button>
 
-              <button
-                type="button"
-                onClick={dismissUpdate}
-                aria-label="Dismiss update"
-                className={`text-[11px] transition-colors ${
-                  dark ? 'text-stone-600 hover:text-stone-400' : 'text-stone-300 hover:text-stone-500'
-                }`}
-              >
-                ✕
-              </button>
+                <button
+                  type="button"
+                  onClick={dismissUpdate}
+                  aria-label="Dismiss update"
+                  className="grid h-6 w-6 place-items-center rounded-full text-muted hover:text-ink hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </div>
             </>
           )}
         </div>
