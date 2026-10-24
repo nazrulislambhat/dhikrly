@@ -6,6 +6,7 @@ import {
   getDayLog, saveDayLog, getSalahSettings, saveSalahSettings,
 } from '@/lib/salahStorage';
 import { markLocalEdit } from '@/lib/localEdits';
+import { queueSalahMutation } from '@/lib/syncEngine';
 
 export function useSalahLog(date: string) {
   const [log, setLog] = useState<DayLog>(() => getDayLog(date));
@@ -29,6 +30,7 @@ export function useSalahLog(date: string) {
   const updatePrayer = useCallback((prayer: PrayerName, status: PrayerStatus) => {
     localRevision.current += 1;
     markLocalEdit('salah', date, `prayer:${prayer}`);
+    queueSalahMutation(date, prayer, status || 'missed', status === 'jamah');
     setLog(prev => {
       const next: DayLog = { ...prev, date, prayers: { ...prev.prayers, [prayer]: status } };
       saveDayLog(next);
@@ -44,6 +46,7 @@ export function useSalahLog(date: string) {
       const cycle: PrayerStatus[] = [null, 'prayed', 'jamah', 'delayed', 'missed'];
       const idx = cycle.indexOf(current);
       const next: PrayerStatus = cycle[(idx + 1) % cycle.length];
+      queueSalahMutation(date, prayer, next || 'missed', next === 'jamah');
       const updated: DayLog = { ...prev, date, prayers: { ...prev.prayers, [prayer]: next } };
       saveDayLog(updated);
       return updated;

@@ -5,6 +5,7 @@ import { load, save, pruneOldEntries, STORAGE_KEY } from '@/lib/storage';
 import { getTodayKey } from '@/lib/dates';
 import { playCheck, playUncheck, playComplete } from '@/lib/sounds';
 import { markLocalEdit } from '@/lib/localEdits';
+import { queueAdhkarMutation } from '@/lib/syncEngine';
 
 export interface UseCheckedOptions {
   onCompleteAll?: () => void;
@@ -47,6 +48,8 @@ export function useChecked(totalDuas: number, options?: UseCheckedOptions) {
         const next = { ...prev, [id]: !wasChecked };
         const newDone = Object.values(next).filter(Boolean).length;
 
+        queueAdhkarMutation(today, id, !wasChecked);
+
         if (!wasChecked && newDone === totalDuas && totalDuas > 0) {
           // Trigger celebration callback only when an active user tap completes the last remaining adhkar
           onCompleteAllRef.current?.();
@@ -71,6 +74,7 @@ export function useChecked(totalDuas: number, options?: UseCheckedOptions) {
     const resetState = Object.fromEntries(
       Object.keys(checked).map((id) => {
         markLocalEdit('adhkar', today, id);
+        queueAdhkarMutation(today, id, false);
         return [id, false];
       }),
     );

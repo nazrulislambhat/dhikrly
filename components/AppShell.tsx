@@ -32,6 +32,7 @@ import {
 import { useServiceWorker } from '@/hooks/useServiceWorker';
 import { scheduleNotifications } from '@/components/NotificationSettings';
 import { initClientStorage } from '@/lib/storage';
+import { pullRemoteSyncState } from '@/lib/syncEngine';
 import UpdateBanner from '@/components/UpdateBanner';
 import DhikrlyProModal from '@/components/DhikrlyProModal';
 import CommandPaletteModal from '@/components/CommandPaletteModal';
@@ -138,6 +139,7 @@ export default function AppShell({
 
   useEffect(() => {
     initClientStorage();
+    pullRemoteSyncState().catch(() => {});
     scheduleNotifications();
     const handleVisibility = () => {
       if (document.visibilityState === 'visible') {
